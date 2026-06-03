@@ -3690,7 +3690,7 @@ else if(currentTab==='nieuw')list=list.filter(g=>g.s.includes('NIEUW')).concat(l
 else if(currentTab==='mijn')return null; // handled separately (custom games)
 else if(currentTab==='cadeautjes')return 'gift';
 if(currentCat!=='Alle'){
-  if(currentCat==='Mario')list=list.filter(g=>/(Mario|Zelda|Pok[eé]mon|Kirby|Metroid|Splatoon|Animal|Smash|Star Fox|F[- ]Zero|Fire Emblem|Pikmin|Xenoblade|Kid Icarus|Punch|Duck|Ice|Excite|Advance|Wave Race|Nintendo|Wii Sports|Rhythm|Dr Mario|Wario|Yoshi|Donkey Kong|Banjo|Conker|EarthBound|Mother|Balloon|Clu Clu|Mach|Samus|Captain Toad|Princess|Tingle|Hyrule|Diddy|Nintendo Land)/i.test(g.n) || (g.n.includes('Wars') && g.c==='Puzzle'));
+  if(currentCat==='Mario')list=list.filter(g=>/Mario/i.test(g.n));
   else list=list.filter(g=>g.c===currentCat);
 }
 return list;
