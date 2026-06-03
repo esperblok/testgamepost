@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🏁 Racer</title><link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#0a0a1a">
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Fredoka',sans-serif;background:#0a0a1a;color:#fff;overflow:hidden;height:100vh;user-select:none}
+canvas{display:block;width:100%;height:100%}
+.hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;font-size:0.85rem;z-index:10;pointer-events:none}
+.hud span{background:rgba(0,0,0,0.5);padding:4px 12px;border-radius:8px}
+.game-over{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);z-index:20;flex-direction:column;gap:16px;backdrop-filter:blur(10px)}
+.game-over.open{display:flex}
+.game-over h1{font-size:2rem}
+.game-over p{font-size:1rem;color:#ffd200}
+.game-over button{background:linear-gradient(135deg,#00c8ff,#0066ff);border:none;border-radius:12px;color:#fff;padding:12px 40px;font-size:1rem;cursor:pointer;font-family:'Fredoka',sans-serif}
+.top-link{position:fixed;top:10px;right:10px;z-index:30;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06);border-radius:8px;color:#888;padding:4px 10px;font-size:0.55rem;text-decoration:none;font-family:'Fredoka',sans-serif;pointer-events:auto}
+</style>
+</head>
+<body>
+<div class="hud"><span>🏁 <span id="score">0</span></span><span>❤️ <span id="lives">3</span></span></div>
+<a href="index.html" class="top-link">🎮 Meer Spellen</a>
+<canvas id="c"></canvas>
+<div class="game-over" id="go"><h1>💥 CRASH!</h1><p>Score: <span id="finalScore">0</span></p><button onclick="startGame()">🔄 Opnieuw</button></div>
+<script>
+const cx=document.getElementById('c');
+const ctx=cx.getContext('2d');
+let W,H,player,obstacles,score,lives,gameOver,speed,frame;
+function resize(){W=cx.width=window.innerWidth;H=cx.height=window.innerHeight}
+window.addEventListener('resize',resize);resize();
+function startGame(){
+player={x:W/2,y:H-80,w:40,h:50};
+obstacles=[];score=0;lives=3;speed=3;gameOver=false;frame=0;
+document.getElementById('go').classList.remove('open');
+updateHUD();
+}
+function updateHUD(){
+document.getElementById('score').textContent=score;
+document.getElementById('lives').textContent=lives;
+}
+const keys={};
+document.addEventListener('keydown',e=>{keys[e.key]=true});
+document.addEventListener('keyup',e=>{keys[e.key]=false});
+document.addEventListener('touchmove',e=>{
+const t=e.touches[0];
+const rect=cx.getBoundingClientRect();
+const x=t.clientX-rect.left;
+player.x=Math.max(20,Math.min(W-20,x));
+},{passive:true});
+function gameLoop(){
+if(gameOver){requestAnimationFrame(gameLoop);return}
+frame++;
+if(keys['ArrowLeft']||keys['a'])player.x=Math.max(20,player.x-5);
+if(keys['ArrowRight']||keys['d'])player.x=Math.min(W-20,player.x+5);
+if(keys['ArrowUp']||keys['w'])player.y=Math.max(20,player.y-4);
+if(keys['ArrowDown']||keys['s'])player.y=Math.min(H-20,player.y+4);
+speed=3+Math.floor(score/10)*0.5;
+if(frame%Math.max(15,30-Math.floor(score/5))===0){
+const lane=Math.floor(Math.random()*3);
+const x=[W*0.2,W*0.5,W*0.8][lane];
+obstacles.push({x,y:-30,w:35,h:35,color:['#ff5252','#ffd200','#ff6a00'][Math.floor(Math.random()*3)]});
+}
+ctx.fillStyle='#0a0a1a';ctx.fillRect(0,0,W,H);
+// Road lines
+for(let i=0;i<H;i+=40){ctx.fillStyle='rgba(255,255,255,0.05)';ctx.fillRect(W/2-2,(i+frame*2)%H,4,20)}
+// Player car
+ctx.shadowColor='rgba(0,200,255,0.3)';ctx.shadowBlur=20;
+ctx.fillStyle='#00c8ff';ctx.beginPath();ctx.roundRect(player.x-player.w/2,player.y-player.h/2,player.w,player.h,8);ctx.fill();
+ctx.shadowBlur=0;
+ctx.fillStyle='#80d8ff';ctx.beginPath();ctx.roundRect(player.x-player.w/2+5,player.y-player.h/2+5,8,15,3);ctx.fill();
+ctx.beginPath();ctx.roundRect(player.x+player.w/2-13,player.y-player.h/2+5,8,15,3);ctx.fill();
+for(let i=obstacles.length-1;i>=0;i--){
+const o=obstacles[i];
+o.y+=speed;
+ctx.shadowColor='rgba(255,50,50,0.2)';ctx.shadowBlur=10;
+ctx.fillStyle=o.color;ctx.beginPath();ctx.roundRect(o.x-o.w/2,o.y-o.h/2,o.w,o.h,6);ctx.fill();
+ctx.shadowBlur=0;
+ctx.fillStyle='rgba(255,255,255,0.15)';ctx.beginPath();ctx.roundRect(o.x-4,o.y-4,8,8,2);ctx.fill();
+if(o.y>H+30){obstacles.splice(i,1);score++;updateHUD();continue}
+// Collision
+if(Math.abs(player.x-o.x)<(player.w/2+o.w/2-5)&&Math.abs(player.y-o.y)<(player.h/2+o.h/2-5)){
+lives--;updateHUD();obstacles.splice(i,1);
+if(lives<=0){gameOver=true;document.getElementById('finalScore').textContent=score;document.getElementById('go').classList.add('open');}
+}
+}
+requestAnimationFrame(gameLoop);
+}
+startGame();gameLoop();
+</script>
+<span id="adminTrigger" style="position:fixed;bottom:2px;left:2px;font-size:1px;color:transparent;pointer-events:auto;z-index:999">speler</span>
+<script>
+
+// Admin commands (comprehensive)
+const ADMIN_PW='esper 331911';
+let isAdmin=localStorage.getItem('g_admin')==='true';
+let bannedPlayers=[],mutedPlayers=[];
+document.addEventListener('click',function ae(e){
+  if(e.target.id==='adminTrigger'){
+    const pw=prompt('👑 Voer wachtwoord in:');
+    if(pw===ADMIN_PW){isAdmin=true;localStorage.setItem('g_admin','true');showAdminBar();}
+    else if(pw!==null)alert('❌ Fout wachtwoord!');
+  }
+});
+function showAdminBar(){
+  let bar=document.getElementById('adminBar');
+  if(!bar){
+    bar=document.createElement('div');
+    bar.id='adminBar';
+    bar.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#1a1a2a;border-top:1px solid rgba(255,255,255,0.04);padding:6px 12px;display:flex;align-items:center;gap:10px;z-index:999;font-size:0.6rem;font-family:"Fredoka",sans-serif';
+    bar.innerHTML='<span style="background:#ffd200;color:#222;padding:2px 8px;border-radius:4px;font-weight:600;white-space:nowrap">👑 ADMIN</span><input id="adminIpt" style="flex:1;min-width:0;padding:4px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#fff;outline:none;font-size:0.6rem;font-family:Fredoka,sans-serif" placeholder="/admin [ww]  |  /help  |  /speler [naam]"><span style="color:rgba(255,255,255,0.15);white-space:nowrap" id="adminC">🪙 0</span>';
+    document.body.appendChild(bar);
+    document.getElementById('adminIpt').addEventListener('keydown',function(e){
+      if(e.key!=='Enter')return;
+      const r=this.value.trim();this.value='';
+      const p=r.split(' ');const c=p[0].toLowerCase();const a=p.slice(1);
+      if(!isAdmin&&c!=='/admin'){alert('❌ Alleen admin!');return;}
+      switch(c){
+        case'/admin':if(a.join(' ')===ADMIN_PW){isAdmin=true;localStorage.setItem('g_admin','true');showAdminBar();alert('✅ Admin modus!');}else alert('❌ Fout!');break;
+        case'/help':alert('/admin [ww] - inloggen\n/speler [naam] - info\n/kick [naam]\n/ban [naam]\n/unban [naam]\n/mute [naam]\n/unmute [naam]\n/kill [naam]\n/freeze [naam]\n/unfreeze [naam]\n/slap [naam]\n/explode [naam]\n/heal\n/god\n/fly\n/invisible\n/speed [n]\n/jump [n]\n/coins [n]\n/setcoins [n]\n/resetcoins\n/clear\n/reset\n/restart\n/time [dag/nacht]\n/weather [zon/regen]\n/announce [txt]\n/shutdown\n/pm [naam] [txt]\n/ip [naam]\n/ping\n/report [naam]');break;
+        case'/ping':alert('🏓 Pong! 0.001ms');break;
+        case'/speler':if(!a[0]){alert('? /speler [naam]');break;}alert('👤 '+a[0]+'\n📊 Level: '+(Math.floor(Math.random()*50)+1)+'\n💰 Coins: '+(Math.floor(Math.random()*9999)+100)+'\n🏆 Rank: '+['Bronze','Silver','Gold','Diamond','Admin'][Math.floor(Math.random()*5)]+'\n🌐 IP: 192.168.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255));break;
+        case'/kick':if(!a[0]){alert('? /kick [naam]');break;}alert('🦶 '+a[0]+' is gekickt!');break;
+        case'/ban':if(!a[0]){alert('? /ban [naam]');break;}if(!bannedPlayers.includes(a[0]))bannedPlayers.push(a[0]);alert('🔨 '+a[0]+' verbannen!');break;
+        case'/unban':if(!a[0]){alert('? /unban [naam]');break;}bannedPlayers=bannedPlayers.filter(b=>b!==a[0]);alert('✅ '+a[0]+' unbanned!');break;
+        case'/mute':if(!a[0]){alert('? /mute [naam]');break;}if(!mutedPlayers.includes(a[0]))mutedPlayers.push(a[0]);alert('🔇 '+a[0]+' gedempt!');break;
+        case'/unmute':if(!a[0]){alert('? /unmute [naam]');break;}mutedPlayers=mutedPlayers.filter(b=>b!==a[0]);alert('🔊 '+a[0]+' kan weer praten!');break;
+        case'/kill':if(!a[0]){alert('? /kill [naam]');break;}alert('💀 '+a[0]+' is gedood!');break;
+        case'/freeze':if(!a[0]){alert('? /freeze [naam]');break;}alert('🧊 '+a[0]+' is bevroren!');break;
+        case'/unfreeze':if(!a[0]){alert('? /unfreeze [naam]');break;}alert('🔥 '+a[0]+' is ontdooid!');break;
+        case'/slap':if(!a[0]){alert('? /slap [naam]');break;}alert('👋 '+a[0]+' vliegt '+(Math.floor(Math.random()*50)+10)+'m ver!');break;
+        case'/explode':if(!a[0]){alert('? /explode [naam]');break;}alert('💥 BOEM! '+a[0]+' ontploft!');break;
+        case'/coins':case'/give':const am=parseInt(a[0])||0;if(am<=0){alert('? /coins [aantal]');break;}alert('💰 +'+am+' coins!');break;
+        case'/setcoins':const sa=parseInt(a[0])||0;if(sa<0){alert('? /setcoins [aantal]');break;}alert('💰 Coins = '+sa);break;
+        case'/resetcoins':alert('🔄 Coins gereset');break;
+        case'/heal':alert('💚 Genezen!');break;
+        case'/god':alert('🛡️ God modus!');break;
+        case'/fly':alert('🕊️ Vlieg modus!');break;
+        case'/invisible':alert('👻 Onzichtbaar!');break;
+        case'/speed':const sp=parseInt(a[0])||0;if(sp<1||sp>100){alert('? /speed [1-100]');break;}alert('💨 Speed '+sp+'x');break;
+        case'/jump':const jp=parseInt(a[0])||0;if(jp<1||jp>100){alert('? /jump [1-100]');break;}alert('🦘 Jump '+jp);break;
+        case'/time':if(!a[0]){alert('? /time [dag/nacht]');break;}alert(a[0]==='nacht'?'🌙 Nacht!':'☀️ Dag!');break;
+        case'/day':alert('☀️ Dag!');break;
+        case'/night':alert('🌙 Nacht!');break;
+        case'/weather':if(!a[0]){alert('? /weather [zon/regen/sneeuw]');break;}alert('🌤️ '+a[0]);break;
+        case'/clear':alert('🧹 Clear!');break;
+        case'/reset':case'/restart':if(confirm('Resetten?')){localStorage.removeItem('g_admin');location.reload();}break;
+        case'/announce':if(!a[0]){alert('? /announce [txt]');break;}alert('📢 '+r.slice(10));break;
+        case'/shutdown':if(confirm('Shutdown?')){document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a1a;color:#fff;flex-direction:column;gap:20px;font-family:Fredoka,sans-serif"><div style="font-size:4rem">🛑</div><h1>Server offline</h1></div>';}break;
+        case'/pm':if(a.length<2){alert('? /pm [naam] [txt]');break;}alert('📩 Naar '+a[0]+': "'+a.slice(1).join(' ')+'"');break;
+        case'/ip':alert('🌐 IP '+(a[0]||'speler')+': 192.168.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255));break;
+        case'/report':if(!a[0]){alert('? /report [naam]');break;}alert('🚨 '+a[0]+' gerapporteerd!');break;
+        case'/data':case'/localstorage':let d='';for(let k=0;k<localStorage.length;k++){const kk=localStorage.key(k);let v=localStorage.getItem(kk);if(v.length>80)v=v.slice(0,80)+'...';d+=kk+': '+v+'\n';}alert(d||'Leeg');break;
+case'/cleardata':if(confirm('Wissen?')){localStorage.clear();alert('Gewist!');}break;
+default:alert('? Onbekend. /help voor lijst');
+      }
+    });
+  }
+  bar.style.display='flex';
+}
+if(isAdmin)showAdminBar();
+
+</script>
+
+<script>
+// Activity logging
+(function(){
+  try{
+    const acts=JSON.parse(localStorage.getItem('sbg_activity')||'[]');
+    const user=localStorage.getItem('sbg_user')||'onbekend';
+    acts.unshift({user,action:'Speelt ' + document.title,time:Date.now()});
+    if(acts.length>200)acts=acts.slice(0,200);
+    localStorage.setItem('sbg_activity',JSON.stringify(acts));
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>
