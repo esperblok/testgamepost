@@ -1,13 +1,13 @@
 const CACHE = 'spacegames-v2';
 const FILES = [
-  '/',
-  '/index.html',
-  '/orlog.html',
-  '/race.html',
-  '/moon.html',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/manifest.json'
+  './',
+  './index.html',
+  './orlog.html',
+  './race.html',
+  './moon.html',
+  './icon-192.png',
+  './icon-512.png',
+  './manifest.json'
 ];
 
 self.addEventListener('install', e => {
