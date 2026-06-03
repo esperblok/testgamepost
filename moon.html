@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌙 Maan Simulator</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MaanSim">
+<meta name="theme-color" content="#0a0a1a">
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Fredoka','Segoe UI',system-ui,sans-serif;background:#0a0a1a;color:#fff;min-height:100vh;overflow-x:hidden;user-select:none}
+.container{max-width:480px;margin:0 auto;padding:10px;position:relative}
+@media(min-width:700px){.container{max-width:600px}}
+
+/* HEADER */
+.header{display:flex;justify-content:space-between;align-items:center;padding:6px 0;margin-bottom:8px}
+.header h1{font-size:1.1rem;background:linear-gradient(135deg,#ffd200,#ff6a00);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .header-right{display:flex;gap:6px;align-items:center}
+.header .profile-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:all 0.15s}
+.header .profile-btn:hover{background:rgba(255,255,255,0.1)}
+.header .profile-btn.admin{background:rgba(255,210,0,0.15);border-color:rgba(255,210,0,0.3)}
+.header .back{color:#888;text-decoration:none;font-size:0.75rem;padding:4px 10px;border:1px solid rgba(255,255,255,0.1);border-radius:6px}
+
+/* RESOURCE BAR */
+.resource-bar{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;justify-content:center}
+.res{display:flex;align-items:center;gap:4px;background:rgba(0,0,0,0.4);padding:5px 12px;border-radius:20px;font-size:0.8rem;border:1px solid rgba(255,255,255,0.06)}
+.res .val{font-weight:bold;min-width:24px;font-size:0.9rem}
+.res .val.gold{color:#ffd200}
+.res .val.green{color:#00e676}
+.res .val.blue{color:#4fc3f7}
+.res .val.pink{color:#ff6b9d}
+
+/* MOON CLICKER AREA */
+.moon-area{position:relative;width:100%;aspect-ratio:4/3;border-radius:20px;overflow:hidden;margin-bottom:10px;border:2px solid rgba(255,255,255,0.1);cursor:pointer;background:#0a0a1a}
+.moon-canvas{width:100%;height:100%;display:block}
+.moon-level{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.7);padding:4px 10px;border-radius:10px;font-size:0.7rem;border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(4px)}
+.moon-level span{color:#ffd200;font-weight:bold}
+.moon-progress{position:absolute;bottom:8px;left:8px;right:8px;height:10px;background:rgba(0,0,0,0.5);border-radius:5px;overflow:hidden}
+.moon-progress-fill{height:100%;background:linear-gradient(90deg,#4fc3f7,#00e676,#ffd200);border-radius:5px;transition:width 0.5s ease;width:0%}
+.moon-progress-label{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:0.6rem;color:#aaa}
+
+/* BUILDINGS ON MAP */
+.map-bldg{position:absolute;font-size:2rem;filter:drop-shadow(0 0 10px rgba(255,255,255,0.2));transition:all 0.2s;cursor:pointer;animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1)}
+.map-bldg:hover{transform:scale(1.3);filter:drop-shadow(0 0 20px rgba(255,255,255,0.5))}
+.map-bldg .label{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);font-size:0.5rem;color:#aaa;white-space:nowrap;background:rgba(0,0,0,0.6);padding:0 4px;border-radius:3px}
+@keyframes popIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.3)}100%{transform:scale(1);opacity:1}}
+
+/* FLOATING RESOURCES */
+.float-res{position:fixed;pointer-events:none;z-index:100;font-weight:bold;animation:floatUp 1.2s ease forwards;font-size:1.1rem}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(0.5)}100%{opacity:0;transform:translateY(-80px) scale(1.3)}}
+
+/* CLICK BURST */
+.click-burst{position:absolute;pointer-events:none;border-radius:50%;background:rgba(255,210,0,0.3);animation:burst 0.6s ease forwards}
+@keyframes burst{0%{transform:scale(0);opacity:0.8}100%{transform:scale(3);opacity:0}}
+
+/* SHOP */
+.shop{background:rgba(15,15,35,0.9);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:12px;margin-bottom:10px}
+.shop-title{text-align:center;font-size:0.8rem;color:#ffd200;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.shop-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.shop-item{background:rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.06);border-radius:12px;padding:8px 4px;text-align:center;cursor:pointer;transition:all 0.15s;position:relative}
+.shop-item:active{transform:scale(0.95)}
+.shop-item.locked{opacity:0.3;cursor:not-allowed}
+.shop-item .icon{font-size:1.4rem}
+.shop-item .sname{font-size:0.6rem;font-weight:600;margin:2px 0}
+.shop-item .scost{font-size:0.55rem;color:#ffd200}
+.shop-item .scount{position:absolute;top:2px;right:4px;font-size:0.5rem;background:#4fc3f7;color:#000;padding:0 4px;border-radius:8px;font-weight:bold;min-width:14px}
+.shop-item .sreq{font-size:0.45rem;color:#ff5252}
+
+/* AUTO STATUS */
+.auto-status{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0;font-size:0.65rem;color:#888}
+.auto-status span{background:rgba(0,0,0,0.2);padding:2px 8px;border-radius:10px}
+
+/* BUTTONS */
+.btn-end{width:100%;padding:14px;font-size:1rem;background:linear-gradient(135deg,#00e676,#009624);color:#fff;border:none;border-radius:14px;cursor:pointer;font-weight:700;transition:all 0.2s;text-transform:uppercase;letter-spacing:2px;box-shadow:0 4px 15px rgba(0,230,118,0.3)}
+.btn-end:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,230,118,0.4)}
+.btn-end:active{transform:translateY(0)}
+.btn-end:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+.btn-reset{width:100%;padding:12px;font-size:0.9rem;background:linear-gradient(135deg,#f7971e,#ffd200);color:#222;border:none;border-radius:12px;cursor:pointer;font-weight:700;transition:all 0.2s;margin-top:6px}
+.btn-reset:hover{transform:translateY(-2px)}
+
+/* LOG */
+.log-box{background:rgba(0,0,0,0.3);border-radius:10px;padding:8px 10px;max-height:100px;overflow-y:auto;font-size:0.7rem;line-height:1.5;margin-top:8px}
+.log-box p{padding:1px 0;color:#888;border-bottom:1px solid rgba(255,255,255,0.02)}
+.log-box .hl{color:#4fc3f7}
+.log-box .gold{color:#ffd200}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(10px)}
+.overlay-box{text-align:center;padding:30px;background:rgba(15,15,35,0.95);border:2px solid rgba(255,210,0,0.2);border-radius:24px;max-width:320px;width:90%}
+.overlay-box .big{font-size:4rem}
+.overlay-box h2{font-size:1.5rem;margin:8px 0}
+.overlay-box p{color:#aaa;font-size:0.75rem;margin-bottom:12px}
+.role-btn{display:block;width:100%;padding:16px;margin:6px 0;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;font-family:'Fredoka','Segoe UI',system-ui,sans-serif;transition:all 0.15s}
+.role-btn:active{transform:scale(0.97)}
+.role-btn.speler{background:rgba(0,200,255,0.1);color:#00c8ff;border:1px solid rgba(0,200,255,0.2)}
+.role-btn.admin-btn{background:rgba(255,210,0,0.1);color:#ffd200;border:1px solid rgba(255,210,0,0.2)}
+.pw-input{width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,210,0,0.2);border-radius:10px;color:#fff;font-size:0.9rem;text-align:center;margin:8px 0;font-family:'Fredoka','Segoe UI',system-ui,sans-serif;outline:none}
+.pw-input:focus{border-color:#ffd200}
+.role-label{font-size:0.6rem;color:rgba(255,255,255,0.15);margin-bottom:4px}
+
+/* AI MINI INFO */
+.ai-row{display:flex;justify-content:space-between;background:rgba(255,82,82,0.05);border:1px solid rgba(255,82,82,0.1);border-radius:10px;padding:6px 12px;margin-bottom:8px;font-size:0.7rem}
+.ai-row .ai-label{color:#ff5252}
+.ai-row .ai-val{color:#fff}
+
+@media(max-width:400px){
+.shop-grid{grid-template-columns:repeat(3,1fr)}
+.res{font-size:0.7rem;padding:4px 8px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>🌙 Maan Simulator 🌟</h1>
+<div class="header-right">
+<button class="profile-btn" id="profileBtn">👤</button>
+<a href="index.html" class="back">🎮 Meer Spellen</a>
+</div>
+</div>
+
+<div class="overlay" id="overlay">
+<div class="overlay-box">
+<div class="big" id="winEmoji">🌍</div>
+<h2 id="winTitle"></h2>
+<p id="winDesc"></p>
+<button class="btn-reset" onclick="resetGame()">🔄 NIEUWE KOLONIE</button>
+</div>
+</div>
+
+<!-- RESOURCES TOP BAR -->
+<div class="resource-bar">
+<div class="res">🪙 <span class="val gold" id="money">15</span></div>
+<div class="res">⛏️ <span class="val blue" id="ore">5</span></div>
+<div class="res">⚡ <span class="val gold" id="energy">5</span></div>
+<div class="res">🌍 <span class="val green" id="terra">0</span></div>
+</div>
+
+<!-- AI STATUS -->
+<div class="ai-row">
+<span><span class="ai-label">🤖 AI:</span> 🌍<span class="ai-val" id="aiTerra">0</span></span>
+<span>⏱️ Beurt <span id="turn">1</span></span>
+</div>
+
+<!-- BIG MOON CLICKER -->
+<div class="moon-area" id="moonArea">
+<canvas id="moonCanvas" class="moon-canvas"></canvas>
+<div class="moon-level">⭐ Level <span id="level">1</span></div>
+<div class="moon-progress-label" id="progLabel">🌍 Terraforming: 0%</div>
+<div class="moon-progress"><div class="moon-progress-fill" id="progFill"></div></div>
+<div id="mapBuildings"></div>
+</div>
+
+<!-- AUTO INCOME STATUS -->
+<div class="auto-status" id="autoStatus">⛏️ Mijn: +0/turn | ☀️ Zonne: +0/turn | 🌍 Terra: +0/turn</div>
+
+<!-- SHOP -->
+<div class="shop">
+<div class="shop-title">🏪 WINKEL</div>
+<div class="shop-grid" id="shopGrid"></div>
+</div>
+
+<button class="btn-end" id="endBtn" onclick="endTurn()">⏭️ EINDE BEURT</button>
+
+<div class="log-box" id="log">
+<p class="hl">🚀 Welkom, astronaut! Klik op de maan om 🪙 te verdienen!</p>
+</div>
+</div>
+
+<div class="overlay" id="profileOverlay">
+<div class="overlay-box">
+<h2>👤 Profiel</h2>
+<p style="font-size:0.7rem;color:rgba(255,255,255,0.3);margin-bottom:12px">Kies je rol</p>
+<div id="roleDisplay" style="font-size:0.55rem;color:rgba(255,255,255,0.15);margin-bottom:8px"></div>
+<button class="role-btn speler" id="roleSpeler">🧑 Speler</button>
+<button class="role-btn admin-btn" id="roleAdmin">👑 Admin</button>
+<div id="adminPwSection" style="display:none">
+<div class="role-label">Voer admin wachtwoord in:</div>
+<input type="password" class="pw-input" id="adminPw" placeholder="Typ wachtwoord...">
+<button class="role-btn admin-btn" id="btnAdminLogin" style="padding:10px;font-size:0.8rem">🔓 Inloggen</button>
+<p id="pwError" style="font-size:0.6rem;color:#ff5252;display:none">❌ Fout wachtwoord!</p>
+</div>
+</div>
+</div>
+
+<div class="cmd-bar">
+<span class="admin-badge" id="adminBadge">👑 ADMIN</span>
+<input type="text" id="cmdInput" placeholder="Type /admin, /ban, /give... (Enter)">
+<button class="cmd-btn" id="cmdBtn">▶</button>
+</div>
+
+<style>
+.cmd-bar{position:fixed;bottom:0;left:0;right:0;display:flex;gap:4px;padding:6px 10px;background:rgba(10,10,26,0.95);border-top:1px solid rgba(255,255,255,0.06);z-index:50;backdrop-filter:blur(10px)}
+.cmd-bar input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px;color:#fff;font-size:0.75rem;font-family:'Fredoka','Segoe UI',system-ui,sans-serif;outline:none}
+.cmd-bar input:focus{border-color:rgba(255,210,0,0.3)}
+.cmd-bar input::placeholder{color:rgba(255,255,255,0.15)}
+.cmd-bar .cmd-btn{background:rgba(255,210,0,0.1);border:1px solid rgba(255,210,0,0.2);border-radius:8px;color:#ffd200;padding:8px 14px;cursor:pointer;font-size:0.8rem}
+.cmd-bar .cmd-btn:active{transform:scale(0.95)}
+.cmd-bar .admin-badge{font-size:0.5rem;padding:2px 6px;border-radius:4px;background:#ffd200;color:#222;display:none;align-items:center}
+.cmd-bar .admin-badge.show{display:flex}
+body{padding-bottom:50px}
+</style>
+
+<script>
+//============== BUILDINGS ==============
+const B = {
+mine:{name:'Mijn',icon:'⛏️',baseCost:5,cost:5,desc:'💰+15/t',mapIcon:'⛏️'},
+solar:{name:'Zonne',icon:'☀️',baseCost:4,cost:4,desc:'💰+10/t',mapIcon:'☀️'},
+habitat:{name:'Huis',icon:'🏠',baseCost:8,cost:8,desc:'+2👥/t',mapIcon:'🏠'},
+greenhouse:{name:'Kas',icon:'🌿',baseCost:7,cost:7,desc:'🌍+4/t',mapIcon:'🌿',req:{habitat:1}},
+lab:{name:'Lab',icon:'🔬',baseCost:10,cost:10,desc:'🌍+3/t',mapIcon:'🔬',req:{habitat:2}},
+water:{name:'Water',icon:'💧',baseCost:12,cost:12,desc:'🌍+4/t',mapIcon:'💧',req:{mine:2}},
+atmo:{name:'Atmo',icon:'🌍',baseCost:15,cost:15,desc:'🌍+5/t',mapIcon:'🌍',req:{lab:1,solar:2}},
+};
+const WIN=80;
+let G=null, animFrame=null;
+
+//============== MOON DRAWING ==============
+function drawMoon(){
+const c=document.getElementById('moonCanvas');
+const ctx=c.getContext('2d');
+const rect=document.getElementById('moonArea').getBoundingClientRect();
+c.width=rect.width;c.height=rect.height;
+const w=c.width,h=c.height;
+
+// Sky
+const sky=ctx.createLinearGradient(0,0,0,h);
+sky.addColorStop(0,'#050510');
+sky.addColorStop(0.5,'#0a0a1a');
+sky.addColorStop(1,'#1a1a2a');
+ctx.fillStyle=sky;
+ctx.fillRect(0,0,w,h);
+
+// Stars
+for(let i=0;i<60;i++){
+ctx.fillStyle=`rgba(255,255,255,${0.1+Math.random()*0.5})`;
+ctx.beginPath();ctx.arc(Math.random()*w,Math.random()*h*0.5,Math.random()*1.5+0.5,0,Math.PI*2);ctx.fill();
+}
+
+// Earth glow
+const ew=w*0.15,eh=h*0.15;
+const eg=ctx.createRadialGradient(w*0.82,h*0.12,5,w*0.82,h*0.12,ew);
+eg.addColorStop(0,'rgba(79,195,247,0.15)');
+eg.addColorStop(0.5,'rgba(79,195,247,0.04)');
+eg.addColorStop(1,'rgba(0,0,0,0)');
+ctx.fillStyle=eg;
+ctx.beginPath();ctx.arc(w*0.82,h*0.12,ew,0,Math.PI*2);ctx.fill();
+
+// Earth
+const eg2=ctx.createRadialGradient(w*0.82-3,h*0.12-3,3,w*0.82,h*0.12,ew*0.35);
+eg2.addColorStop(0,'#4fc3f7');
+eg2.addColorStop(0.3,'#1a73e8');
+eg2.addColorStop(0.6,'#00e676');
+eg2.addColorStop(0.8,'#1a73e8');
+eg2.addColorStop(1,'#0a3a6a');
+ctx.fillStyle=eg2;
+ctx.beginPath();ctx.arc(w*0.82,h*0.12,ew*0.35,0,Math.PI*2);ctx.fill();
+
+// Moon surface
+const mg=ctx.createRadialGradient(w/2,h,20,w/2,h,h);
+mg.addColorStop(0,'#4a4a5a');
+mg.addColorStop(0.3,'#3a3a4a');
+mg.addColorStop(0.6,'#2a2a3a');
+mg.addColorStop(1,'#1a1a2a');
+ctx.fillStyle=mg;
+ctx.beginPath();ctx.ellipse(w/2,h,w*0.6,h*0.15,0,0,Math.PI*2);ctx.fill();
+
+// Craters
+for(let i=0;i<6;i++){
+const cx=rand(40,w-40),cy=h-rand(20,60),cr=rand(6,20);
+ctx.fillStyle='rgba(20,20,35,0.3)';
+ctx.beginPath();ctx.ellipse(cx,cy,cr,cr*0.4,0,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle='rgba(255,255,255,0.02)';ctx.lineWidth=1;ctx.stroke();
+}
+
+// Ground
+ctx.fillStyle='rgba(30,30,50,0.5)';
+ctx.fillRect(0,h-3,w,3);
+
+// Animated glow pulse
+if(G){
+const pct=Math.min(1,G.p.terraform/WIN);
+const glowIntensity=0.02+pct*0.08;
+const g=ctx.createRadialGradient(w/2,h*0.7,10,w/2,h*0.7,w*0.4);
+g.addColorStop(0,`rgba(79,195,247,${glowIntensity})`);
+g.addColorStop(1,'rgba(0,0,0,0)');
+ctx.fillStyle=g;
+ctx.beginPath();ctx.arc(w/2,h*0.7,w*0.4,0,Math.PI*2);ctx.fill();
+
+// Map buildings
+renderMapBldgs(w,h);
+}
+}
+
+function rand(mx,my=0){return my?Math.random()*(my-mx)+mx:Math.random()*mx}
+
+function renderMapBldgs(w,h){
+const container=document.getElementById('mapBuildings');
+container.innerHTML='';
+if(!G)return;
+const placed=[];
+const allBldgs=Object.entries(G.p.buildings).filter(([k,v])=>v>0);
+for(const [key,count]of allBldgs){
+const b=B[key];if(!b)continue;
+for(let i=0;i<Math.min(count,6);i++){
+let x,y,attempts=0;
+do{x=0.08+rand(0.78);y=0.5+rand(0.35);attempts++;}
+while(placed.some(p=>Math.hypot(p.x-x,p.y-y)<0.1)&&attempts<20);
+placed.push({x,y});
+const el=document.createElement('div');
+el.className='map-bldg';
+el.style.left=(x*100)+'%';el.style.top=(y*100)+'%';
+el.title=b.name;el.textContent=b.mapIcon;
+container.appendChild(el);
+}}
+}
+
+window.addEventListener('resize',()=>{setTimeout(drawMoon,50)});
+
+//============== GAME LOGIC ==============
+function newColony(){
+return{money:25,ore:10,energy:10,buildings:{mine:0,solar:0,habitat:0,greenhouse:0,lab:0,water:0,atmo:0},terraform:0,pop:1};}
+
+function initGame(){
+G={p:newColony(),a:newColony(),turn:1,log:[],winner:null,level:1,clicks:0};
+// Reset building costs
+for(const k in B){B[k].cost=B[k].baseCost;}
+}
+
+function totalBldgs(p){
+return Object.values(p.buildings).reduce((a,b)=>a+b,0);
+}
+
+// Berekent inkomen per beurt
+function incomePerTurn(p){
+const ore=p.buildings.mine*2;
+const energy=p.buildings.solar*2;
+const pop=p.buildings.habitat*2;
+let terra=0;
+terra+=p.buildings.lab*3;
+terra+=p.buildings.greenhouse*2;
+terra+=p.buildings.atmo*5;
+terra+=p.buildings.water*4;
+terra+=p.buildings.greenhouse;
+const money=ore*3+energy*2; // MEER geld van resources!
+return{ore,energy,pop,terra,money};
+}
+
+function canBuy(key){
+const p=G.p,b=B[key];
+if(!b||p.money<b.cost)return false;
+if(b.req){for(const[k,v]of Object.entries(b.req)){if((p.buildings[k]||0)<v)return false}}
+return true;
+}
+
+function buy(key){
+if(G.winner)return;
+const p=G.p,b=B[key];
+if(!canBuy(key)){return}
+p.money-=b.cost;
+p.buildings[key]++;
+
+// Toon verdiensten
+const inc=incomePerTurn(p);
+G.log.push(`🧑 🏗️ ${b.icon} ${b.name}! Nu: 💰+${inc.money}/t 🌍+${inc.terra}/t`);
+
+// Prijs stijgt telkens (Roblox-style)
+b.cost=Math.floor(b.cost*1.15)+1;
+drawMoon();
+render();
+}
+
+function clickMoon(e){
+if(G.winner)return;
+const rect=document.getElementById('moonArea').getBoundingClientRect();
+const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+const x=clientX-rect.left,y=clientY-rect.top;
+
+// Click burst
+const burst=document.createElement('div');
+burst.className='click-burst';
+burst.style.left=(x-20)+'px';burst.style.top=(y-20)+'px';
+burst.style.width='40px';burst.style.height='40px';
+document.getElementById('moonArea').appendChild(burst);
+setTimeout(()=>burst.remove(),600);
+
+// Click power schaalt met aantal gebouwen!
+const clickPower=1+G.level+Math.floor(totalBldgs(G.p)/2);
+const earn=clickPower;
+G.p.money+=earn;
+G.clicks++;
+
+// Float text
+const ft=document.createElement('div');
+ft.className='float-res';
+ft.textContent=`+${earn}🪙`;
+const fx = e.touches ? e.touches[0].clientX : e.clientX;
+const fy = e.touches ? e.touches[0].clientY : e.clientY;
+ft.style.left=(fx-20)+'px';ft.style.top=(fy-30)+'px';
+ft.style.color='#ffd200';
+document.body.appendChild(ft);
+setTimeout(()=>ft.remove(),1200);
+
+render();
+}
+
+function processTurn(player,label){
+const inc=incomePerTurn(player);
+player.money+=inc.money;
+player.ore+=inc.ore;
+player.energy+=inc.energy;
+player.pop+=inc.pop;
+player.terraform+=inc.terra;
+
+if(inc.terra>0)G.log.push(`${label} 🌍+${inc.terra} 💰+${inc.money}`);
+else if(inc.money>0)G.log.push(`${label} 💰+${inc.money}`);
+return player.terraform>=WIN;
+}
+
+function aiCanBuy(key){
+const a=G.a,b=B[key];
+if(!b||a.money<b.cost)return false;
+if(b.req){for(const[k,v]of Object.entries(b.req)){if((a.buildings[k]||0)<v)return false}}
+return true;
+}
+
+function aiTurn(){
+const a=G.a;
+const order=['mine','solar','habitat','greenhouse','water','lab','atmo'];
+for(const k of order){
+if(aiCanBuy(k)){
+const b=B[k];
+a.money-=b.cost;
+a.buildings[k]=(a.buildings[k]||0)+1;
+b.cost=Math.floor(b.cost*1.15)+1;
+break;
+}}
+processTurn(a,'🤖');
+if(a.terraform>=WIN){G.winner='a';G.log.push('💀 AI wint!');}
+}
+
+function endTurn(){
+if(G.winner)return;
+const clickBonus=Math.floor(G.clicks*0.5);
+if(clickBonus>0){G.p.money+=clickBonus;G.log.push(`🖱️ +${clickBonus}🪙 klik bonus`);}
+processTurn(G.p,'🧑');
+if(G.p.terraform>=WIN){G.winner='p';G.log.push('🏆 JIJ WINT!');render();return}
+G.turn++;
+const nl=Math.floor(totalBldgs(G.p)/3)+1;
+if(nl>G.level){G.level=nl;G.log.push(`⭐ LEVEL ${nl}! Click power +${nl}!`);}
+aiTurn();
+saveGame();
+drawMoon();
+render();
+}
+
+function render(){
+if(!G)return;
+const p=G.p,a=G.a;
+document.getElementById('money').textContent=Math.floor(p.money);
+document.getElementById('ore').textContent=p.ore;
+document.getElementById('energy').textContent=p.energy;
+document.getElementById('terra').textContent=p.terraform;
+document.getElementById('turn').textContent=G.turn;
+document.getElementById('level').textContent=G.level;
+document.getElementById('aiTerra').textContent=a.terraform;
+
+const pct=Math.min(100,(p.terraform/WIN)*100);
+document.getElementById('progFill').style.width=pct+'%';
+document.getElementById('progLabel').textContent=`🌍 Terraforming: ${Math.floor(pct)}%`;
+
+// Auto status - toon inkomen
+const inc=incomePerTurn(p);
+const clickPow=1+G.level+Math.floor(totalBldgs(p)/2);
+document.getElementById('autoStatus').innerHTML=`🖱️+${clickPow}/klik | 💰+${inc.money}/t | 🌍+${inc.terra}/t | 🏗️${totalBldgs(p)} bldgs`;
+
+// Shop
+const grid=document.getElementById('shopGrid');
+grid.innerHTML=Object.entries(B).map(([k,b])=>{
+const ok=canBuy(k);
+const cnt=p.buildings[k]||0;
+let r='';
+if(b.req)r=`<div class="sreq">🔒${Object.entries(b.req).map(([kk,vv])=>`${B[kk]?.icon||kk}${vv}`).join(' ')}</div>`;
+return `<div class="shop-item ${ok?'':'locked'}" onclick="${ok?`buy('${k}')`:''}">
+<div class="scount">${cnt}</div>
+<div class="icon">${b.icon}</div>
+<div class="sname">${b.name}</div>
+<div class="scost">🪙${b.cost}</div>
+${r}
+</div>`;
+}).join('');
+
+// Winner
+if(G.winner){
+document.getElementById('overlay').style.display='flex';
+document.getElementById('winEmoji').textContent=G.winner==='p'?'🌍':'💀';
+document.getElementById('winTitle').textContent=G.winner==='p'?'🎉 JIJ WINT! 🎉':'AI WINT!';
+document.getElementById('winDesc').textContent=`Beurt ${G.turn} | Terraformatie: ${Math.floor(pct)}% | Klikken: ${G.clicks}`;
+document.getElementById('endBtn').disabled=true;
+return;
+}
+document.getElementById('overlay').style.display='none';
+
+const log=document.getElementById('log');
+const msgs=G.log.slice(-8);
+log.innerHTML=msgs.map(l=>`<p>${l.includes('🧑')||l.includes('🏆')?'<span class="hl">':l.includes('🤖')?'<span class="gold">':'<span>'}${l}</span></p>`).join('');
+log.scrollTop=log.scrollHeight;
+}
+
+function saveGame(){
+localStorage.setItem('moon_money',G.p.money);
+localStorage.setItem('moon_ore',G.p.ore);
+localStorage.setItem('moon_energy',G.p.energy);
+localStorage.setItem('moon_terraform',G.p.terraform);
+}
+function loadGame(){
+const m=parseInt(localStorage.getItem('moon_money'))||0;
+if(m&&G){G.p.money=m;G.p.ore=parseInt(localStorage.getItem('moon_ore'))||0;G.p.energy=parseInt(localStorage.getItem('moon_energy'))||0;G.p.terraform=parseInt(localStorage.getItem('moon_terraform'))||0;}
+}
+
+function resetGame(){
+initGame();document.getElementById('overlay').style.display='none';document.getElementById('endBtn').disabled=false;
+document.getElementById('log').innerHTML='<p class="hl">🚀 Nieuwe kolonie! Klik op de maan om 🪙 te verdienen!</p>';
+drawMoon();render();
+}
+
+// Click moon to earn coins
+document.getElementById('moonArea').addEventListener('click', clickMoon);
+document.getElementById('moonArea').addEventListener('touchstart', clickMoon, {passive:true});
+
+// ======== PROFILE ========
+const ADMIN_PW_PROFILE='esper 331911';
+let isAdmin=localStorage.getItem('moon_admin')==='true';
+let banned=JSON.parse(localStorage.getItem('moon_banned')||'[]');
+
+function updateProfileUI(){
+const btn=document.getElementById('profileBtn');
+if(isAdmin){btn.classList.add('admin');btn.textContent='👑';}
+else{btn.classList.remove('admin');btn.textContent='👤';}
+document.getElementById('adminBadge').classList.toggle('show',isAdmin);
+document.getElementById('roleDisplay').textContent=isAdmin?'👑 Admin modus':'🧑 Speler modus';
+}
+
+document.getElementById('profileBtn').addEventListener('click',function(){
+document.getElementById('profileOverlay').style.display='flex';
+document.getElementById('adminPwSection').style.display='none';
+document.getElementById('adminPw').value='';
+document.getElementById('pwError').style.display='none';
+updateProfileUI();
+});
+
+document.getElementById('roleSpeler').addEventListener('click',function(){
+if(isAdmin){isAdmin=false;localStorage.setItem('moon_admin','false');}
+document.getElementById('profileOverlay').style.display='none';
+updateProfileUI();
+cmdLog('🧑 Speler modus');
+});
+
+document.getElementById('roleAdmin').addEventListener('click',function(){
+document.getElementById('adminPwSection').style.display='block';
+document.getElementById('adminPw').focus();
+});
+
+document.getElementById('btnAdminLogin').addEventListener('click',function(){
+const pw=document.getElementById('adminPw').value;
+if(pw===ADMIN_PW_PROFILE){
+isAdmin=true;localStorage.setItem('moon_admin','true');
+document.getElementById('profileOverlay').style.display='none';
+updateProfileUI();
+cmdLog('👑 Admin modus!');
+}else{
+document.getElementById('pwError').style.display='block';
+}});
+
+document.getElementById('adminPw').addEventListener('keydown',function(e){
+if(e.key==='Enter')document.getElementById('btnAdminLogin').click();
+});
+
+document.getElementById('profileOverlay').addEventListener('click',function(e){
+if(e.target===this)this.style.display='none';
+});
+
+updateProfileUI();
+
+// ======== COMMANDS ========
+document.getElementById('cmdInput').addEventListener('keydown',function(e){if(e.key==='Enter')runCmd()});
+document.getElementById('cmdBtn').addEventListener('click',runCmd);
+
+function runCmd(){
+const input=document.getElementById('cmdInput');
+const text=input.value.trim();input.value='';
+if(!text.startsWith('/'))return;
+const parts=text.split(' '),cmd=parts[0].toLowerCase(),args=parts.slice(1);
+switch(cmd){
+case'/admin':
+if(args[0]===ADMIN_PW_PROFILE){isAdmin=true;localStorage.setItem('moon_admin','true');updateProfileUI();cmdLog('✅ Admin modus!');}
+break;
+case'/help':cmdLog('/admin, /speler, /kick, /ban, /unban, /mute, /unmute, /kill, /freeze, /unfreeze, /slap, /explode, /heal, /god, /fly, /invisible, /speed, /jump, /coins, /setcoins, /resetcoins, /time, /day, /night, /weather, /clear, /reset, /restart, /announce, /shutdown, /pm, /ip, /ping, /report');break;
+case'/ping':cmdLog('🏓 Pong! 0.001ms');break;
+case'/speler':if(!args[0]){cmdLog('❌ /speler [naam]');break;}cmdLog(`👤 ${args[0]}: Level ${Math.floor(Math.random()*50)+1}, Coins ${Math.floor(Math.random()*9999)+100}, Rank ${['Bronze','Silver','Gold','Diamond','Admin'][Math.floor(Math.random()*5)]}`);break;
+case'/kick':if(!args[0]){cmdLog('❌ /kick [naam]');break;}cmdLog(`🦶 ${args[0]} gekickt!`);break;
+case'/ban':if(!isAdmin){cmdLog('❌ Alleen admin!');break;}if(!args[0]){cmdLog('❌ /ban [naam]');break;}if(!banned.includes(args[0]))banned.push(args[0]);localStorage.setItem('moon_banned',JSON.stringify(banned));cmdLog(`🔨 ${args[0]} verbannen!`);break;
+case'/unban':if(!isAdmin){cmdLog('❌ Alleen admin!');break;}banned=banned.filter(b=>b!==args[0]);localStorage.setItem('moon_banned',JSON.stringify(banned));cmdLog(`✅ ${args[0]} unban!`);break;
+case'/mute':if(!args[0]){cmdLog('❌ /mute [naam]');break;}cmdLog(`🔇 ${args[0]} gedempt!`);break;
+case'/unmute':if(!args[0]){cmdLog('❌ /unmute [naam]');break;}cmdLog(`🔊 ${args[0]} kan weer praten!`);break;
+case'/kill':if(!args[0]){cmdLog('❌ /kill [naam]');break;}cmdLog(`💀 ${args[0]} gedood!`);break;
+case'/freeze':if(!args[0]){cmdLog('❌ /freeze [naam]');break;}cmdLog(`🧊 ${args[0]} bevroren!`);break;
+case'/unfreeze':if(!args[0]){cmdLog('❌ /unfreeze [naam]');break;}cmdLog(`🔥 ${args[0]} ontdooid!`);break;
+case'/slap':if(!args[0]){cmdLog('❌ /slap [naam]');break;}cmdLog(`👋 ${args[0]} vliegt ${Math.floor(Math.random()*50)+10}m!`);break;
+case'/explode':if(!args[0]){cmdLog('❌ /explode [naam]');break;}cmdLog(`💥 BOEM! ${args[0]} ontploft!`);break;
+case'/heal':cmdLog('💚 Genezen!');break;
+case'/god':cmdLog('🛡️ God modus!');break;
+case'/fly':cmdLog('🕊️ Vlieg modus!');break;
+case'/invisible':cmdLog('👻 Onzichtbaar!');break;
+case'/speed':const sp=parseInt(args[0])||0;if(sp<1||sp>100){cmdLog('❌ /speed [1-100]');break;}cmdLog(`💨 Speed ${sp}x`);break;
+case'/jump':const jp=parseInt(args[0])||0;if(jp<1||jp>100){cmdLog('❌ /jump [1-100]');break;}cmdLog(`🦘 Jump ${jp}`);break;
+case'/coins':case'/give':const amt=parseInt(args[0])||0;if(amt<=0){cmdLog('❌ /coins [aantal]');break;}G.p.money+=amt;render();saveGame();cmdLog(`💰 +${amt} coins!`);break;
+case'/setcoins':const sa=parseInt(args[0])||0;if(sa<0){cmdLog('❌ /setcoins [aantal]');break;}G.p.money=sa;render();saveGame();cmdLog(`💰 Coins = ${sa}`);break;
+case'/resetcoins':G.p.money=0;render();saveGame();cmdLog('🔄 Coins gereset');break;
+case'/time':if(!args[0]){cmdLog('❌ /time [dag/nacht]');break;}cmdLog(args[0]==='nacht'?'🌙 Nacht!':'☀️ Dag!');break;
+case'/day':cmdLog('☀️ Dag!');break;
+case'/night':cmdLog('🌙 Nacht!');break;
+case'/weather':if(!args[0]){cmdLog('❌ /weather [zon/regen]');break;}cmdLog(`🌤️ ${args[0]}`);break;
+case'/clear':document.getElementById('log').innerHTML='';cmdLog('🧹 Clear!');break;
+case'/reset':case'/restart':cmdLog('🔄 Reset...');setTimeout(()=>location.reload(),500);break;
+case'/announce':if(!args[0]){cmdLog('❌ /announce [txt]');break;}cmdLog(`📢 ${args.join(' ')}`);break;
+case'/shutdown':cmdLog('🛑 Server shutdown...');setTimeout(()=>{document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a1a;color:#fff;flex-direction:column;gap:20px;font-family:Fredoka,sans-serif"><div style="font-size:4rem">🛑</div><h1>Server offline</h1></div>'},1000);break;
+case'/pm':if(args.length<2){cmdLog('❌ /pm [naam] [txt]');break;}cmdLog(`📩 Naar ${args[0]}: "${args.slice(1).join(' ')}"`);break;
+case'/ip':if(!isAdmin){cmdLog('❌ Alleen admin!');break;}cmdLog(`🌐 IP ${args[0]||'speler'}: 192.168.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`);break;
+case'/data':case'/localstorage':let d='';for(let k=0;k<localStorage.length;k++){const kk=localStorage.key(k);let v=localStorage.getItem(kk);if(v.length>80)v=v.slice(0,80)+'...';d+=kk+': '+v+'\n';}cmdLog(d||'Leeg');break;
+case'/cleardata':if(confirm('Wissen?')){localStorage.clear();cmdLog('Gewist!');}break;
+case'/report':if(!args[0]){cmdLog('❌ /report [naam]');break;}cmdLog(`🚨 ${args[0]} gerapporteerd!`);break;
+default:cmdLog(`❌ Onbekend: ${cmd}. /help voor lijst`);
+}}
+function cmdLog(msg){document.getElementById('log').innerHTML+=`<p style="color:#ffd200">💬 ${msg}</p>`;document.getElementById('log').scrollTop=document.getElementById('log').scrollHeight;}
+
+// Start game
+initGame();
+loadGame();
+setTimeout(()=>{drawMoon();render();}, 100);
+
+// Auto-refresh canvas every 2 seconds for glow animation
+setInterval(()=>{if(!G.winner)drawMoon();}, 2000);
+</script>
+
+<script>
+// Activity logging
+(function(){
+  try{
+    const acts=JSON.parse(localStorage.getItem('sbg_activity')||'[]');
+    const user=localStorage.getItem('sbg_user')||'onbekend';
+    acts.unshift({user,action:'Speelt ' + document.title,time:Date.now()});
+    if(acts.length>200)acts=acts.slice(0,200);
+    localStorage.setItem('sbg_activity',JSON.stringify(acts));
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>
