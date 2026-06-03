@@ -1,4 +1,4 @@
-const CACHE = 'spacegames-v2';
+const CACHE = 'spacegames-v3';
 const FILES = [
   './',
   './index.html',
