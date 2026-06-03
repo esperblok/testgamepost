@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🏓 Pong</title><link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#0a0a1a">
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Fredoka',sans-serif;background:#0a0a1a;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;user-select:none}
+canvas{background:#0f0f15;border-radius:12px;border:1px solid rgba(255,255,255,0.06);width:100%;max-width:500px;height:300px}
+.hud{display:flex;gap:30px;margin-bottom:10px;font-size:1rem}
+.hud span{background:rgba(255,255,255,0.04);padding:4px 18px;border-radius:8px;border:1px solid rgba(255,255,255,0.06)}
+.hud .p1{color:#00c8ff}.hud .p2{color:#ff5252}
+.info{font-size:0.55rem;color:rgba(255,255,255,0.15);margin-top:6px}
+.top-link{position:fixed;top:12px;right:12px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06);border-radius:8px;color:#888;padding:4px 10px;font-size:0.55rem;text-decoration:none;font-family:'Fredoka',sans-serif}
+</style>
+</head>
+<body>
+<a href="index.html" class="top-link">🎮 Meer Spellen</a>
+<h1 style="font-size:1.2rem;margin-bottom:8px">🏓 Pong</h1>
+<div class="hud"><span class="p1">🧑 <span id="p1s">0</span></span><span class="p2">🤖 <span id="p2s">0</span></span></div>
+<canvas id="pc"></canvas>
+<div class="info">⬆/⬇ of W/S om te bewegen</div>
+<script>
+const cx=document.getElementById('pc'),ctx=cx.getContext('2d');
+let W,H,paddleH=60,paddleW=10,ballS=8;
+let player,ai,ball,ps1,ps2,gameOver;
+function resize(){W=cx.width=cx.clientWidth;H=cx.height=cx.clientHeight}
+window.addEventListener('resize',resize);resize();
+function startPong(){
+player={y:H/2-paddleH/2};ai={y:H/2-paddleH/2};
+ball={x:W/2,y:H/2,vx:4*(Math.random()>0.5?1:-1),vy:2*(Math.random()>0.5?1:-1)};
+ps1=0;ps2=0;gameOver=false;
+document.getElementById('p1s').textContent=0;document.getElementById('p2s').textContent=0;
+}
+let keysP={};
+document.addEventListener('keydown',e=>{keysP[e.key]=true;if(e.key==='ArrowUp'||e.key==='ArrowDown')e.preventDefault()});
+document.addEventListener('keyup',e=>{keysP[e.key]=false});
+function pongLoop(){
+if(gameOver){requestAnimationFrame(pongLoop);return}
+// Player
+if(keysP['ArrowUp']||keysP['w'])player.y=Math.max(0,player.y-5);
+if(keysP['ArrowDown']||keysP['s'])player.y=Math.min(H-paddleH,player.y+5);
+// AI
+const target=ball.y-paddleH/2;
+ai.y+=Math.min(3.5,Math.abs(ai.y-target)*0.1)*(target>ai.y?1:-1);
+ai.y=Math.max(0,Math.min(H-paddleH,ai.y));
+// Ball
+ball.x+=ball.vx;ball.y+=ball.vy;
+if(ball.y<=0||ball.y>=H){ball.vy*=-1}
+// Paddle collision
+if(ball.x<=paddleW+5&&ball.y>player.y&&ball.y<player.y+paddleH){ball.vx=Math.abs(ball.vx);ball.x=paddleW+6;ball.vx+=0.3}
+if(ball.x>=W-paddleW-5&&ball.y>ai.y&&ball.y<ai.y+paddleH){ball.vx=-Math.abs(ball.vx);ball.x=W-paddleW-6;ball.vx-=0.3}
+// Score
+if(ball.x<0){ps2++;document.getElementById('p2s').textContent=ps2;resetBall()}
+if(ball.x>W){ps1++;document.getElementById('p1s').textContent=ps1;resetBall()}
+if(ps1>=5||ps2>=5){gameOver=true;setTimeout(startPong,1500)}
+drawPong();requestAnimationFrame(pongLoop);
+}
+function resetBall(){ball={x:W/2,y:H/2,vx:3*(Math.random()>0.5?1:-1),vy:2*(Math.random()>0.5?1:-1)}}
+function drawPong(){
+ctx.fillStyle='#0f0f15';ctx.fillRect(0,0,W,H);
+// Center line
+ctx.setLineDash([6,8]);ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();ctx.setLineDash([]);
+// Paddles
+ctx.shadowColor='rgba(0,200,255,0.3)';ctx.shadowBlur=15;
+ctx.fillStyle='#00c8ff';ctx.beginPath();ctx.roundRect(5,player.y,paddleW,paddleH,4);ctx.fill();
+ctx.shadowColor='rgba(255,50,50,0.3)';ctx.shadowBlur=15;
+ctx.fillStyle='#ff5252';ctx.beginPath();ctx.roundRect(W-paddleW-5,ai.y,paddleW,paddleH,4);ctx.fill();
+ctx.shadowBlur=0;
+// Ball
+ctx.fillStyle='#fff';ctx.shadowColor='rgba(255,255,255,0.4)';ctx.shadowBlur=20;
+ctx.beginPath();ctx.arc(ball.x,ball.y,ballS,0,6.28);ctx.fill();
+ctx.shadowBlur=0;
+}
+startPong();pongLoop();
+</script>
+<span id="adminTrigger" style="position:fixed;bottom:2px;left:2px;font-size:1px;color:transparent;pointer-events:auto;z-index:999">speler</span>
+<script>
+
+// Admin commands (comprehensive)
+const ADMIN_PW='esper 331911';
+let isAdmin=localStorage.getItem('g_admin')==='true';
+let bannedPlayers=[],mutedPlayers=[];
+document.addEventListener('click',function ae(e){
+  if(e.target.id==='adminTrigger'){
+    const pw=prompt('👑 Voer wachtwoord in:');
+    if(pw===ADMIN_PW){isAdmin=true;localStorage.setItem('g_admin','true');showAdminBar();}
+    else if(pw!==null)alert('❌ Fout wachtwoord!');
+  }
+});
+function showAdminBar(){
+  let bar=document.getElementById('adminBar');
+  if(!bar){
+    bar=document.createElement('div');
+    bar.id='adminBar';
+    bar.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#1a1a2a;border-top:1px solid rgba(255,255,255,0.04);padding:6px 12px;display:flex;align-items:center;gap:10px;z-index:999;font-size:0.6rem;font-family:"Fredoka",sans-serif';
+    bar.innerHTML='<span style="background:#ffd200;color:#222;padding:2px 8px;border-radius:4px;font-weight:600;white-space:nowrap">👑 ADMIN</span><input id="adminIpt" style="flex:1;min-width:0;padding:4px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#fff;outline:none;font-size:0.6rem;font-family:Fredoka,sans-serif" placeholder="/admin [ww]  |  /help  |  /speler [naam]"><span style="color:rgba(255,255,255,0.15);white-space:nowrap" id="adminC">🪙 0</span>';
+    document.body.appendChild(bar);
+    document.getElementById('adminIpt').addEventListener('keydown',function(e){
+      if(e.key!=='Enter')return;
+      const r=this.value.trim();this.value='';
+      const p=r.split(' ');const c=p[0].toLowerCase();const a=p.slice(1);
+      if(!isAdmin&&c!=='/admin'){alert('❌ Alleen admin!');return;}
+      switch(c){
+        case'/admin':if(a.join(' ')===ADMIN_PW){isAdmin=true;localStorage.setItem('g_admin','true');showAdminBar();alert('✅ Admin modus!');}else alert('❌ Fout!');break;
+        case'/help':alert('/admin [ww] - inloggen\n/speler [naam] - info\n/kick [naam]\n/ban [naam]\n/unban [naam]\n/mute [naam]\n/unmute [naam]\n/kill [naam]\n/freeze [naam]\n/unfreeze [naam]\n/slap [naam]\n/explode [naam]\n/heal\n/god\n/fly\n/invisible\n/speed [n]\n/jump [n]\n/coins [n]\n/setcoins [n]\n/resetcoins\n/clear\n/reset\n/restart\n/time [dag/nacht]\n/weather [zon/regen]\n/announce [txt]\n/shutdown\n/pm [naam] [txt]\n/ip [naam]\n/ping\n/report [naam]');break;
+        case'/ping':alert('🏓 Pong! 0.001ms');break;
+        case'/speler':if(!a[0]){alert('? /speler [naam]');break;}alert('👤 '+a[0]+'\n📊 Level: '+(Math.floor(Math.random()*50)+1)+'\n💰 Coins: '+(Math.floor(Math.random()*9999)+100)+'\n🏆 Rank: '+['Bronze','Silver','Gold','Diamond','Admin'][Math.floor(Math.random()*5)]+'\n🌐 IP: 192.168.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255));break;
+        case'/kick':if(!a[0]){alert('? /kick [naam]');break;}alert('🦶 '+a[0]+' is gekickt!');break;
+        case'/ban':if(!a[0]){alert('? /ban [naam]');break;}if(!bannedPlayers.includes(a[0]))bannedPlayers.push(a[0]);alert('🔨 '+a[0]+' verbannen!');break;
+        case'/unban':if(!a[0]){alert('? /unban [naam]');break;}bannedPlayers=bannedPlayers.filter(b=>b!==a[0]);alert('✅ '+a[0]+' unbanned!');break;
+        case'/mute':if(!a[0]){alert('? /mute [naam]');break;}if(!mutedPlayers.includes(a[0]))mutedPlayers.push(a[0]);alert('🔇 '+a[0]+' gedempt!');break;
+        case'/unmute':if(!a[0]){alert('? /unmute [naam]');break;}mutedPlayers=mutedPlayers.filter(b=>b!==a[0]);alert('🔊 '+a[0]+' kan weer praten!');break;
+        case'/kill':if(!a[0]){alert('? /kill [naam]');break;}alert('💀 '+a[0]+' is gedood!');break;
+        case'/freeze':if(!a[0]){alert('? /freeze [naam]');break;}alert('🧊 '+a[0]+' is bevroren!');break;
+        case'/unfreeze':if(!a[0]){alert('? /unfreeze [naam]');break;}alert('🔥 '+a[0]+' is ontdooid!');break;
+        case'/slap':if(!a[0]){alert('? /slap [naam]');break;}alert('👋 '+a[0]+' vliegt '+(Math.floor(Math.random()*50)+10)+'m ver!');break;
+        case'/explode':if(!a[0]){alert('? /explode [naam]');break;}alert('💥 BOEM! '+a[0]+' ontploft!');break;
+        case'/coins':case'/give':const am=parseInt(a[0])||0;if(am<=0){alert('? /coins [aantal]');break;}alert('💰 +'+am+' coins!');break;
+        case'/setcoins':const sa=parseInt(a[0])||0;if(sa<0){alert('? /setcoins [aantal]');break;}alert('💰 Coins = '+sa);break;
+        case'/resetcoins':alert('🔄 Coins gereset');break;
+        case'/heal':alert('💚 Genezen!');break;
+        case'/god':alert('🛡️ God modus!');break;
+        case'/fly':alert('🕊️ Vlieg modus!');break;
+        case'/invisible':alert('👻 Onzichtbaar!');break;
+        case'/speed':const sp=parseInt(a[0])||0;if(sp<1||sp>100){alert('? /speed [1-100]');break;}alert('💨 Speed '+sp+'x');break;
+        case'/jump':const jp=parseInt(a[0])||0;if(jp<1||jp>100){alert('? /jump [1-100]');break;}alert('🦘 Jump '+jp);break;
+        case'/time':if(!a[0]){alert('? /time [dag/nacht]');break;}alert(a[0]==='nacht'?'🌙 Nacht!':'☀️ Dag!');break;
+        case'/day':alert('☀️ Dag!');break;
+        case'/night':alert('🌙 Nacht!');break;
+        case'/weather':if(!a[0]){alert('? /weather [zon/regen/sneeuw]');break;}alert('🌤️ '+a[0]);break;
+        case'/clear':alert('🧹 Clear!');break;
+        case'/reset':case'/restart':if(confirm('Resetten?')){localStorage.removeItem('g_admin');location.reload();}break;
+        case'/announce':if(!a[0]){alert('? /announce [txt]');break;}alert('📢 '+r.slice(10));break;
+        case'/shutdown':if(confirm('Shutdown?')){document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a1a;color:#fff;flex-direction:column;gap:20px;font-family:Fredoka,sans-serif"><div style="font-size:4rem">🛑</div><h1>Server offline</h1></div>';}break;
+        case'/pm':if(a.length<2){alert('? /pm [naam] [txt]');break;}alert('📩 Naar '+a[0]+': "'+a.slice(1).join(' ')+'"');break;
+        case'/ip':alert('🌐 IP '+(a[0]||'speler')+': 192.168.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255));break;
+        case'/report':if(!a[0]){alert('? /report [naam]');break;}alert('🚨 '+a[0]+' gerapporteerd!');break;
+        case'/data':case'/localstorage':let d='';for(let k=0;k<localStorage.length;k++){const kk=localStorage.key(k);let v=localStorage.getItem(kk);if(v.length>80)v=v.slice(0,80)+'...';d+=kk+': '+v+'\n';}alert(d||'Leeg');break;
+case'/cleardata':if(confirm('Wissen?')){localStorage.clear();alert('Gewist!');}break;
+default:alert('? Onbekend. /help voor lijst');
+      }
+    });
+  }
+  bar.style.display='flex';
+}
+if(isAdmin)showAdminBar();
+
+</script>
+
+<script>
+// Activity logging
+(function(){
+  try{
+    const acts=JSON.parse(localStorage.getItem('sbg_activity')||'[]');
+    const user=localStorage.getItem('sbg_user')||'onbekend';
+    acts.unshift({user,action:'Speelt ' + document.title,time:Date.now()});
+    if(acts.length>200)acts=acts.slice(0,200);
+    localStorage.setItem('sbg_activity',JSON.stringify(acts));
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>
