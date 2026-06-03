@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>📊 Dashboard — SpaceBlox</title><link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#0a0a1a">
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Fredoka',sans-serif;background:#0a0a1a;color:#fff;min-height:100vh;user-select:none}
+.topbar{background:#12121a;border-bottom:1px solid rgba(255,255,255,0.04);padding:0 16px;height:48px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.topbar .logo{font-weight:700;font-size:0.85rem;color:#ffd200;text-decoration:none}
+.topbar .back{color:rgba(255,255,255,0.2);font-size:0.65rem;text-decoration:none;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.06)}
+.topbar .back:hover{background:rgba(255,255,255,0.04)}
+.topbar .user{flex:1;text-align:right;font-size:0.6rem;color:rgba(255,255,255,0.15)}
+.container{max-width:800px;margin:0 auto;padding:16px}
+.card{background:#12121a;border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:16px;margin-bottom:12px}
+.card h3{font-size:0.75rem;color:rgba(255,255,255,0.3);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.card .content{font-size:0.6rem;color:rgba(255,255,255,0.5);line-height:1.6;font-family:monospace;word-break:break-all;max-height:200px;overflow-y:auto}
+.card .content.wrap{white-space:pre-wrap}
+.btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;color:#fff;padding:8px 16px;font-size:0.6rem;cursor:pointer;font-family:'Fredoka',sans-serif;transition:all 0.2s}
+.btn:hover{background:rgba(255,255,255,0.08)}
+.btn-danger{background:rgba(255,50,50,0.08);border-color:rgba(255,50,50,0.15);color:#ff5252}
+.btn-warn{background:rgba(255,210,0,0.08);border-color:rgba(255,210,0,0.15);color:#ffd200}
+.row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.stat{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:10px;padding:12px 16px;flex:1;min-width:100px;text-align:center}
+.stat .num{font-size:1.2rem;font-weight:700;color:#ffd200}
+.stat .lbl{font-size:0.55rem;color:rgba(255,255,255,0.2);margin-top:2px}
+input,select{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#fff;padding:8px 12px;font-size:0.65rem;font-family:'Fredoka',sans-serif;outline:none;width:100%}
+input:focus{border-color:rgba(0,200,255,0.3)}
+.admin-badge{background:#ffd200;color:#222;padding:2px 8px;border-radius:4px;font-size:0.55rem;font-weight:600}
+.log-item{padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.02);font-size:0.55rem}
+.log-item .time{color:rgba(255,255,255,0.15)}
+.log-item .user{color:#4fc3f7}
+.log-item .action{color:rgba(255,255,255,0.5)}
+.login-box{max-width:320px;margin:80px auto 0;text-align:center}
+.login-box h2{font-size:1rem;margin-bottom:4px}
+.login-box p{font-size:0.6rem;color:rgba(255,255,255,0.2);margin-bottom:16px}
+.login-box input{margin-bottom:8px;text-align:center}
+.login-box .error{font-size:0.55rem;color:#ff5252;display:none;margin-bottom:6px}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:#0a0a1a}
+::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">📊 Dashboard</span>
+  <a href="index.html" class="back">← Spellen</a>
+  <span class="user" id="topUser"></span>
+</div>
+
+<div id="loginView" style="display:none">
+  <div class="login-box">
+    <div style="font-size:2.5rem;margin-bottom:8px">🔐</div>
+    <h2>Admin Login</h2>
+    <p>Alleen admin heeft toegang tot Dashboard</p>
+    <input type="text" id="dashUser" placeholder="Gebruikersnaam">
+    <input type="password" id="dashPass" placeholder="Wachtwoord">
+    <p class="error" id="dashLoginError">❌ Onjuiste gegevens!</p>
+    <button class="btn" id="dashLoginBtn" style="width:100%;background:linear-gradient(135deg,#ffd200,#ff6a00);color:#222;font-weight:600;padding:10px">🔓 Inloggen</button>
+  </div>
+</div>
+
+<div id="dashView" style="display:none">
+  <div class="container">
+    <!-- Stats -->
+    <div class="row" id="statsRow">
+      <div class="stat"><div class="num" id="statGames">0</div><div class="lbl">Games</div></div>
+      <div class="stat"><div class="num" id="statAccounts">0</div><div class="lbl">Accounts</div></div>
+      <div class="stat"><div class="num" id="statActivities">0</div><div class="lbl">Acties</div></div>
+      <div class="stat"><div class="num" id="statStorage">0</div><div class="lbl">Keys</div></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row">
+      <button class="btn btn-warn" id="dashRefreshBtn">🔄 Verversen</button>
+      <button class="btn btn-danger" id="dashClearActivityBtn">🗑 Wis activiteit</button>
+      <button class="btn btn-danger" id="dashClearAllBtn">⚠️ Wis alles</button>
+      <button class="btn" id="dashLogoutBtn">🚪 Uitloggen</button>
+    </div>
+
+    <!-- Accounts -->
+    <div class="card">
+      <h3>👤 Accounts</h3>
+      <div class="content" id="dashAccounts">Laden...</div>
+    </div>
+
+    <!-- localStorage -->
+    <div class="card">
+      <h3>📦 localStorage</h3>
+      <div class="content wrap" id="dashStorage">Laden...</div>
+    </div>
+
+    <!-- Activity -->
+    <div class="card">
+      <h3>📋 Activiteit <span style="font-size:0.5rem;color:rgba(255,255,255,0.1)">(nieuwste eerst)</span></h3>
+      <div class="content" id="dashActivity" style="max-height:300px">Laden...</div>
+    </div>
+
+    <!-- Admin CMD -->
+    <div class="card">
+      <h3>⚡ Admin Commando</h3>
+      <input type="text" id="dashCmdInput" placeholder="/help  |  /speler  |  /give [n]  |  /data" style="margin-bottom:6px">
+      <div id="dashCmdLog" style="font-size:0.55rem;color:rgba(255,255,255,0.3);min-height:20px;font-family:monospace"></div>
+    </div>
+
+    <!-- Game Maker -->
+    <div class="card">
+      <h3>🎮 Game Maken</h3>
+      <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+        <input type="text" id="gmTitle" placeholder="Titel" style="flex:2;min-width:120px">
+        <select id="gmCat" style="flex:1;min-width:100px">
+          <option value="Actie">🔫 Actie</option>
+          <option value="Racing">🏎️ Racing</option>
+          <option value="Simulator">🌙 Simulator</option>
+          <option value="Dobbelsteen">🎲 Dobbelsteen</option>
+          <option value="Arcade">🕹️ Arcade</option>
+          <option value="Puzzle">🧩 Puzzle</option>
+        </select>
+        <input type="text" id="gmIcon" placeholder="🎮" maxlength="4" style="flex:0 0 50px;text-align:center">
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-warn" id="gmCreateBtn" style="flex:1">➕ Game Maken</button>
+      </div>
+      <div id="gmMsg" style="font-size:0.55rem;color:#4fc3f7;margin-top:4px;min-height:14px"></div>
+    </div>
+
+    <!-- Aankondigingen -->
+    <div class="card">
+      <h3>📢 Aankondiging</h3>
+      <input type="text" id="annText" placeholder="Bericht..." style="margin-bottom:6px">
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-warn" id="annSendBtn">📢 Verzenden</button>
+        <button class="btn btn-danger" id="annClearBtn">🗑 Wissen</button>
+      </div>
+      <div id="annCurrent" style="font-size:0.55rem;color:rgba(255,255,255,0.3);margin-top:4px;min-height:14px"></div>
+    </div>
+
+    <!-- Custom Reward -->
+    <div class="card">
+      <h3>🎁 Custom Reward</h3>
+      <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+        <input type="text" id="rwUser" placeholder="Gebruiker" style="flex:1;min-width:80px">
+        <select id="rwType" style="flex:0 0 100px">
+          <option value="coins">🪙 Coins</option>
+          <option value="stars">⭐ Stars</option>
+          <option value="badge">🏅 Badge</option>
+        </select>
+        <input type="number" id="rwAmount" placeholder="Aantal" style="flex:0 0 80px" value="100">
+      </div>
+      <button class="btn btn-warn" id="rwSendBtn">🎁 Geef Reward</button>
+      <div id="rwMsg" style="font-size:0.55rem;color:#4fc3f7;margin-top:4px;min-height:14px"></div>
+    </div>
+
+    <!-- Wachtwoord Reset -->
+    <div class="card">
+      <h3>🔑 Wachtwoord Reset</h3>
+      <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+        <input type="text" id="rpUser" placeholder="Gebruiker" style="flex:1;min-width:80px">
+        <input type="text" id="rpNewPass" placeholder="Nieuw wachtwoord" style="flex:1;min-width:80px">
+      </div>
+      <button class="btn btn-warn" id="rpResetBtn">🔄 Reset Wachtwoord</button>
+      <div id="rpMsg" style="font-size:0.55rem;color:#4fc3f7;margin-top:4px;min-height:14px"></div>
+    </div>
+
+    <!-- Gebruikers Beheer -->
+    <div class="card">
+      <h3>👥 Gebruikers Beheer</h3>
+      <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+        <input type="text" id="ubOldUser" placeholder="Huidige naam" style="flex:1;min-width:80px">
+        <input type="text" id="ubNewUser" placeholder="Nieuwe naam" style="flex:1;min-width:80px">
+      </div>
+      <button class="btn btn-warn" id="ubRenameBtn">✏️ Naam Wijzigen</button>
+      <button class="btn btn-danger" id="ubDeleteBtn">🗑️ Account Verwijderen</button>
+      <div id="ubMsg" style="font-size:0.55rem;color:#4fc3f7;margin-top:4px;min-height:14px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADMIN_USER='esper';
+const ADMIN_PASS='/adminesper331911';
+let isAdmin=false;
+let undercover=localStorage.getItem('sbg_undercover')==='true';
+const loggedUser=localStorage.getItem('sbg_user');
+
+function logActivity(user,action){
+  let acts=JSON.parse(localStorage.getItem('sbg_activity')||'[]');
+  acts.unshift({user,action,time:Date.now()});
+  if(acts.length>500)acts=acts.slice(0,500);
+  localStorage.setItem('sbg_activity',JSON.stringify(acts));
+}
+
+function showLogin(){document.getElementById('loginView').style.display='block';document.getElementById('dashView').style.display='none';}
+function showDash(){document.getElementById('loginView').style.display='none';document.getElementById('dashView').style.display='block';}
+
+// Check if already admin
+if(loggedUser===ADMIN_USER&&localStorage.getItem('sbg_admin')==='true'){
+  isAdmin=true;
+  document.getElementById('topUser').innerHTML='<span class="admin-badge">ADMIN</span> '+loggedUser;
+  showDash();
+  loadDash();
+}else{
+  document.getElementById('topUser').textContent='Niet ingelogd';
+  showLogin();
+}
+
+// Login
+document.getElementById('dashLoginBtn').onclick=function(){
+  const u=document.getElementById('dashUser').value.trim();
+  const p=document.getElementById('dashPass').value;
+  if(u===ADMIN_USER&&p===ADMIN_PASS){
+    isAdmin=true;
+    localStorage.setItem('sbg_user',ADMIN_USER);
+    localStorage.setItem('sbg_admin','true');
+    logActivity(ADMIN_USER,'Dashboard ingelogd');
+    document.getElementById('topUser').innerHTML='<span class="admin-badge">ADMIN</span> '+ADMIN_USER;
+    showDash();
+    loadDash();
+  }else{
+    document.getElementById('dashLoginError').style.display='block';
+  }
+};
+document.getElementById('dashPass').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('dashLoginBtn').click();
+});
+
+// Logout
+document.getElementById('dashLogoutBtn').onclick=function(){
+  logActivity(ADMIN_USER,'Dashboard uitgelogd');
+  localStorage.removeItem('sbg_user');
+  localStorage.removeItem('sbg_admin');
+  isAdmin=false;
+  showLogin();
+  document.getElementById('topUser').textContent='Niet ingelogd';
+};
+
+// Load dashboard data
+function loadDash(){
+  const accounts=JSON.parse(localStorage.getItem('sbg_accounts')||'[]');
+  const activity=JSON.parse(localStorage.getItem('sbg_activity')||'[]');
+  let keys=0;
+  let ls='';
+  for(let k=0;k<localStorage.length;k++){
+    const key=localStorage.key(k);
+    let val=localStorage.getItem(key);
+    if(val.length>200)val=val.slice(0,200)+'...';
+    ls+=key+': '+val+'\n';
+    keys++;
+  }
+  
+  // Stats
+  document.getElementById('statGames').textContent=document.title;
+  // Count game files
+  const games=JSON.parse(localStorage.getItem('GAMES_LIBRARY')||'[]');
+  document.getElementById('statGames').textContent=games.length||'365';
+  document.getElementById('statAccounts').textContent=accounts.length;
+  document.getElementById('statActivities').textContent=activity.length;
+  document.getElementById('statStorage').textContent=keys;
+
+  // Accounts
+  document.getElementById('dashAccounts').innerHTML=accounts.length?
+    accounts.map(a=>'👤 <b>'+a.user+'</b> — aangemaakt '+a.created).join('<br>'):
+    '<span style="color:rgba(255,255,255,0.15)">Geen geregistreerde accounts</span>';
+
+  // localStorage
+  document.getElementById('dashStorage').textContent=ls||'<leeg>';
+
+  // Activity
+  document.getElementById('dashActivity').innerHTML=activity.length?
+    activity.map(a=>'<div class="log-item"><span class="time">['+new Date(a.time).toLocaleString()+']</span> <span class="user">'+a.user+'</span> <span class="action">'+a.action+'</span></div>').join(''):
+    '<span style="color:rgba(255,255,255,0.15)">Geen activiteit</span>';
+}
+
+// Refresh
+document.getElementById('dashRefreshBtn').onclick=loadDash;
+
+// Clear activity
+document.getElementById('dashClearActivityBtn').onclick=function(){
+  if(confirm('Activiteit wissen?')){localStorage.setItem('sbg_activity','[]');loadDash();}
+};
+
+// Clear all
+document.getElementById('dashClearAllBtn').onclick=function(){
+  if(confirm('⚠️ ALLE localStorage wissen? Dit kan niet ongedaan worden gemaakt!')){
+    if(confirm('Weet je het zeker?')){
+      localStorage.clear();
+      alert('🧹 Alles gewist!');
+      loadDash();
+    }
+  }
+};
+
+// Admin CMD
+const cmdLog=document.getElementById('dashCmdLog');
+document.getElementById('dashCmdInput').addEventListener('keydown',function(e){
+  if(e.key!=='Enter')return;
+  const raw=this.value.trim();
+  this.value='';
+  const parts=raw.split(' ');
+  const cmd=parts[0].toLowerCase();
+  const a=parts.slice(1);
+  const n=a.join(' ');
+  let out='';
+  switch(cmd){
+    case'/help':out='/admin [ww] /speler /undercover /kick /ban /unban /mute /unmute /kill /freeze /unfreeze /slap /explode /heal /god /fly /invisible /speed /jump /coins /setcoins /resetcoins /data /cleardata /clear /reset /time /weather /announce /shutdown /pm /ip /ping /report';break;
+    case'/ping':out='🏓 Pong!';break;
+    case'/speler':
+      if(loggedUser!==ADMIN_USER){out='❌ Alleen admin!';break;}
+      isAdmin=!isAdmin;
+      localStorage.setItem('sbg_admin',isAdmin?'true':'');
+      out=isAdmin?'👑 Admin modus!':'👤 Speler modus!';
+      document.getElementById('topUser').innerHTML=isAdmin?'<span class="admin-badge">ADMIN</span> '+loggedUser:'👤 '+loggedUser;
+      break;
+    case'/undercover':
+      if(loggedUser!==ADMIN_USER){out='❌ Alleen admin!';break;}
+      undercover=!undercover;
+      localStorage.setItem('sbg_undercover',undercover?'true':'');
+      out=undercover?'🕵️ Undercover modus':'👑 Admin zichtbaar';
+      if(undercover)document.getElementById('topUser').innerHTML='👤 '+loggedUser;
+      else document.getElementById('topUser').innerHTML='<span class="admin-badge">ADMIN</span> '+loggedUser;
+      break;
+    case'/kick':out='🦶 '+a[0]+' gekickt!';break;
+    case'/ban':out='🔨 '+a[0]+' verbannen!';break;
+    case'/unban':out='✅ '+a[0]+' unbanned!';break;
+    case'/mute':out='🔇 '+a[0]+' gedempt!';break;
+    case'/unmute':out='🔊 '+a[0]+' kan weer praten!';break;
+    case'/kill':out='💀 '+a[0]+' gedood!';break;
+    case'/freeze':out='🧊 '+a[0]+' bevroren!';break;
+    case'/unfreeze':out='🔥 '+a[0]+' ontdooid!';break;
+    case'/slap':out='👋 '+a[0]+' vliegt '+(Math.floor(Math.random()*50)+10)+'m!';break;
+    case'/explode':out='💥 BOEM! '+a[0]+' ontploft!';break;
+    case'/heal':out='💚 Genezen!';break;
+    case'/god':out='🛡️ God modus!';break;
+    case'/fly':out='🕊️ Vlieg modus!';break;
+    case'/invisible':out='👻 Onzichtbaar!';break;
+    case'/speed':const sp=parseInt(a[0])||0;if(sp<1||sp>100){out='❌ /speed [1-100]';break;}out='💨 Speed '+sp+'x';break;
+    case'/jump':const jp=parseInt(a[0])||0;if(jp<1||jp>100){out='❌ /jump [1-100]';break;}out='🦘 Jump '+jp;break;
+    case'/coins':case'/give':const am=parseInt(a[0])||0;if(am<=0){out='❌ /coins [aantal]';break;}out='💰 +'+am+' coins!';break;
+    case'/setcoins':const sa=parseInt(a[0])||0;if(sa<0){out='❌ /setcoins [aantal]';break;}out='💰 Coins = '+sa;break;
+    case'/resetcoins':out='🔄 Coins gereset';break;
+    case'/data':case'/localstorage':let d='';for(let k=0;k<localStorage.length;k++){const kk=localStorage.key(k);let v=localStorage.getItem(kk);if(v.length>80)v=v.slice(0,80)+'...';d+=kk+': '+v+'\n';}out=d||'📭 Leeg';break;
+    case'/cleardata':if(confirm('Alles wissen?')){localStorage.clear();out='🧹 Gewist!';loadDash();}break;
+    case'/time':if(!a[0]){out='❌ /time [dag/nacht]';break;}out=a[0]==='nacht'?'🌙 Nacht!':'☀️ Dag!';break;
+    case'/day':out='☀️ Dag!';break;
+    case'/night':out='🌙 Nacht!';break;
+    case'/weather':if(!a[0]){out='❌ /weather [zon/regen]';break;}out='🌤️ '+a[0];break;
+    case'/clear':out='🧹 Clear!';break;
+    case'/reset':case'/restart':if(confirm('Resetten?')){localStorage.clear();location.reload();}break;
+    case'/announce':if(!a[0]){out='❌ /announce [txt]';break;}out='📢 '+n;break;
+    case'/shutdown':if(confirm('Shutdown?')){document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a1a;color:#fff;flex-direction:column;gap:20px;font-family:Fredoka,sans-serif"><div style="font-size:4rem">🛑</div><h1>Server offline</h1></div>';}break;
+    case'/pm':if(a.length<2){out='❌ /pm [naam] [txt]';break;}out='📩 Naar '+a[0]+': "'+a.slice(1).join(' ')+'"';break;
+    case'/ip':out='🌐 IP '+(a[0]||'speler')+': 192.168.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255);break;
+    case'/report':if(!a[0]){out='❌ /report [naam]';break;}out='🚨 '+a[0]+' gerapporteerd!';break;
+    default:out='❌ Onbekend: '+cmd+' — /help voor lijst';
+  }
+  if(out){
+    logActivity(ADMIN_USER,'Dashboard: /'+cmd+(a[0]?' '+a[0]:''));
+    cmdLog.innerHTML='<span style="color:#ffd200">▶</span> '+out+'<br>'+cmdLog.innerHTML;
+    if(cmdLog.children.length>20)cmdLog.innerHTML='';
+  }
+});
+
+// Activity logging for this page
+logActivity(ADMIN_USER||'onbekend','Dashboard geopend');
+
+// ─── Game Maker ───
+document.getElementById('gmCreateBtn').onclick=function(){
+  const title=document.getElementById('gmTitle').value.trim();
+  const cat=document.getElementById('gmCat').value;
+  const icon=document.getElementById('gmIcon').value.trim()||'🎮';
+  if(!title){document.getElementById('gmMsg').textContent='❌ Vul een titel in!';return;}
+  const games=JSON.parse(localStorage.getItem(GK)||'[]');
+  if(games.find(g=>g.n===title)){document.getElementById('gmMsg').textContent='❌ Game met deze titel bestaat al!';return;}
+  games.push({
+    n:title,
+    i:icon,
+    c:cat,
+    id:'custom_'+Date.now(),
+    h:'custom',
+    p:'0',
+    s:'🆕 Nieuw'
+  });
+  localStorage.setItem(GK,JSON.stringify(games));
+  document.getElementById('gmTitle').value='';
+  document.getElementById('gmIcon').value='';
+  document.getElementById('gmMsg').textContent='✅ "'+title+'" aangemaakt!';
+  logActivity(ADMIN_USER,'Game gemaakt: '+title);
+  loadDash();
+};
+// Enter to create
+document.getElementById('gmTitle').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('gmCreateBtn').click();
+});
+
+// ─── Aankondigingen ───
+function loadAnn(){
+  const ann=localStorage.getItem('sbg_announcement')||'';
+  document.getElementById('annCurrent').textContent=ann?'📢 Huidig: "'+ann+'"':'📭 Geen aankondiging';
+}
+document.getElementById('annSendBtn').onclick=function(){
+  const txt=document.getElementById('annText').value.trim();
+  if(!txt){alert('❌ Vul een bericht in!');return;}
+  localStorage.setItem('sbg_announcement',txt);
+  document.getElementById('annText').value='';
+  loadAnn();
+  logActivity(ADMIN_USER,'Aankondiging: "'+txt+'"');
+  alert('📢 Aankondiging verzonden!');
+};
+document.getElementById('annClearBtn').onclick=function(){
+  localStorage.removeItem('sbg_announcement');
+  loadAnn();
+  logActivity(ADMIN_USER,'Aankondiging gewist');
+};
+document.getElementById('annText').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('annSendBtn').click();
+});
+loadAnn();
+
+// ─── Custom Reward ───
+document.getElementById('rwSendBtn').onclick=function(){
+  const user=document.getElementById('rwUser').value.trim();
+  const type=document.getElementById('rwType').value;
+  const amount=parseInt(document.getElementById('rwAmount').value)||0;
+  if(!user){document.getElementById('rwMsg').textContent='❌ Vul een gebruiker in!';return;}
+  if(amount<=0){document.getElementById('rwMsg').textContent='❌ Ongeldig aantal!';return;}
+  const rewards=JSON.parse(localStorage.getItem('sbg_rewards')||'[]');
+  rewards.push({user,type,amount,time:Date.now(),from:ADMIN_USER});
+  if(rewards.length>200)rewards.splice(0,rewards.length-200);
+  localStorage.setItem('sbg_rewards',JSON.stringify(rewards));
+  document.getElementById('rwMsg').textContent='✅ '+amount+' '+type+' gegeven aan '+user;
+  logActivity(ADMIN_USER,'Reward: '+amount+' '+type+' → '+user);
+  loadDash();
+};
+document.getElementById('rwUser').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('rwSendBtn').click();
+});
+
+// ─── Wachtwoord Reset ───
+document.getElementById('rpResetBtn').onclick=function(){
+  const user=document.getElementById('rpUser').value.trim();
+  const pass=document.getElementById('rpNewPass').value.trim();
+  if(!user||!pass){document.getElementById('rpMsg').textContent='❌ Vul gebruiker en wachtwoord in!';return;}
+  if(user===ADMIN_USER){document.getElementById('rpMsg').textContent='❌ Admin wachtwoord kan niet via dashboard!';return;}
+  const accounts=JSON.parse(localStorage.getItem('sbg_accounts')||'[]');
+  const idx=accounts.findIndex(a=>a.user===user);
+  if(idx<0){document.getElementById('rpMsg').textContent='❌ Gebruiker "'+user+'" niet gevonden!';return;}
+  accounts[idx].pass=pass;
+  localStorage.setItem('sbg_accounts',JSON.stringify(accounts));
+  document.getElementById('rpUser').value='';
+  document.getElementById('rpNewPass').value='';
+  document.getElementById('rpMsg').textContent='✅ Wachtwoord gereset voor '+user;
+  logActivity(ADMIN_USER,'Wachtwoord reset: '+user);
+  loadDash();
+};
+document.getElementById('rpNewPass').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('rpResetBtn').click();
+});
+
+// ─── Gebruikers Beheer ───
+document.getElementById('ubRenameBtn').onclick=function(){
+  const oldN=document.getElementById('ubOldUser').value.trim();
+  const newN=document.getElementById('ubNewUser').value.trim();
+  if(!oldN||!newN){document.getElementById('ubMsg').textContent='❌ Vul beide namen in!';return;}
+  if(newN===ADMIN_USER){document.getElementById('ubMsg').textContent='❌ Deze naam is niet beschikbaar!';return;}
+  const accounts=JSON.parse(localStorage.getItem('sbg_accounts')||'[]');
+  const idx=accounts.findIndex(a=>a.user===oldN);
+  if(idx<0){document.getElementById('ubMsg').textContent='❌ Gebruiker "'+oldN+'" niet gevonden!';return;}
+  if(accounts.find(a=>a.user===newN)){document.getElementById('ubMsg').textContent='❌ Nieuwe naam bestaat al!';return;}
+  accounts[idx].user=newN;
+  localStorage.setItem('sbg_accounts',JSON.stringify(accounts));
+  document.getElementById('ubOldUser').value='';
+  document.getElementById('ubNewUser').value='';
+  document.getElementById('ubMsg').textContent='✅ "'+oldN+'" → "'+newN+'" hernoemd!';
+  logActivity(ADMIN_USER,'Gebruiker hernoemd: '+oldN+' → '+newN);
+  loadDash();
+};
+document.getElementById('ubDeleteBtn').onclick=function(){
+  const user=document.getElementById('ubOldUser').value.trim();
+  if(!user){document.getElementById('ubMsg').textContent='❌ Vul een gebruikersnaam in!';return;}
+  if(user===ADMIN_USER){document.getElementById('ubMsg').textContent='❌ Admin kan niet worden verwijderd!';return;}
+  if(!confirm('Account "'+user+'" verwijderen?'))return;
+  const accounts=JSON.parse(localStorage.getItem('sbg_accounts')||'[]');
+  const nw=accounts.filter(a=>a.user!==user);
+  if(nw.length===accounts.length){document.getElementById('ubMsg').textContent='❌ Gebruiker "'+user+'" niet gevonden!';return;}
+  localStorage.setItem('sbg_accounts',JSON.stringify(nw));
+  document.getElementById('ubOldUser').value='';
+  document.getElementById('ubMsg').textContent='🗑️ Account "'+user+'" verwijderd!';
+  logActivity(ADMIN_USER,'Account verwijderd: '+user);
+  loadDash();
+};
+document.getElementById('ubNewUser').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('ubRenameBtn').click();
+});
+</script>
+</body>
+</html>
