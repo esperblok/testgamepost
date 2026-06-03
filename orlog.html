@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orlog - Verwoeste Toekomst</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ff6a00">
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a0a;color:#e0e0e0;min-height:100vh;overflow-x:hidden}
+.container{max-width:950px;margin:0 auto;padding:16px}
+.game-header{display:flex;justify-content:space-between;align-items:center;padding:10px 0;margin-bottom:12px;border-bottom:1px solid rgba(255,100,0,0.2)}
+.game-header h1{font-size:1.3rem;color:#ff6a00;text-shadow:0 0 20px rgba(255,106,0,0.3)}
+.game-header .header-right{display:flex;gap:8px;align-items:center}
+.game-header .profile-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,100,0,0.2);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:all 0.15s}
+.game-header .profile-btn:hover{background:rgba(255,100,0,0.1)}
+.game-header .profile-btn.admin{background:rgba(255,210,0,0.15);border-color:rgba(255,210,0,0.3)}
+.game-header .home-btn{color:#ff6a00;text-decoration:none;padding:6px 14px;border:1px solid rgba(255,100,0,0.3);border-radius:8px;font-size:0.85rem}
+.game-header .home-btn:hover{background:rgba(255,100,0,0.15)}
+
+/* POST-APOCALYPTIC MAP */
+.map-container{position:relative;width:100%;height:200px;border-radius:12px;overflow:hidden;margin-bottom:16px;border:1px solid rgba(255,100,0,0.2)}
+.map-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.map-overlay{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);padding:4px 16px;border-radius:20px;font-size:0.75rem;color:#ff6a00;border:1px solid rgba(255,100,0,0.2);text-align:center;backdrop-filter:blur(4px)}
+.map-location{position:absolute;font-size:0.7rem;color:rgba(255,200,100,0.7);text-shadow:0 0 10px rgba(0,0,0,0.9);background:rgba(0,0,0,0.5);padding:2px 6px;border-radius:4px}
+
+.game-panel{background:rgba(20,15,10,0.8);border:1px solid rgba(255,100,0,0.12);border-radius:12px;padding:20px;margin-bottom:14px;backdrop-filter:blur(5px)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;margin-bottom:12px}
+.stat-box{text-align:center;padding:10px;background:rgba(0,0,0,0.4);border-radius:8px;border:1px solid rgba(255,100,0,0.08)}
+.stat-value{font-size:1.4rem;font-weight:bold}
+.p-stat .stat-value{color:#4fc3f7}
+.a-stat .stat-value{color:#ff5252}
+.stat-label{font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:1px}
+
+.dice-container{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.die{width:76px;height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(30,20,10,0.9);border:2px solid rgba(255,100,0,0.2);border-radius:10px;cursor:pointer;transition:all 0.2s;font-size:1.8rem;user-select:none;position:relative}
+.die:hover{border-color:rgba(255,100,0,0.5);background:rgba(40,25,10,0.9)}
+.die.selected{border-color:#ff6a00;background:rgba(255,106,0,0.2);box-shadow:0 0 25px rgba(255,106,0,0.3)}
+.die.locked{border-color:#4fc3f7;background:rgba(79,195,247,0.12);cursor:default}
+.die .die-label{font-size:0.55rem;color:#aaa;margin-top:2px}
+.die .die-desc{position:absolute;bottom:-18px;font-size:0.55rem;color:#666;white-space:nowrap;opacity:0;transition:opacity 0.2s}
+.die:hover .die-desc{opacity:1}
+
+.btn{padding:10px 24px;border:none;border-radius:8px;font-size:0.95rem;cursor:pointer;transition:all 0.2s;font-weight:600}
+.btn-primary{background:linear-gradient(135deg,#ff6a00,#ee0979);color:white}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,106,0,0.3)}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed}
+.btn-gold{background:linear-gradient(135deg,#f7971e,#ffd200);color:#222}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(247,151,30,0.4)}
+.btn-sm{padding:6px 12px;font-size:0.8rem;background:rgba(255,255,255,0.08);color:#aaa;border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer}
+.btn-sm:hover{background:rgba(255,255,255,0.15)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.player-col{border-color:rgba(79,195,247,0.2)}
+.ai-col{border-color:rgba(255,82,82,0.2)}
+.center-text{text-align:center}
+.mt-12{margin-top:12px}
+.log-box{background:rgba(0,0,0,0.5);border-radius:8px;padding:12px;max-height:180px;overflow-y:auto;font-size:0.82rem;line-height:1.7;border:1px solid rgba(255,100,0,0.06)}
+.log-box p{padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.log-box .p-log{color:#4fc3f7}
+.log-box .a-log{color:#ff5252}
+.log-box .sys-log{color:#ff6a00}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(10px)}
+.overlay .box{text-align:center;padding:40px;background:rgba(20,15,10,0.9);border:1px solid rgba(255,100,0,0.3);border-radius:20px}
+.overlay .box .trophy{font-size:5rem}
+.overlay .box h2{font-size:2rem;margin:16px 0;color:#ff6a00}
+.overlay-box{text-align:center;padding:30px;background:rgba(20,15,10,0.95);border:1px solid rgba(255,100,0,0.2);border-radius:20px;max-width:300px;width:90%}
+.overlay-box h2{font-size:1.3rem;margin:8px 0;color:#ff6a00}
+.overlay-box p{color:#aaa;font-size:0.75rem}
+.role-btn{display:block;width:100%;padding:16px;margin:6px 0;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;font-family:'Segoe UI',system-ui,sans-serif;transition:all 0.15s}
+.role-btn:active{transform:scale(0.97)}
+.role-btn.speler{background:rgba(79,195,247,0.1);color:#4fc3f7;border:1px solid rgba(79,195,247,0.2)}
+.role-btn.admin-btn{background:rgba(255,210,0,0.1);color:#ffd200;border:1px solid rgba(255,210,0,0.2)}
+.pw-input{width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,210,0,0.2);border-radius:10px;color:#fff;font-size:0.9rem;text-align:center;margin:8px 0;font-family:'Segoe UI',system-ui,sans-serif;outline:none}
+.pw-input:focus{border-color:#ffd200}
+.role-label{font-size:0.6rem;color:rgba(255,255,255,0.15);margin-bottom:4px}
+h4{margin-bottom:8px;color:#ff6a00;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.pulse{animation:pulse 1.2s infinite}
+@keyframes glow{0%,100%{text-shadow:0 0 10px rgba(255,106,0,0.3)}50%{text-shadow:0 0 25px rgba(255,106,0,0.6)}}
+.glow{animation:glow 2s infinite}
+@keyframes fallout{0%{opacity:0;transform:translateY(-5px)}100%{opacity:1;transform:translateY(0)}}
+.fallout{animation:fallout 0.4s ease}
+
+/* Terminal effect for log */
+.terminal-cursor::after{content:'_';animation:blink 1s infinite;color:#ff6a00}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="game-header">
+<h1>☢️ Orlog — Verwoeste Toekomst</h1>
+<div class="header-right">
+<button class="profile-btn" id="profileBtn">👤</button>
+<a href="index.html" class="home-btn">🎮 Meer Spellen</a>
+</div>
+</div>
+
+<!-- POST-APOCALYPTIC MAP -->
+<div class="map-container">
+<canvas id="mapCanvas" class="map-canvas"></canvas>
+<div id="mapLocations"></div>
+<div class="map-overlay glow">💀 RUÏNES VAN DE OUDE WERELD — Strijd om de restanten</div>
+</div>
+
+<div class="overlay" id="overlay">
+<div class="box">
+<div class="trophy" id="win-icon">☠️</div>
+<h2 id="win-text"></h2>
+<button class="btn btn-gold mt-12" onclick="resetGame()">Opnieuw Vechten</button>
+<a href="index.html" class="btn btn-primary mt-12" style="display:inline-block">🎮 Meer Spellen</a>
+</div>
+</div>
+
+<div class="two-col">
+<div class="game-panel player-col p-stat">
+<h3 style="color:#4fc3f7">🧑 Jij — Wasteland Overlever</h3>
+<div class="stats-grid">
+<div class="stat-box"><div class="stat-value" id="p-hp">12</div><div class="stat-label">❤️ Leven</div></div>
+<div class="stat-box"><div class="stat-value" id="p-ammo">3</div><div class="stat-label">🔫 Munitie</div></div>
+</div>
+<div class="dice-container" id="p-dice"></div>
+<p id="p-status" style="font-size:0.8rem;color:#666;text-align:center"></p>
+</div>
+<div class="game-panel ai-col a-stat">
+<h3 style="color:#ff5252">🤖 AI — Verwoestingsmachine</h3>
+<div class="stats-grid">
+<div class="stat-box"><div class="stat-value" id="a-hp">12</div><div class="stat-label">❤️ Leven</div></div>
+<div class="stat-box"><div class="stat-value" id="a-ammo">3</div><div class="stat-label">🔫 Munitie</div></div>
+</div>
+<div class="dice-container" id="a-dice"></div>
+</div>
+</div>
+
+<div class="game-panel center-text">
+<div id="actions"></div>
+<p id="round-info" style="color:#666;margin-top:8px;font-size:0.8rem"></p>
+<p style="font-size:0.7rem;color:#444;margin-top:4px" id="location-info"></p>
+</div>
+
+<div class="game-panel">
+<h4>📟 Wasteland Log</h4>
+<div class="log-box" id="log"><p class="sys-log">☢️> System online. De wereld is verwoest. Vecht voor de restanten...</p></div>
+</div>
+</div>
+
+<div class="overlay" id="profileOverlay">
+<div class="overlay-box">
+<h2>👤 Profiel</h2>
+<p style="font-size:0.7rem;color:rgba(255,255,255,0.3);margin-bottom:12px">Kies je rol</p>
+<div id="roleDisplay" style="font-size:0.55rem;color:rgba(255,255,255,0.15);margin-bottom:8px"></div>
+<button class="role-btn speler" id="roleSpeler">🧑 Speler</button>
+<button class="role-btn admin-btn" id="roleAdmin">👑 Admin</button>
+<div id="adminPwSection" style="display:none">
+<div class="role-label">Voer admin wachtwoord in:</div>
+<input type="password" class="pw-input" id="adminPw" placeholder="Typ wachtwoord...">
+<button class="role-btn admin-btn" id="btnAdminLogin" style="padding:10px;font-size:0.8rem">🔓 Inloggen</button>
+<p id="pwError" style="font-size:0.6rem;color:#ff5252;display:none">❌ Fout wachtwoord!</p>
+</div>
+</div>
+</div>
+
+<div class="cmd-bar">
+<span class="admin-badge" id="adminBadge">👑 ADMIN</span>
+<input type="text" id="cmdInput" placeholder="Type /admin, /ban, /give... (Enter)">
+<button class="cmd-btn" id="cmdBtn">▶</button>
+</div>
+
+<style>
+.cmd-bar{position:fixed;bottom:0;left:0;right:0;display:flex;gap:4px;padding:6px 10px;background:rgba(10,10,10,0.95);border-top:1px solid rgba(255,100,0,0.1);z-index:50;backdrop-filter:blur(10px)}
+.cmd-bar input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,100,0,0.1);border-radius:8px;padding:8px 12px;color:#fff;font-size:0.75rem;font-family:'Segoe UI',system-ui,sans-serif;outline:none}
+.cmd-bar input:focus{border-color:rgba(255,100,0,0.3)}
+.cmd-bar input::placeholder{color:rgba(255,255,255,0.15)}
+.cmd-bar .cmd-btn{background:rgba(255,100,0,0.1);border:1px solid rgba(255,100,0,0.2);border-radius:8px;color:#ff6a00;padding:8px 14px;cursor:pointer;font-size:0.8rem}
+.cmd-bar .cmd-btn:active{transform:scale(0.95)}
+.cmd-bar .admin-badge{font-size:0.5rem;padding:2px 6px;border-radius:4px;background:#ffd200;color:#222;display:none;align-items:center}
+.cmd-bar .admin-badge.show{display:flex}
+body{padding-bottom:50px}
+</style>
+
+<script>
+const DICE=[
+{id:'schiet',name:'Schiet',icon:'🔫',desc:'2 schade, -1 kogel'},
+{id:'herlaad',name:'Herlaad',icon:'🔄',desc:'+2 kogels'},
+{id:'schild',name:'Schild',icon:'🛡️',desc:'Blokkeer 2'},
+{id:'crit',name:'Headshot',icon:'💥',desc:'3 schade, -2 kogels'},
+{id:'medic',name:'Stim',icon:'💉',desc:'+2 leven'},
+{id:'jam',name:'Armor',icon:'⚡',desc:'Blokkeer alles'},
+];
+
+const WEIGHTS=[25,20,20,10,15,10];
+const MAX_HP=15, MAX_AMMO=5;
+
+// Wasteland map locations
+const LOCATIONS=[
+{name:'Verwoeste Stad',x:0.15,y:0.35,icon:'🏙️',desc:'Restanten van een oude metropool'},
+{name:'Radioactief Moeras',x:0.35,y:0.65,icon:'☢️',desc:'Dodelijke straling, maar vol waardevolle onderdelen'},
+{name:'Verlaten Basis',x:0.55,y:0.25,icon:'🏚️',desc:'Oude militaire bunker met munitie'},
+{name:'Giftige Rivier',x:0.72,y:0.55,icon:'🟢',desc:'Vervuild water, gevaarlijke oversteek'},
+{name:'De Krater',x:0.38,y:0.15,icon:'💥',desc:'Inslaan van een oude bom. Niemandsland.'},
+{name:'Brug der Zielen',x:0.88,y:0.40,icon:'🌉',desc:'Kapotte brug, strategisch punt'},
+{name:'Schrootvallei',x:0.60,y:0.78,icon:'⚙️',desc:'Bergen met afval en schroot'},
+];
+
+let G=null;
+
+function drawMap(){
+const c=document.getElementById('mapCanvas');
+const ctx=c.getContext('2d');
+const rect=c.parentElement.getBoundingClientRect();
+c.width=rect.width||900;
+c.height=rect.height||200;
+const w=c.width,h=c.height;
+
+// Sky - toxic green/orange gradient
+const sky=ctx.createLinearGradient(0,0,0,h);
+sky.addColorStop(0,'#1a0a00');
+sky.addColorStop(0.3,'#2d1a05');
+sky.addColorStop(0.6,'#3d2008');
+sky.addColorStop(1,'#1a0f05');
+ctx.fillStyle=sky;
+ctx.fillRect(0,0,w,h);
+
+// Ground
+ctx.fillStyle='#1a1208';
+ctx.fillRect(0,h*0.7,w,h*0.3);
+
+// Toxic glow horizon
+const glow=ctx.createRadialGradient(w/2,h*0.68,10,w/2,h*0.68,200);
+glow.addColorStop(0,'rgba(255,100,0,0.15)');
+glow.addColorStop(0.5,'rgba(255,50,0,0.05)');
+glow.addColorStop(1,'rgba(0,0,0,0)');
+ctx.fillStyle=glow;
+ctx.fillRect(0,0,w,h);
+
+// Destroyed buildings silhouette
+function drawBuilding(x,bw,bh,color){
+ctx.fillStyle=color;
+ctx.fillRect(x,h*0.7-bh,bw,bh);
+// broken top
+ctx.fillStyle='rgba(0,0,0,0.3)';
+for(let i=0;i<3;i++){
+const bx=x+Math.random()*bw;
+ctx.fillRect(bx,h*0.7-bh-5+Math.random()*10,3,Math.random()*15);
+}
+// windows
+ctx.fillStyle='rgba(255,100,0,0.1)';
+for(let i=0;i<5;i++){
+for(let j=0;j<3;j++){
+if(Math.random()>0.4){
+ctx.fillRect(x+4+j*10,h*0.7-bh+8+i*12,6,6);
+}}}}
+
+const buildings=[
+{x:0.05,bw:30,bh:70},{x:0.12,bw:20,bh:45},{x:0.18,bw:40,bh:90},
+{x:0.28,bw:15,bh:35},{x:0.33,bw:35,bh:80},{x:0.42,bw:25,bh:55},
+{x:0.50,bw:45,bh:100},{x:0.60,bw:20,bh:40},{x:0.68,bw:30,bh:65},
+{x:0.78,bw:50,bh:85},{x:0.88,bw:22,bh:50},{x:0.94,bw:18,bh:35},
+];
+for(const b of buildings){
+drawBuilding(b.x*w,b.bw,b.bh,'rgba(15,8,3,0.9)');
+}
+
+// Fire/smoke particles
+for(let i=0;i<20;i++){
+const fx=Math.random()*w,fy=h*0.65-Math.random()*60;
+const fs=Math.random()*4+1;
+ctx.fillStyle=`rgba(255,${100+Math.random()*80},0,${0.1+Math.random()*0.2})`;
+ctx.beginPath();
+ctx.arc(fx,fy,fs,0,Math.PI*2);
+ctx.fill();
+}
+
+// Ground details
+ctx.fillStyle='rgba(60,40,20,0.3)';
+for(let i=0;i<30;i++){
+const gx=Math.random()*w,gy=h*0.72+Math.random()*h*0.25;
+ctx.beginPath();
+ctx.arc(gx,gy,Math.random()*3+1,0,Math.PI*2);
+ctx.fill();
+}
+
+// Craters
+for(let i=0;i<4;i++){
+const cx=0.1+w*Math.random()*0.8,cy=h*0.73+Math.random()*h*0.15;
+ctx.fillStyle='rgba(10,5,0,0.6)';
+ctx.beginPath();
+ctx.ellipse(cx,cy,15+Math.random()*20,5+Math.random()*8,0,0,Math.PI*2);
+ctx.fill();
+ctx.strokeStyle='rgba(255,100,0,0.1)';
+ctx.lineWidth=1;
+ctx.stroke();
+}
+
+// Map markers (locations)
+const locs=document.getElementById('mapLocations');
+locs.innerHTML=LOCATIONS.map(l=>{
+const px=(l.x*w)-12,py=(l.y*h)-12;
+return `<div class="map-location" style="left:${l.x*100}%;top:${l.y*100}%;transform:translate(-50%,-50%)" title="${l.desc}">${l.icon} ${l.name}</div>`;
+}).join('');
+}
+
+// CLICKABLE LOCATIONS FOR WASTELAND MAP
+document.addEventListener('click',function(e){
+const map=document.querySelector('.map-container');
+if(!map)return;
+const rect=map.getBoundingClientRect();
+const x=e.clientX-rect.left,y=e.clientY-rect.top;
+const w=rect.width,h=rect.height;
+const pctX=x/w,pctY=y/h;
+// Check if clicked on a location
+let nearest=null,nearestDist=Infinity;
+for(const l of LOCATIONS){
+const dist=Math.hypot(pctX-l.x,pctY-l.y);
+if(dist<nearestDist){nearestDist=dist;nearest=l;}
+}
+if(nearest&&nearestDist<0.08&&G){
+G.log.push(`📍> Je verkent: ${nearest.icon} ${nearest.name} — ${nearest.desc}`);
+// Random event!
+const events=[
+{msg:'Vindt voorraad! +2 leven',fn:()=>{G.p.hp=Math.min(G.p.hp+2,MAX_HP);}},
+{msg:'Munitie gevonden! +1 kogel',fn:()=>{G.p.ammo=Math.min(G.p.ammo+1,MAX_AMMO);}},
+{msg:'Gevaar! Vijandelijke patrouille! -1 leven',fn:()=>{G.p.hp=Math.max(G.p.hp-1,1);}},
+{msg:'Oude wapenonderdelen! Volgende headshot +1 schade',fn:()=>{}},
+{msg:'Radioactieve wolk! Moet snel weg...',fn:()=>{}},
+];
+const ev=events[Math.floor(Math.random()*events.length)];
+ev.fn();
+G.log.push(`🎲> ${ev.msg}`);
+render();
+}});
+
+// Resize map on load
+window.addEventListener('resize',drawMap);
+
+function rollDice(){return weightedSample(DICE,WEIGHTS,6)}
+function weightedSample(arr,w,n){
+const r=[],total=w.reduce((a,b)=>a+b,0);
+for(let i=0;i<n;i++){
+let t=Math.random()*total,s=0;
+for(let j=0;j<arr.length;j++){s+=w[j];if(t<=s){r.push({...arr[j]});break}}
+}return r;
+}
+
+function initGame(){
+const locations=[...LOCATIONS];
+const startLoc=locations[Math.floor(Math.random()*locations.length)];
+G={
+p:{hp:12,ammo:3,dice:[],locked:[],block:0,location:startLoc},
+a:{hp:12,ammo:3,dice:[],locked:[],block:0,location:locations[Math.floor(Math.random()*locations.length)]},
+phase:'roll',turn:'p',winner:null,log:['☢️> De wereld ligt in puin. Vecht om te overleven...'],round:1
+};}
+
+function resolveDice(dice,ammo,hp){
+let dmg=0,block=0,heal=0,newAmmo=ammo,blockAll=false;
+for(const d of dice){
+switch(d.id){
+case'schiet':if(newAmmo>=1){dmg+=2;newAmmo--}break;
+case'herlaad':newAmmo=Math.min(newAmmo+2,MAX_AMMO);break;
+case'schild':block+=2;break;
+case'crit':if(newAmmo>=2){dmg+=3;newAmmo-=2}break;
+case'medic':heal+=2;break;
+case'jam':blockAll=true;break;
+}}
+hp=Math.min(hp+heal,MAX_HP);
+return{dmg,block,hp,ammo:newAmmo,blockAll};
+}
+
+function aiTurn(){
+const a=G.a,p=G.p;
+const scores=a.dice.map(d=>{
+if(d.id==='schiet'&&a.ammo>=1)return 3;
+if(d.id==='crit'&&a.ammo>=2)return 4;
+if(d.id==='medic'&&a.hp<8)return 3;
+if(d.id==='schild')return 2;
+if(d.id==='herlaad'&&a.ammo<3)return 2;
+return 0;
+});
+const indices=[...Array(6).keys()].sort((i,j)=>scores[i]-scores[j]).slice(0,3);
+for(const i of indices){if(!a.locked[i])a.dice[i]=rollDice()[0]}
+
+const r=resolveDice(a.dice,a.ammo,a.hp);
+if(r.blockAll){G.log.push('<span class="a-log">⚡ AI gebruikt Armor! Alle schade geblokkeerd!</span>');}else{p.hp-=Math.max(0,r.dmg-p.block)}
+a.hp=r.hp;a.ammo=r.ammo;
+G.log.push(`<span class="a-log">🤖> AI dealt ${r.dmg} schade | HP:${a.hp} | Kogels:${a.ammo}</span>`);
+G.turn='p';G.phase='roll';
+if(p.hp<=0)G.winner='a';
+else if(a.hp<=0)G.winner='p';
+}
+
+function playerResolve(){
+const p=G.p,a=G.a;
+const r=resolveDice(p.dice,p.ammo,p.hp);
+p.block=r.block;
+G.log.push(`<span class="p-log">🔫> Jij dealt ${r.dmg} schade | HP:${r.hp} | Kogels:${r.ammo}</span>`);
+p.hp=r.hp;p.ammo=r.ammo;
+if(r.blockAll){G.log.push('<span class="p-log">⚡ Armor actief! AI schade geblokkeerd!</span>');}else{a.hp-=r.dmg}
+if(a.hp<=0){G.winner='p';return}
+aiTurn();
+G.round++;
+G.phase='roll';
+p.locked=[false,false,false,false,false,false];
+}
+
+function render(){
+if(!G)return;
+document.getElementById('p-hp').textContent=G.p.hp;
+document.getElementById('p-ammo').textContent=G.p.ammo;
+document.getElementById('a-hp').textContent=G.a.hp;
+document.getElementById('a-ammo').textContent=G.a.ammo;
+document.getElementById('round-info').textContent=`☢️ Ronde ${G.round} | ${G.turn==='p'?'Jouw beurt':'🤖 AI beurt'}`;
+if(G.p.location&&G.a.location){
+document.getElementById('location-info').textContent=`📍 Jij: ${G.p.location.name} | 🤖 AI: ${G.a.location.name}`;
+}
+
+renderDice('p-dice',G.p.dice,G.p.locked,G.turn==='p'&&G.phase==='reroll');
+renderDice('a-dice',G.a.dice,G.a.locked,false);
+
+const a=document.getElementById('actions');
+if(G.winner){
+document.getElementById('overlay').style.display='flex';
+document.getElementById('win-icon').textContent=G.winner==='p'?'🏆':'☠️';
+document.getElementById('win-text').textContent=G.winner==='p'?'Jij overleeft de wasteland! 🔫':'AI heeft je vernietigd! 💀';
+a.innerHTML='';return;
+}
+document.getElementById('overlay').style.display='none';
+
+if(G.turn!=='p'){a.innerHTML='<p style="color:#ff5252">🤖 AI denkt na...</p>';return}
+if(G.phase==='roll'){a.innerHTML='<button class="btn btn-primary pulse" onclick="roll()">🎲 Zoek naar gevecht</button>'}
+else if(G.phase==='reroll'){a.innerHTML=`<p style="color:#ff6a00;margin-bottom:8px;font-size:0.85rem">🎯 Klik dobbelstenen om te hergooien (of sla over)</p><button class="btn btn-primary" onclick="doReroll()">🔄 Hergooi</button><button class="btn-sm" style="margin-left:8px" onclick="skipReroll()">⏭ Overslaan</button>`}
+else if(G.phase==='resolve'){a.innerHTML='<button class="btn btn-gold pulse" onclick="doResolve()">⚔ Afhandelen!</button>'}
+
+const log=document.getElementById('log');
+log.innerHTML+=G.log.slice(log.children.length?G.log.indexOf(log.lastElementChild?.textContent||'')+1:0).map(l=>`<p class="fallout">${l}</p>`).join('');
+log.scrollTop=log.scrollHeight;
+}
+
+function renderDice(id,dice,locked,selectable){
+const el=document.getElementById(id);
+if(!dice||!dice.length){el.innerHTML='<p style="color:#555;font-size:0.8rem">🔘 Wachtend op actie...</p>';return}
+el.innerHTML=dice.map((d,i)=>{
+let cls='die'+(locked[i]?' locked':'');
+const s=selectable&&!locked[i]?'onclick="toggleDie(this)"':'';
+return `<div class="${cls}" data-index="${i}" ${s}><span>${d.icon}</span><span class="die-label">${d.name}</span><span class="die-desc">${d.desc}</span></div>`
+}).join('');
+}
+
+function toggleDie(el){el.classList.toggle('selected')}
+
+function roll(){
+if(G.phase!=='roll'||G.turn!=='p')return;
+G.p.dice=rollDice();G.p.locked=[false,false,false,false,false,false];G.phase='reroll';
+G.log.push('<span class="sys-log">🎲> Dobbelstenen geworpen — het lot beslist...</span>');
+// Random location event
+if(Math.random()>0.6){
+const loc=LOCATIONS[Math.floor(Math.random()*LOCATIONS.length)];
+G.log.push(`<span class="sys-log">📍> Je arriveert bij ${loc.icon} ${loc.name}</span>`);
+G.p.location=loc;
+}
+render();
+}
+
+function doReroll(){
+const sel=document.querySelectorAll('#p-dice .die.selected');
+const indices=Array.from(sel).map(el=>parseInt(el.dataset.index));
+for(const i of indices){if(i<6&&!G.p.locked[i])G.p.dice[i]=rollDice()[0]}
+G.phase='resolve';G.log.push('<span class="sys-log">🔄> Hergooi voltooid. Het moment van de waarheid...</span>');render();
+}
+
+function skipReroll(){G.phase='resolve';render()}
+
+function doResolve(){
+if(G.phase!=='resolve'||G.turn!=='p')return;
+playerResolve();render();
+}
+
+function resetGame(){
+initGame();document.getElementById('overlay').style.display='none';
+document.getElementById('log').innerHTML='<p class="sys-log">☢️> Nieuwe strijd. De wasteland wacht...</p>';
+render();
+}
+
+// ======== PROFILE ========
+const ADMIN_PW_PROFILE='esper 331911';
+let isAdmin=localStorage.getItem('orlog_admin')==='true';
+let banned=JSON.parse(localStorage.getItem('orlog_banned')||'[]');
+
+function updateProfileUI(){
+const btn=document.getElementById('profileBtn');
+if(isAdmin){btn.classList.add('admin');btn.textContent='👑';}
+else{btn.classList.remove('admin');btn.textContent='👤';}
+document.getElementById('adminBadge').classList.toggle('show',isAdmin);
+document.getElementById('roleDisplay').textContent=isAdmin?'👑 Admin modus':'🧑 Speler modus';
+}
+
+document.getElementById('profileBtn').addEventListener('click',function(){
+document.getElementById('profileOverlay').style.display='flex';
+document.getElementById('adminPwSection').style.display='none';
+document.getElementById('adminPw').value='';
+document.getElementById('pwError').style.display='none';
+updateProfileUI();
+});
+
+document.getElementById('roleSpeler').addEventListener('click',function(){
+if(isAdmin){isAdmin=false;localStorage.setItem('orlog_admin','false');}
+document.getElementById('profileOverlay').style.display='none';
+updateProfileUI();
+cmdLog('🧑 Speler modus');
+});
+
+document.getElementById('roleAdmin').addEventListener('click',function(){
+document.getElementById('adminPwSection').style.display='block';
+document.getElementById('adminPw').focus();
+});
+
+document.getElementById('btnAdminLogin').addEventListener('click',function(){
+const pw=document.getElementById('adminPw').value;
+if(pw===ADMIN_PW_PROFILE){
+isAdmin=true;localStorage.setItem('orlog_admin','true');
+document.getElementById('profileOverlay').style.display='none';
+updateProfileUI();
+cmdLog('👑 Admin modus!');
+}else{
+document.getElementById('pwError').style.display='block';
+}});
+
+document.getElementById('adminPw').addEventListener('keydown',function(e){
+if(e.key==='Enter')document.getElementById('btnAdminLogin').click();
+});
+
+document.getElementById('profileOverlay').addEventListener('click',function(e){
+if(e.target===this)this.style.display='none';
+});
+
+updateProfileUI();
+
+// ======== COMMANDS ========
+document.getElementById('cmdInput').addEventListener('keydown',function(e){if(e.key==='Enter')runCmd()});
+document.getElementById('cmdBtn').addEventListener('click',runCmd);
+
+function runCmd(){
+const input=document.getElementById('cmdInput');
+const text=input.value.trim();input.value='';
+if(!text.startsWith('/'))return;
+const parts=text.split(' '),cmd=parts[0].toLowerCase(),args=parts.slice(1);
+switch(cmd){
+ case'/admin':
+if(args[0]===ADMIN_PW_PROFILE){isAdmin=true;localStorage.setItem('orlog_admin','true');updateProfileUI();cmdLog('✅ Admin modus!');}
+else cmdLog('❌ Fout wachtwoord!');
+break;
+case'/help':cmdLog('/admin, /speler, /kick, /ban, /unban, /mute, /unmute, /kill, /freeze, /unfreeze, /slap, /explode, /heal, /god, /fly, /invisible, /speed, /jump, /coins, /setcoins, /resetcoins, /time, /day, /night, /weather, /clear, /reset, /restart, /announce, /shutdown, /pm, /ip, /ping, /report');break;
+case'/ping':cmdLog('🏓 Pong! 0.001ms');break;
+case'/speler':if(!args[0]){cmdLog('❌ /speler [naam]');break;}cmdLog(`👤 ${args[0]}: Level ${Math.floor(Math.random()*50)+1}, Coins ${Math.floor(Math.random()*9999)+100}, Rank ${['Bronze','Silver','Gold','Diamond','Admin'][Math.floor(Math.random()*5)]}`);break;
+case'/kick':if(!args[0]){cmdLog('❌ /kick [naam]');break;}cmdLog(`🦶 ${args[0]} gekickt!`);break;
+case'/ban':if(!isAdmin){cmdLog('❌ Alleen admin!');break;}if(!args[0]){cmdLog('❌ /ban [naam]');break;}if(!banned.includes(args[0]))banned.push(args[0]);localStorage.setItem('orlog_banned',JSON.stringify(banned));cmdLog(`🔨 ${args[0]} verbannen!`);break;
+case'/unban':if(!isAdmin){cmdLog('❌ Alleen admin!');break;}banned=banned.filter(b=>b!==args[0]);localStorage.setItem('orlog_banned',JSON.stringify(banned));cmdLog(`✅ ${args[0]} unban!`);break;
+case'/mute':if(!args[0]){cmdLog('❌ /mute [naam]');break;}cmdLog(`🔇 ${args[0]} gedempt!`);break;
+case'/unmute':if(!args[0]){cmdLog('❌ /unmute [naam]');break;}cmdLog(`🔊 ${args[0]} kan weer praten!`);break;
+case'/kill':if(!args[0]){cmdLog('❌ /kill [naam]');break;}cmdLog(`💀 ${args[0]} gedood!`);break;
+case'/freeze':if(!args[0]){cmdLog('❌ /freeze [naam]');break;}cmdLog(`🧊 ${args[0]} bevroren!`);break;
+case'/unfreeze':if(!args[0]){cmdLog('❌ /unfreeze [naam]');break;}cmdLog(`🔥 ${args[0]} ontdooid!`);break;
+case'/slap':if(!args[0]){cmdLog('❌ /slap [naam]');break;}cmdLog(`👋 ${args[0]} vliegt ${Math.floor(Math.random()*50)+10}m!`);break;
+case'/explode':if(!args[0]){cmdLog('❌ /explode [naam]');break;}cmdLog(`💥 BOEM! ${args[0]} ontploft!`);break;
+case'/heal':cmdLog('💚 Genezen!');break;
+case'/god':cmdLog('🛡️ God modus!');break;
+case'/fly':cmdLog('🕊️ Vlieg modus!');break;
+case'/invisible':cmdLog('👻 Onzichtbaar!');break;
+case'/speed':const sp=parseInt(args[0])||0;if(sp<1||sp>100){cmdLog('❌ /speed [1-100]');break;}cmdLog(`💨 Speed ${sp}x`);break;
+case'/jump':const jp=parseInt(args[0])||0;if(jp<1||jp>100){cmdLog('❌ /jump [1-100]');break;}cmdLog(`🦘 Jump ${jp}`);break;
+case'/coins':case'/give':const amt=parseInt(args[0])||0;if(amt<=0){cmdLog('❌ /coins [aantal]');break;}if(G){G.p.hp=Math.min(G.p.hp+amt,15);G.p.ammo=Math.min(G.p.ammo+Math.floor(amt/2),5);render();cmdLog(`💰 +${amt} HP/Kogels!`);}break;
+case'/setcoins':const sa=parseInt(args[0])||0;if(sa<0){cmdLog('❌ /setcoins [aantal]');break;}cmdLog(`💰 Coins = ${sa}`);break;
+case'/resetcoins':cmdLog('🔄 Coins gereset');break;
+case'/time':if(!args[0]){cmdLog('❌ /time [dag/nacht]');break;}cmdLog(args[0]==='nacht'?'🌙 Nacht!':'☀️ Dag!');break;
+case'/day':cmdLog('☀️ Dag!');break;
+case'/night':cmdLog('🌙 Nacht!');break;
+case'/weather':if(!args[0]){cmdLog('❌ /weather [zon/regen]');break;}cmdLog(`🌤️ ${args[0]}`);break;
+case'/clear':document.getElementById('log').innerHTML='';cmdLog('🧹 Clear!');break;
+case'/reset':case'/restart':cmdLog('🔄 Reset...');setTimeout(()=>location.reload(),500);break;
+case'/announce':if(!args[0]){cmdLog('❌ /announce [txt]');break;}cmdLog(`📢 ${args.join(' ')}`);break;
+case'/shutdown':cmdLog('🛑 Server shutdown...');setTimeout(()=>{document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#1a1000;color:#fff;flex-direction:column;gap:20px;font-family:Fredoka,sans-serif"><div style="font-size:4rem">🛑</div><h1>Server offline</h1></div>'},1000);break;
+case'/pm':if(args.length<2){cmdLog('❌ /pm [naam] [txt]');break;}cmdLog(`📩 Naar ${args[0]}: "${args.slice(1).join(' ')}"`);break;
+case'/ip':if(!isAdmin){cmdLog('❌ Alleen admin!');break;}cmdLog(`🌐 IP ${args[0]||'speler'}: 192.168.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`);break;
+case'/data':case'/localstorage':let d='';for(let k=0;k<localStorage.length;k++){const kk=localStorage.key(k);let v=localStorage.getItem(kk);if(v.length>80)v=v.slice(0,80)+'...';d+=kk+': '+v+'\n';}cmdLog(d||'Leeg');break;
+case'/cleardata':if(confirm('Wissen?')){localStorage.clear();cmdLog('Gewist!');}break;
+case'/report':if(!args[0]){cmdLog('❌ /report [naam]');break;}cmdLog(`🚨 ${args[0]} gerapporteerd!`);break;
+default:cmdLog(`❌ Onbekend: ${cmd}. /help voor lijst`);
+}}
+function cmdLog(msg){document.getElementById('log').innerHTML+=`<p style="color:#ffd200">💬 ${msg}</p>`;document.getElementById('log').scrollTop=document.getElementById('log').scrollHeight;}
+
+// Init
+initGame();
+setTimeout(drawMap,50);
+render();
+</script>
+
+<script>
+// Activity logging
+(function(){
+  try{
+    const acts=JSON.parse(localStorage.getItem('sbg_activity')||'[]');
+    const user=localStorage.getItem('sbg_user')||'onbekend';
+    acts.unshift({user,action:'Speelt ' + document.title,time:Date.now()});
+    if(acts.length>200)acts=acts.slice(0,200);
+    localStorage.setItem('sbg_activity',JSON.stringify(acts));
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>
