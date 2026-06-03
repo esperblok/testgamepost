@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏎️ Race Simulator</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a1a">
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Fredoka',sans-serif;background:#0a0a1a;color:#fff;min-height:100vh;overflow:hidden;user-select:none}
+html,body{width:100%;height:100%}
+
+/* SECTIONS */
+.screen{display:none;width:100%;height:100%;position:fixed;inset:0}
+.screen.active{display:flex;flex-direction:column}
+
+/* MENU */
+.menu{background:#0a0a1a;padding:12px;max-width:500px;margin:0 auto;width:100%;overflow-y:auto;height:100%}
+.menu .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.menu .top h1{font-size:1.1rem}
+.menu .top .row{display:flex;gap:6px;align-items:center}
+.menu .top button{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#fff;padding:4px 10px;cursor:pointer;font-size:0.65rem;font-family:'Fredoka',sans-serif}
+.stats{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
+.stat{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:4px 12px;font-size:0.65rem;display:flex;align-items:center;gap:4px}
+.stat .n{font-weight:600;color:#ffd200}
+.tabs{display:flex;gap:4px;margin-bottom:8px}
+.tab-btn{flex:1;text-align:center;padding:8px;border-radius:10px;font-size:0.7rem;cursor:pointer;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);font-weight:500}
+.tab-btn.active{background:rgba(0,200,255,0.1);border-color:rgba(0,200,255,0.25);color:#00c8ff}
+.page{display:none}
+.page.active{display:block}
+.garage-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.car-card{background:rgba(15,15,35,0.9);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer}
+.car-card.owned{border-color:rgba(0,200,255,0.2)}
+.car-card.sel{border-color:#00c8ff;box-shadow:0 0 15px rgba(0,200,255,0.15)}
+.car-card .ic{font-size:2rem;margin-bottom:2px}
+.car-card .nm{font-size:0.65rem;font-weight:600}
+.car-card .pr{font-size:0.5rem;color:#ffd200}
+.car-card .sp{font-size:0.45rem;color:rgba(255,255,255,0.3)}
+.customize{background:rgba(15,15,35,0.9);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:10px;margin-bottom:8px}
+.customize .t{font-size:0.6rem;color:rgba(255,255,255,0.2);text-transform:uppercase;margin-bottom:4px}
+.cgrid{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-bottom:4px}
+.cbtn{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer}
+.cbtn.active{border-color:#fff}
+.ug-row{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.ug-btn{padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#fff;font-size:0.55rem;cursor:pointer;font-family:'Fredoka',sans-serif}
+.ug-btn .c{color:#ffd200}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.mode-card{background:rgba(15,15,35,0.9);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:12px 6px;text-align:center;cursor:pointer}
+.mode-card .ic{font-size:1.6rem}
+.mode-card .nm{font-size:0.65rem;font-weight:600}
+.mode-card .de{font-size:0.5rem;color:rgba(255,255,255,0.3)}
+.mode-card .rw{font-size:0.5rem;color:#ffd200;margin-top:2px}
+.opponents{background:rgba(15,15,35,0.9);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:8px;margin-bottom:8px}
+.opponents .t{font-size:0.55rem;color:rgba(255,255,255,0.2);text-transform:uppercase;margin-bottom:4px}
+.opp-row{display:flex;justify-content:space-between;align-items:center;padding:2px 6px;font-size:0.6rem}
+.opp-row.you{background:rgba(0,200,255,0.06);border-radius:4px}
+.btn-big{width:100%;padding:14px;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Fredoka',sans-serif;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.btn-pri{background:linear-gradient(135deg,#00c8ff,#0066ff);color:#fff}
+.btn-gold{background:linear-gradient(135deg,#f7971e,#ffd200);color:#222}
+
+/* RACE VIEW - FULL SCREEN */
+.race-view{width:100%;height:100%;position:relative;background:#0a0a1a;overflow:hidden}
+.race-view canvas{width:100%;height:100%;display:block}
+
+/* HUD overlay */
+.hud{position:absolute;inset:0;pointer-events:none}
+.hud-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:8px 12px}
+.hud-item{background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);border-radius:10px;padding:4px 10px;text-align:center;border:1px solid rgba(255,255,255,0.06);min-width:55px}
+.hud-item .lbl{font-size:0.45rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px}
+.hud-item .val{font-size:0.85rem;font-weight:700;color:#ffd200}
+.hud-item .val.green{color:#00e676}
+.hud-item .val.red{color:#ff5252}
+.hud-bottom{position:absolute;bottom:0;left:0;right:0;padding:6px 12px 10px;display:flex;justify-content:space-between;align-items:flex-end}
+.hud-cmd{position:absolute;bottom:50px;left:12px;right:12px;display:flex;gap:4px;pointer-events:auto}
+.hud-cmd input{flex:1;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:6px 10px;color:#fff;font-size:0.7rem;font-family:'Fredoka',sans-serif;outline:none}
+.hud-cmd input:focus{border-color:rgba(0,200,255,0.3)}
+.hud-cmd input::placeholder{color:rgba(255,255,255,0.15)}
+.hud-cmd .cb{background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.2);border-radius:8px;color:#00c8ff;padding:6px 12px;cursor:pointer;font-size:0.7rem;pointer-events:auto}
+.hud-cmd .ab{font-size:0.45rem;padding:2px 6px;border-radius:4px;background:#ffd200;color:#222;display:none;align-items:center;pointer-events:auto}
+.hud-cmd .ab.show{display:flex}
+.hud-gear{position:absolute;right:12px;bottom:70px;pointer-events:auto;display:flex;gap:3px;flex-wrap:wrap;width:70px}
+.gear-btn{width:22px;height:22px;border-radius:4px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);color:#fff;font-size:0.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto}
+.gear-btn:active{background:rgba(255,255,255,0.1)}
+.gear-btn.active{background:rgba(0,200,255,0.2);border-color:#00c8ff}
+
+.hud-big-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:5rem;font-weight:700;color:#ffd200;text-shadow:0 0 40px rgba(255,210,0,0.3);animation:pop 0.5s ease;pointer-events:none}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(2);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+
+.fs-btn{position:absolute;top:8px;right:8px;z-index:10;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;padding:4px 8px;cursor:pointer;font-size:0.6rem;font-family:'Fredoka',sans-serif;pointer-events:auto;backdrop-filter:blur(4px)}
+.fs-btn:hover{background:rgba(0,0,0,0.6)}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(10px)}
+.overlay-box{text-align:center;padding:30px;background:rgba(15,15,35,0.95);border:1px solid rgba(0,200,255,0.2);border-radius:20px;max-width:300px;width:90%}
+.overlay-box h2{font-size:1.3rem;margin:8px 0}
+.overlay-box .btn{display:inline-block;padding:10px 30px;border:none;border-radius:10px;color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:'Fredoka',sans-serif;margin:4px}
+.role-btn{display:block;width:100%;padding:16px;margin:6px 0;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;font-family:'Fredoka',sans-serif}
+.role-btn.s{background:rgba(0,200,255,0.1);color:#00c8ff;border:1px solid rgba(0,200,255,0.2)}
+.role-btn.a{background:rgba(255,210,0,0.1);color:#ffd200;border:1px solid rgba(255,210,0,0.2)}
+.pw-input{width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,210,0,0.2);border-radius:10px;color:#fff;font-size:0.9rem;text-align:center;margin:8px 0;font-family:'Fredoka',sans-serif;outline:none}
+</style>
+</head>
+<body>
+
+<!-- MENU SCREEN -->
+<div class="screen active" id="menuScreen">
+<div class="menu">
+<div class="top">
+<h1>🏎️ Race Simulator</h1>
+<div class="row">
+<button id="profileBtn">👤</button>
+<button id="topRaceBtn">🏁 Race</button>
+<a href="index.html" style="color:#888;text-decoration:none;font-size:0.65rem">🎮 Meer Spellen</a>
+</div>
+</div>
+<div class="stats">
+<div class="stat">🪙 <span class="n" id="money">500</span></div>
+<div class="stat">🏆 <span class="n" id="wins">0</span></div>
+<div class="stat">🚗 <span class="n" id="carCount">1</span></div>
+</div>
+<div class="tabs" id="tabBar">
+<div class="tab-btn active" data-p="garage">🏪 Garage</div>
+<div class="tab-btn" data-p="race">🏁 Racen</div>
+</div>
+<div class="page active" id="pageGarage">
+<div class="garage-grid" id="carGrid"></div>
+<div class="customize" id="custSec">
+<div class="t">🎨 Kleur</div>
+<div class="cgrid" id="colorGrid"></div>
+<div class="t" style="margin-top:4px">⚡ Upgrades</div>
+<div class="ug-row" id="upgradeRow"></div>
+</div>
+<button class="btn-big btn-pri" id="goRace">🏁 GA RACEN!</button>
+</div>
+<div class="page" id="pageRace">
+<div class="mode-grid" id="modeGrid"></div>
+<div class="opponents"><div class="t">🤖 Tegenstanders</div><div id="oppList"></div></div>
+<button class="btn-big btn-gold" id="startRaceBtn">🏎️ START RACE!</button>
+</div>
+</div>
+</div>
+
+<!-- RACE SCREEN - FULL SCREEN -->
+<div class="screen" id="gameScreen">
+<div class="race-view">
+<canvas id="raceCanvas"></canvas>
+<button class="fs-btn" id="fsBtn">⛶ Fullscreen</button>
+<div class="hud" id="hud">
+<div class="hud-top">
+<div class="hud-item"><div class="lbl">Snelheid</div><div class="val" id="hSpeed">0</div></div>
+<div class="hud-item"><div class="lbl">Ronde</div><div class="val" id="hLap">0/3</div></div>
+<div class="hud-item"><div class="lbl">Positie</div><div class="val" id="hPos">-</div></div>
+</div>
+<div class="hud-gear" id="gearBox"></div>
+<div class="hud-bottom">
+<div style="display:flex;gap:4px;pointer-events:auto">
+<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnGas">⬆ GAS</button>
+<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnBrake">⬇ REM</button>
+<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnBoost">🚀</button>
+</div>
+<div style="color:rgba(255,255,255,0.15);font-size:0.45rem;pointer-events:auto">
+<span id="cDist">0</span>m | <span id="cTime">0:00</span>
+<button style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:6px;color:#888;padding:4px 8px;cursor:pointer;font-size:0.5rem;margin-left:6px;font-family:'Fredoka',sans-serif" id="exitRace">✕</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- OVERLAYS -->
+<div class="overlay" id="resultOverlay">
+<div class="overlay-box"><div style="font-size:3rem" id="resultEmoji">🏆</div>
+<h2 id="resultTitle"></h2><p id="resultSub"></p>
+<button class="btn btn-pri" id="btnCloseResult" style="background:linear-gradient(135deg,#00c8ff,#0066ff);border:none;border-radius:10px;color:#fff;font-size:0.9rem;padding:10px 30px;cursor:pointer;font-family:'Fredoka',sans-serif">OK</button></div></div>
+<div class="overlay" id="profileOverlay">
+<div class="overlay-box"><h2>👤 Profiel</h2><p style="font-size:0.7rem;color:rgba(255,255,255,0.3);margin-bottom:12px">Kies je rol</p>
+<div id="roleDisplay" style="font-size:0.55rem;color:rgba(255,255,255,0.15);margin-bottom:8px"></div>
+<button class="role-btn s" id="roleS">🧑 Speler</button>
+<button class="role-btn a" id="roleA">👑 Admin</button>
+<div id="pwSec" style="display:none"><div class="role-label" style="font-size:0.6rem;color:rgba(255,255,255,0.15);margin-bottom:4px">Voer wachtwoord in:</div>
+<input type="password" class="pw-input" id="adminPw" placeholder="Wachtwoord...">
+<button class="role-btn a" id="btnAdminLogin" style="padding:10px;font-size:0.8rem">🔓 Inloggen</button>
+<p id="pwError" style="font-size:0.6rem;color:#ff5252;display:none">❌ Fout!</p></div></div></div>
+
+<script>
+const CARS=[
+{id:'s',name:'Starter',icon:'🚗',price:0,speed:3,accel:3,handle:3},
+{id:'sp',name:'Sports',icon:'🏎️',price:400,speed:5,accel:4,handle:3},
+{id:'m',name:'Muscle',icon:'🚘',price:800,speed:6,accel:3,handle:2},
+{id:'d',name:'Drift',icon:'🚕',price:1200,speed:4,accel:5,handle:5},
+{id:'su',name:'Supercar',icon:'🛞',price:2000,speed:7,accel:6,handle:4},
+{id:'c',name:'Cyber',icon:'⚡',price:3000,speed:8,accel:7,handle:5},
+{id:'r',name:'Rocket',icon:'🚀',price:5000,speed:10,accel:8,handle:6},
+{id:'a',name:'Alien',icon:'🛸',price:8000,speed:12,accel:10,handle:8},
+];
+const COLS=['#ff0000','#00c8ff','#00e676','#ffd200','#ff6a00','#ff0066','#aa00ff','#fff','#888','#222'];
+let pm,pw,oc,sc,scol,upg;
+function save(){try{localStorage.setItem('r1',pm);localStorage.setItem('r2',pw);localStorage.setItem('r3',JSON.stringify(oc));localStorage.setItem('r4',sc);localStorage.setItem('r5',scol);localStorage.setItem('r6',JSON.stringify(upg));}catch(e){}}
+function load(){try{pm=parseInt(localStorage.getItem('r1'))||500;pw=parseInt(localStorage.getItem('r2'))||0;oc=JSON.parse(localStorage.getItem('r3'))||['s'];sc=localStorage.getItem('r4')||'s';scol=localStorage.getItem('r5')||'#ff0000';upg=JSON.parse(localStorage.getItem('r6'))||{};}catch(e){}}
+load();
+
+let G=null,currentMode='q',raceLoop=null,raceId=null;
+
+// Garage
+function gGrid(){
+document.getElementById('carGrid').innerHTML=CARS.map(c=>{const o=oc.includes(c.id),s=sc===c.id;return `<div class="car-card ${o?'owned':''} ${s?'sel':''}" data-id="${c.id}" data-a="${o?'sel':'buy'}"><div class="ic">${c.icon}</div><div class="nm">${c.name}</div><div class="pr">${o?'✓':c.price===0?'GRATIS':`🪙${c.price}`}</div><div class="sp">⚡${c.speed} ⬆${c.accel} 🎯${c.handle}</div></div>`;}).join('');
+cGrid();uGrid();}
+function cGrid(){document.getElementById('colorGrid').innerHTML=COLS.map(c=>`<div class="cbtn ${scol===c?'active':''}" style="background:${c}" data-c="${c}"></div>`).join('');}
+function uGrid(){const row=document.getElementById('upgradeRow');const c=CARS.find(x=>x.id===sc);if(!c){row.innerHTML='';return}const up=upg[sc]||{s:0,a:0,h:0};row.innerHTML=['s','a','h'].map(k=>{const l=up[k]||0,cost=(l+1)*100;return `<button class="ug-btn" data-k="${k}" ${l>=5?'disabled':''}>${k==='s'?'⚡':k==='a'?'⬆':'🎯'} ${'⭐'.repeat(l)}${'☆'.repeat(5-l)}<br><span class="c">🪙${cost}</span></button>`;}).join('');}
+function selCar(id){sc=id;gGrid();save();}
+function buyCar(id){const c=CARS.find(x=>x.id===id);if(!c||oc.includes(id)||pm<c.price)return;pm-=c.price;oc.push(id);sc=id;updStats();gGrid();save();}
+function upCar(k){const up=upg[sc]||{s:0,a:0,h:0};const l=up[k]||0;if(l>=5)return;const cost=(l+1)*100;if(pm<cost)return;pm-=cost;up[k]=l+1;upg[sc]=up;updStats();gGrid();save();}
+function cStats(id){const c=CARS.find(x=>x.id===id);if(!c)return{s:2,a:2,h:2};const up=upg[id]||{};return{s:c.speed+(up.s||0),a:c.accel+(up.a||0),h:c.handle+(up.h||0)};}
+
+const MODES=[
+{id:'q',name:'⚡ Snel',desc:'2 rondjes',rw:100,opp:2,la:2},
+{id:'t',name:'🏆 Toernooi',desc:'3 rondjes',rw:400,opp:3,la:3},
+{id:'tm',name:'⏱ Tijdrit',desc:'1 ronde',rw:50,opp:0,la:1},
+{id:'c',name:'👑 Kampioen',desc:'5 rondjes',rw:1000,opp:4,la:5},
+];
+function rMenu(){
+document.getElementById('modeGrid').innerHTML=MODES.map(m=>`<div class="mode-card" data-m="${m.id}"><div class="ic">${m.id==='q'?'⚡':m.id==='t'?'🏆':m.id==='tm'?'⏱':'👑'}</div><div class="nm">${m.desc}</div><div class="de">${m.opp} AI</div><div class="rw">🪙${m.rw}</div></div>`).join('');
+const m=MODES.find(x=>x.id===currentMode);const ol=document.getElementById('oppList');
+if(!m||m.opp===0){ol.innerHTML='<div style="font-size:0.55rem;color:rgba(255,255,255,0.2);text-align:center">Tijdrit</div>';return}
+const n=['🤖 RacerBot','🏎️ SpeedBot','🚀 TurboBot','⚡ VoltBot','💨 DriftBot'];
+ol.innerHTML=`<div class="opp-row you"><span>🧑 Jij</span><span>${CARS.find(c=>c.id===sc)?.icon||'🚗'}</span><span>LVL ${clvl(sc)}</span></div>`;
+for(let i=0;i<m.opp;i++)ol.innerHTML+=`<div class="opp-row"><span>${n[i]}</span><span>${['🚗','🏎️','🚘','🚕','🛞','⚡'][i]}</span><span>LVL ${i+2}</span></div>`;
+}
+function clvl(id){const u=upg[id]||{};return(u.s||0)+(u.a||0)+(u.h||0);}
+
+// ======== 3D ROAD RACER ========
+const TRACK_SEGMENTS=500;
+const SEGMENT_LENGTH=200;
+const ROAD_WIDTH=2000;
+const DRAW_DISTANCE=300;
+
+function startRace(){
+if(raceId){cancelAnimationFrame(raceId);raceId=null;raceLoop=null;}
+G=null;
+const mode=MODES.find(m=>m.id===currentMode);
+const stats=cStats(sc);
+G={
+player:{seg:0,pos:0,speed:0,gear:0,lap:0,maxLaps:mode?.la||3,boost:3,stats},
+ai:[],
+time:0,started:false,winner:null,countdown:3,allCars:[]
+};
+const aiNames=['🤖 Racer','🏎️ Speed','🚀 Turbo','⚡ Volt','💨 Drift'];
+const aiIcons=['🚗','🏎️','🚘','🚕','🛞','⚡'];
+const aiCols=['#ff5252','#ff6a00','#ffd200','#00c8ff','#00e676'];
+for(let i=0;i<(mode?.opp||2);i++){
+const lvl=i+2;
+G.ai.push({seg:Math.floor(TRACK_SEGMENTS*(0.1+i*0.15)),pos:0,speed:0,gear:1,lap:0,boost:2,
+stats:{s:1.5+lvl*0.3,a:1+lvl*0.2,h:1+lvl*0.2},label:aiNames[i],icon:aiIcons[i],col:aiCols[i]});
+}
+G.allCars=[G.player,...G.ai];
+
+document.getElementById('gameScreen').classList.add('active');
+document.getElementById('menuScreen').classList.remove('active');
+
+const c=document.getElementById('raceCanvas');
+const wrap=document.querySelector('.race-view');
+function resize(){c.width=wrap.clientWidth;c.height=wrap.clientHeight}
+resize();window.addEventListener('resize',resize);
+
+const ctx=c.getContext('2d');
+let lastTime=0;
+
+// Generate track segments (random curves)
+const track=[];let curve=0;
+for(let i=0;i<TRACK_SEGMENTS;i++){
+curve+=Math.sin(i*0.05)*0.3+Math.sin(i*0.13)*0.2;
+track.push({curve:Math.max(-1,Math.min(1,curve)),up:Math.sin(i*0.1)*1.5});
+}
+
+function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v))}
+
+function raceLoop(time){
+if(!G||G.winner)return;
+if(time-lastTime<20){raceId=requestAnimationFrame(raceLoop);return}
+lastTime=time;
+const w=c.width,h=c.height;
+
+G.time+=0.02;
+const p=G.player;
+
+// Countdown
+if(G.countdown>0){
+G.countdown-=0.02;
+if(G.countdown<=0){G.countdown=0;G.started=true;}
+draw3D(ctx,w,h,track,p,G,true);
+raceId=requestAnimationFrame(raceLoop);
+return;
+}
+
+// Physics
+if(G.started){
+const accel=p.stats.a*2.5;
+const drag=p.speed*0.03;
+if(p.gear>0)p.speed=clamp(p.speed+accel-drag,0,p.stats.s*p.gear*60);
+else p.speed=Math.max(0,p.speed-drag*3);
+p.speed=clamp(p.speed,0,500);
+p.pos+=p.speed*0.01;
+if(p.pos>=1){p.pos-=1;p.seg=(p.seg+1)%TRACK_SEGMENTS;if(p.seg===0){p.lap++;if(p.lap>=p.maxLaps)G.winner='p';}}
+
+// AI
+for(const ai of G.ai){
+const aa=ai.stats.a*2;
+const ad=ai.speed*0.025;
+if(ai.gear>0)ai.speed=clamp(ai.speed+aa-ad,0,ai.stats.s*ai.gear*50);
+else ai.speed=Math.max(0,ai.speed-ad*3);
+ai.speed=clamp(ai.speed,0,400);
+ai.pos+=ai.speed*0.01;
+if(ai.pos>=1){ai.pos-=1;ai.seg=(ai.seg+1)%TRACK_SEGMENTS;if(ai.seg===0)ai.lap++;}
+}
+}
+
+// Sort by (lap*totalSegs + seg + pos)
+for(const car of G.allCars){
+car.dist=car.lap*TRACK_SEGMENTS+car.seg+car.pos;
+}
+G.allCars.sort((a,b)=>b.dist-a.dist);
+const pos=G.allCars.indexOf(G.player)+1;
+
+// HUD
+document.getElementById('hSpeed').textContent=Math.floor(p.speed*2.2);
+document.getElementById('hLap').textContent=`${Math.min(p.lap+1,p.maxLaps)}/${p.maxLaps}`;
+document.getElementById('hPos').textContent=`${pos}e`;
+document.getElementById('cDist').textContent=Math.floor(p.dist||p.seg);
+const mins=Math.floor(G.time/60);const secs=Math.floor(G.time%60);
+document.getElementById('cTime').textContent=`${mins}:${secs.toString().padStart(2,'0')}`;
+
+// Draw
+draw3D(ctx,w,h,track,p,G,false);
+
+// Check winner
+if(G.winner){
+const wp=pos;const mode=MODES.find(m=>m.id===currentMode);const rw=mode?mode.rw:100;
+const bn=wp===1?rw:(wp===2?Math.floor(rw*0.5):Math.floor(rw*0.25));
+if(wp===1)pw++;pm+=bn;save();updStats();
+document.getElementById('resultEmoji').textContent=wp===1?'🏆':'😢';
+document.getElementById('resultTitle').textContent=wp===1?'🎉 JIJ WINT!':`${wp}e plaats!`;
+document.getElementById('resultSub').textContent=`🪙+${bn} | ${Math.floor(p.speed*2.2)} km/h`;
+document.getElementById('resultOverlay').style.display='flex';
+return;
+}
+
+raceId=requestAnimationFrame(raceLoop);
+}
+raceId=requestAnimationFrame(raceLoop);
+}
+
+function draw3D(ctx,w,h,track,p,G,countdown){
+const cx=w/2,cy=h*0.7;
+const fov=Math.PI*0.6;
+const baseX=cx,baseY=h;
+
+// Sky
+const sky=ctx.createLinearGradient(0,0,0,cy);
+sky.addColorStop(0,'#0a0a2a');sky.addColorStop(0.5,'#1a1a3a');sky.addColorStop(1,'#2a2a4a');
+ctx.fillStyle=sky;ctx.fillRect(0,0,w,cy);
+
+// Stars
+for(let i=0;i<60;i++){ctx.fillStyle=`rgba(255,255,255,${0.05+Math.random()*0.15})`;ctx.beginPath();ctx.arc(Math.random()*w,Math.random()*cy*0.6,Math.random()+0.5,0,6.28);ctx.fill()}
+
+// Mountains
+ctx.fillStyle='rgba(30,20,50,0.3)';
+for(let i=0;i<8;i++){const mx=w*(i/8),my=cy*0.3,mw=w/6,mh=cy*0.25;ctx.beginPath();ctx.moveTo(mx,my+mh);ctx.quadraticCurveTo(mx+mw/2,my-mh*0.3,mx+mw,my+mh);ctx.fill()}
+
+// Ground
+ctx.fillStyle='#1a2a1a';ctx.fillRect(0,cy,w,h-cy);
+ctx.fillStyle='#2a3a1a';ctx.fillRect(0,cy,w,3);
+
+// Draw road segments
+const baseSeg=p.seg;
+const basePos=p.pos;
+
+for(let n=0;n<DRAW_DISTANCE;n++){
+const idx=(baseSeg+n)%TRACK_SEGMENTS;
+const t=track[idx];
+const nextT=track[(idx+1)%TRACK_SEGMENTS];
+const segCurve=t.curve;
+const segUp=t.up;
+
+const z=n-basePos;
+if(z<0)continue;
+const perspect=1+(z/10);
+const scale=fov/perspect;
+
+const roadW=ROAD_WIDTH*scale/w;
+const curveX=segCurve*1000*scale/w;
+const upY=segUp*20*scale/h;
+
+const x1=baseX+curveX-roadW/2;
+const x2=baseX+curveX+roadW/2;
+const y1=baseY-z*3+upY;
+const y2=baseY-(z+1)*3+nextT.up*20/h*scale;
+
+if(y1>h||y2<0)continue;
+
+// Road surface
+const shade=0.2+(1-Math.min(1,z/50))*0.3;
+const isGrass=Math.floor(z/3)%2===0;
+const isCurb=n%12<3&&n>5;
+const isFinish=n>TRACK_SEGMENTS-3||n<2;
+
+if(isFinish){
+ctx.fillStyle=`rgba(0,0,0,${shade})`;
+ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.closePath();ctx.fill();
+// Checkered
+for(let c=0;c<10;c+=2){ctx.fillStyle=c%4<2?'#fff':'#222';ctx.fillRect(x1+c*((x2-x1)/10)-1,y1,((x2-x1)/10)+2,y2-y1)}
+}else if(isCurb){
+ctx.fillStyle=n%2===0?`rgba(255,0,0,${shade})`:`rgba(255,255,255,${shade})`;
+ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.closePath();ctx.fill();
+}else if(isGrass){
+ctx.fillStyle=`rgba(30,50,30,${shade*0.8})`;
+ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.closePath();ctx.fill();
+}else{
+ctx.fillStyle=`rgba(60,60,60,${shade})`;
+ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.closePath();ctx.fill();
+}
+
+// Lane markings
+if(z%8<4&&z>3){
+ctx.fillStyle=`rgba(255,255,255,${shade*0.4})`;
+const lx=baseX+curveX;
+ctx.fillRect(lx-1,y1,2,y2-y1);
+}
+
+// Side objects (trees)
+if(z%40<3&&z>10){
+const side=n%3===0?-1:1;
+const ox=baseX+curveX+side*roadW*0.8;
+ctx.fillStyle=`rgba(40,${60+Math.floor(Math.random()*40)},30,${shade})`;
+ctx.fillRect(ox-5,y1-(z%2)*10,10,y2-y1+10);
+ctx.fillStyle=`rgba(30,${80+Math.floor(Math.random()*30)},30,${shade})`;
+ctx.beginPath();ctx.arc(ox, y1-15, 10,0,6.28);ctx.fill();
+}
+
+// AI cars on road
+if(n>3&&n<40&&G){
+for(const ai of G.ai){
+const aiDist=(((ai.seg-baseSeg)%TRACK_SEGMENTS)+TRACK_SEGMENTS)%TRACK_SEGMENTS;
+if(Math.floor(aiDist)===n){
+const acx=baseX+curveX;
+const acy=y1;
+const carZ=Math.min(1,1-(z/40));
+ctx.shadowColor='rgba(0,0,0,0.3)';ctx.shadowBlur=5;
+ctx.fillStyle=ai.col;ctx.beginPath();ctx.arc(acx,acy,6*carZ+3,0,6.28);ctx.fill();
+ctx.shadowBlur=0;
+ctx.fillStyle='rgba(255,255,255,0.8)';ctx.font=`${Math.floor(7*carZ+2)}px sans-serif`;ctx.textAlign='center';
+ctx.fillText(ai.icon,acx,acy-12*carZ);
+break;
+}
+}}}
+}
+
+// Player car
+const carY=h*0.85;
+ctx.shadowColor='rgba(255,200,0,0.4)';ctx.shadowBlur=30;
+ctx.font='2.5rem serif';ctx.textAlign='center';
+ctx.fillStyle=scol;ctx.beginPath();ctx.arc(cx,carY-10,22,0,6.28);ctx.fill();
+ctx.fillStyle='rgba(255,255,255,0.3)';ctx.beginPath();ctx.arc(cx-5,carY-15,10,0,6.28);ctx.fill();
+ctx.shadowBlur=0;
+ctx.font='0.6rem sans-serif';ctx.fillStyle='rgba(255,255,255,0.3)';ctx.textAlign='center';
+ctx.fillText(`🏎️ ${Math.floor(G.player.speed*2.2)} km/h`,cx,carY+15);
+
+// Gear display
+if(G.started){
+const g=G.player.gear;
+document.getElementById('gearBox').innerHTML=[1,2,3,4,5,6].map(i=>`<div class="gear-btn ${i<=g?'active':''}">${i}</div>`).join('');
+}
+
+// Countdown
+if(G.countdown>0){
+const nums=['3','2','1','GO!'];
+const idx=Math.floor((3-G.countdown)*3);
+if(idx>=0&&idx<4){
+ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(cx-60,cy-40,120,80);
+ctx.fillStyle='#ffd200';ctx.font='4rem Fredoka,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+ctx.fillText(nums[idx],cx,cy);
+}}
+ctx.textBaseline='alphabetic';
+}
+
+function closeResult(){
+document.getElementById('resultOverlay').style.display='none';
+document.getElementById('gameScreen').classList.remove('active');
+document.getElementById('menuScreen').classList.add('active');
+if(raceId){cancelAnimationFrame(raceId);raceId=null;raceLoop=null;}
+rMenu();
+}
+
+function raceAction(a){
+if(!G||G.winner)return;
+G.started=true;const p=G.player;
+switch(a){
+case'gas':p.gear=Math.min(p.gear+1,6);p.speed=Math.max(p.speed+5,5);break;
+case'brake':p.gear=Math.max(p.gear-1,0);p.speed*=0.3;break;
+case'boost':if(p.boost<=0)break;p.boost--;p.speed+=p.stats.s*20;break;
+}
+}
+
+function showScreen(id){
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+
+// EVENTS
+document.addEventListener('DOMContentLoaded',function(){
+document.getElementById('tabBar').addEventListener('click',function(e){
+const t=e.target.closest('.tab-btn');if(!t)return;
+document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+t.classList.add('active');document.getElementById('page'+t.dataset.p.charAt(0).toUpperCase()+t.dataset.p.slice(1)).classList.add('active');
+if(t.dataset.p==='race')rMenu();
+});
+document.getElementById('carGrid').addEventListener('click',function(e){
+const c=e.target.closest('.car-card');if(!c)return;
+c.dataset.a==='sel'?selCar(c.dataset.id):buyCar(c.dataset.id);
+});
+document.getElementById('colorGrid').addEventListener('click',function(e){
+const b=e.target.closest('.cbtn');if(!b)return;
+scol=b.dataset.c;gGrid();save();
+});
+document.getElementById('upgradeRow').addEventListener('click',function(e){
+const b=e.target.closest('.ug-btn');if(!b||b.disabled)return;
+upCar(b.dataset.k);
+});
+document.getElementById('goRace').addEventListener('click',goRaceTab);
+document.getElementById('topRaceBtn').addEventListener('click',goRaceTab);
+function goRaceTab(){
+document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.tab-btn')[1].classList.add('active');
+document.getElementById('pageRace').classList.add('active');rMenu();
+}
+document.getElementById('modeGrid').addEventListener('click',function(e){
+const c=e.target.closest('.mode-card');if(!c)return;
+currentMode=c.dataset.m;rMenu();
+});
+document.getElementById('startRaceBtn').addEventListener('click',startRace);
+document.getElementById('btnGas').onclick=()=>raceAction('gas');
+document.getElementById('btnBrake').onclick=()=>raceAction('brake');
+document.getElementById('btnBoost').onclick=()=>raceAction('boost');
+document.getElementById('btnCloseResult').onclick=closeResult;
+document.getElementById('exitRace').onclick=()=>{if(raceId){cancelAnimationFrame(raceId);raceId=null;raceLoop=null;}closeResult();};
+
+// Fullscreen
+document.getElementById('fsBtn').onclick=()=>{
+if(!document.fullscreenElement){
+document.querySelector('.race-view').requestFullscreen?.()||document.querySelector('.race-view').webkitRequestFullscreen?.();
+}else{document.exitFullscreen?.()||document.webkitExitFullscreen?.();}
+};
+
+// Keyboard
+document.addEventListener('keydown',function(e){
+if(document.activeElement?.tagName==='INPUT')return;
+switch(e.key){case'ArrowUp':case'w':raceAction('gas');break;case'ArrowDown':case's':raceAction('brake');break;case' ':e.preventDefault();raceAction('boost');break;}
+});
+
+// Profile
+const ADMIN_PW='esper 331911';
+let isAdmin=localStorage.getItem('r_ad')==='true';
+let banned=JSON.parse(localStorage.getItem('r_ban')||'[]');
+function upUI(){const b=document.getElementById('profileBtn');b.textContent=isAdmin?'👑':'👤';document.getElementById('roleDisplay').textContent=isAdmin?'👑 Admin':'🧑 Speler';}
+document.getElementById('profileBtn').onclick=()=>{document.getElementById('profileOverlay').style.display='flex';document.getElementById('pwSec').style.display='none';document.getElementById('adminPw').value='';document.getElementById('pwError').style.display='none';upUI();};
+document.getElementById('roleS').onclick=()=>{if(isAdmin){isAdmin=false;localStorage.setItem('r_ad','false');}document.getElementById('profileOverlay').style.display='none';upUI();};
+document.getElementById('roleA').onclick=()=>{document.getElementById('pwSec').style.display='block';document.getElementById('adminPw').focus();};
+document.getElementById('btnAdminLogin').onclick=()=>{const p=document.getElementById('adminPw').value;if(p===ADMIN_PW){isAdmin=true;localStorage.setItem('r_ad','true');document.getElementById('profileOverlay').style.display='none';upUI();}else{document.getElementById('pwError').style.display='block';}};
+document.getElementById('adminPw').onkeydown=(e)=>{if(e.key==='Enter')document.getElementById('btnAdminLogin').click()};
+document.getElementById('profileOverlay').onclick=(e)=>{if(e.target===e.currentTarget)e.currentTarget.style.display='none'};
+upUI();
+
+// Commands in game
+document.addEventListener('keydown',function(e){
+if(e.key==='Enter'&&document.getElementById('gameScreen').classList.contains('active')){
+const inp=prompt('💬 Commando:');
+if(inp&&inp.startsWith('/'))runCmd2(inp);
+}});
+function runCmd2(t){const p=t.split(' '),c=p[0].toLowerCase(),a=p.slice(1);
+switch(c){
+case'/admin':if(a.join(' ')===ADMIN_PW){isAdmin=true;localStorage.setItem('r_ad','true');upUI();alert('✅ Admin!');}else alert('❌ Fout!');break;
+case'/help':alert('/admin - inloggen\n/speler [naam]\n/kick\n/ban\n/unban\n/mute\n/unmute\n/kill\n/freeze\n/unfreeze\n/slap\n/explode\n/heal\n/god\n/fly\n/invisible\n/speed\n/jump\n/coins\n/setcoins\n/resetcoins\n/clear\n/reset\n/time\n/weather\n/announce\n/shutdown\n/pm\n/ip\n/ping\n/report');break;
+case'/ping':alert('🏓 Pong! 0.001ms');break;
+case'/speler':if(!a[0]){alert('❌ /speler [naam]');break;}alert('👤 '+a[0]+'\nLevel: '+(Math.floor(Math.random()*50)+1)+'\nCoins: '+(Math.floor(Math.random()*9999)+100)+'\nRank: '+['Bronze','Silver','Gold','Diamond','Admin'][Math.floor(Math.random()*5)]);break;
+case'/kick':if(!a[0]){alert('❌ /kick [naam]');break;}alert('🦶 '+a[0]+' gekickt!');break;
+case'/ban':if(!isAdmin){alert('❌ Alleen admin!');break;}if(!a[0]){alert('❌ /ban [naam]');break;}if(!banned.includes(a[0]))banned.push(a[0]);localStorage.setItem('r_ban',JSON.stringify(banned));alert('🔨 '+a[0]+' banned!');break;
+case'/unban':if(!isAdmin){alert('❌ Alleen admin!');break;}banned=banned.filter(b=>b!==a[0]);localStorage.setItem('r_ban',JSON.stringify(banned));alert('✅ '+a[0]+' unbanned!');break;
+case'/mute':if(!a[0]){alert('❌ /mute [naam]');break;}alert('🔇 '+a[0]+' muted!');break;
+case'/unmute':if(!a[0]){alert('❌ /unmute [naam]');break;}alert('🔊 '+a[0]+' unmuted!');break;
+case'/kill':if(!a[0]){alert('❌ /kill [naam]');break;}alert('💀 '+a[0]+' gedood!');break;
+case'/freeze':if(!a[0]){alert('❌ /freeze [naam]');break;}alert('🧊 '+a[0]+' frozen!');break;
+case'/unfreeze':if(!a[0]){alert('❌ /unfreeze [naam]');break;}alert('🔥 '+a[0]+' unfrozen!');break;
+case'/slap':if(!a[0]){alert('❌ /slap [naam]');break;}alert('👋 '+a[0]+' vliegt '+(Math.floor(Math.random()*50)+10)+'m!');break;
+case'/explode':if(!a[0]){alert('❌ /explode [naam]');break;}alert('💥 BOEM! '+a[0]+'!');break;
+case'/heal':alert('💚 Genezen!');break;
+case'/god':alert('🛡️ God modus!');break;
+case'/fly':alert('🕊️ Vlieg modus!');break;
+case'/invisible':alert('👻 Onzichtbaar!');break;
+case'/speed':const sp=parseInt(a[0])||0;if(sp<1||sp>100){alert('❌ /speed [1-100]');break;}alert('💨 Speed '+sp+'x');break;
+case'/jump':const jp=parseInt(a[0])||0;if(jp<1||jp>100){alert('❌ /jump [1-100]');break;}alert('🦘 Jump '+jp);break;
+case'/coins':case'/give':const am=parseInt(a[0])||0;if(am<=0){alert('❌ /coins [aantal]');break;}pm+=am;updStats();save();alert('💰 +'+am+' coins!');break;
+case'/setcoins':const sa=parseInt(a[0])||0;if(sa<0){alert('❌ /setcoins [aantal]');break;}pm=sa;updStats();save();alert('💰 Coins = '+sa);break;
+case'/resetcoins':pm=0;updStats();save();alert('🔄 Coins gereset');break;
+case'/time':if(!a[0]){alert('❌ /time [dag/nacht]');break;}alert(a[0]==='nacht'?'🌙 Nacht!':'☀️ Dag!');break;
+case'/day':alert('☀️ Dag!');break;
+case'/night':alert('🌙 Nacht!');break;
+case'/weather':if(!a[0]){alert('❌ /weather [zon/regen]');break;}alert('🌤️ '+a[0]);break;
+case'/clear':alert('🧹 Clear!');break;
+case'/reset':case'/restart':if(confirm('Resetten?')){localStorage.removeItem('r_ad');location.reload();}break;
+case'/announce':if(!a[0]){alert('❌ /announce [txt]');break;}alert('📢 '+a.join(' '));break;
+case'/shutdown':if(confirm('Shutdown?')){document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a1a;color:#fff;flex-direction:column;gap:20px;font-family:Fredoka,sans-serif"><div style="font-size:4rem">🛑</div><h1>Server offline</h1></div>';}break;
+case'/pm':if(a.length<2){alert('❌ /pm [naam] [txt]');break;}alert('📩 Bericht naar '+a[0]);break;
+case'/ip':if(!isAdmin){alert('❌ Alleen admin!');break;}alert('🌐 IP: 192.168.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255));break;
+case'/data':case'/localstorage':let d='';for(let k=0;k<localStorage.length;k++){const kk=localStorage.key(k);let v=localStorage.getItem(kk);if(v.length>80)v=v.slice(0,80)+'...';d+=kk+': '+v+'\n';}alert(d||'Leeg');break;
+case'/cleardata':if(confirm('Wissen?')){localStorage.clear();alert('Gewist!');}break;
+case'/report':if(!a[0]){alert('❌ /report [naam]');break;}alert('🚨 '+a[0]+' gerapporteerd!');break;
+default:alert('❌ /admin, /help, /speler, /kick, /ban, /unban, /mute, /unmute, /kill, /freeze, /unfreeze, /slap, /explode, /heal, /god, /fly, /invisible, /speed, /jump, /coins, /setcoins, /resetcoins, /time, /day, /night, /weather, /clear, /reset, /restart, /announce, /shutdown, /pm, /ip, /ping, /report');}}
+
+updStats();gGrid();rMenu();
+});
+
+function updStats(){document.getElementById('money').textContent=pm;document.getElementById('wins').textContent=pw;document.getElementById('carCount').textContent=oc.length;}
+</script>
+
+<script>
+// Activity logging
+(function(){
+  try{
+    const acts=JSON.parse(localStorage.getItem('sbg_activity')||'[]');
+    const user=localStorage.getItem('sbg_user')||'onbekend';
+    acts.unshift({user,action:'Speelt ' + document.title,time:Date.now()});
+    if(acts.length>200)acts=acts.slice(0,200);
+    localStorage.setItem('sbg_activity',JSON.stringify(acts));
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>
