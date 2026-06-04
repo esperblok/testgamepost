@@ -285,6 +285,7 @@ body{font-family:'Fredoka',sans-serif;background:#12121a;color:#fff;min-height:1
       <button id="goSpeler" style="flex:1;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#00c8ff,#0066ff);color:#fff;font-weight:600;font-size:0.8rem;font-family:'Fredoka',sans-serif;cursor:pointer">🎮 Speler</button>
       <button id="goDashboard" style="flex:1;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#ffd200,#ff6a00);color:#222;font-weight:600;font-size:0.8rem;font-family:'Fredoka',sans-serif;cursor:pointer" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
     </div>
+    <button id="toggleAdminBtn" style="display:none;width:100%;padding:8px;border:1px solid rgba(255,210,0,0.2);border-radius:8px;background:rgba(255,210,0,0.05);color:#ffd200;font-size:0.65rem;font-family:'Fredoka',sans-serif;cursor:pointer;margin-top:6px">👑 Admin modus — klik om te wisselen</button>
     <button id="logoutBtn" style="width:100%;padding:8px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;background:transparent;color:rgba(255,255,255,0.2);font-size:0.6rem;font-family:'Fredoka',sans-serif;cursor:pointer;margin-top:10px">🚪 Uitloggen</button>
 </div>
 
@@ -3845,6 +3846,14 @@ function showChoicePanel(){
   document.getElementById('dashboardPanel').style.display='none';
   document.getElementById('welcomeMsg').innerHTML='Welkom, <strong>'+loggedInUser+'</strong>!';
   document.getElementById('userRole').textContent=loggedInIsAdmin?'📊 Admin • Dashboard beschikbaar':'🎮 Speler';
+  const tb=document.getElementById('toggleAdminBtn');
+  if(loggedInUser===ADMIN_USER){
+    tb.style.display='block';
+    tb.textContent=loggedInIsAdmin?'👑 Admin modus — klik om Speler te worden':'🎮 Speler modus — klik om Admin te worden';
+    tb.style.borderColor=loggedInIsAdmin?'rgba(255,210,0,0.2)':'rgba(0,200,255,0.2)';
+    tb.style.background=loggedInIsAdmin?'rgba(255,210,0,0.05)':'rgba(0,200,255,0.05)';
+    tb.style.color=loggedInIsAdmin?'#ffd200':'#4fc3f7';
+  }else{tb.style.display='none';}
 }
 function showDashboardPanel(){
   window.location.href='dashboard.html';
@@ -3953,6 +3962,19 @@ document.getElementById('regPass2').addEventListener('keydown',function(e){
 
 // ─── Choice panel ───
 document.getElementById('goSpeler').onclick=function(){lOverlay.style.display='none'};
+document.getElementById('toggleAdminBtn').onclick=function(){
+  if(loggedInIsAdmin){
+    loggedInIsAdmin=false;
+    localStorage.removeItem('sbg_admin');
+    logActivity(loggedInUser,'Admin uit (speler modus)');
+  }else{
+    loggedInIsAdmin=true;
+    localStorage.setItem('sbg_admin','true');
+    logActivity(loggedInUser,'Admin aan (admin modus)');
+  }
+  updateLoginUI();
+  showChoicePanel();
+};
 document.getElementById('goDashboard').onclick=function(){
   if(!loggedInIsAdmin){alert('❌ Alleen admin heeft toegang tot Dashboard!');return;}
   showDashboardPanel();
