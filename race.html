@@ -563,7 +563,7 @@ switch(e.key){case'ArrowUp':case'w':raceAction('gas');break;case'ArrowDown':case
 });
 
 // Profile
-const ADMIN_PW='esper 331911';
+const ADMIN_PW='/adminesper331911';
 let isAdmin=localStorage.getItem('r_ad')==='true';
 let banned=JSON.parse(localStorage.getItem('r_ban')||'[]');
 function upUI(){const b=document.getElementById('profileBtn');b.textContent=isAdmin?'👑':'👤';document.getElementById('roleDisplay').textContent=isAdmin?'👑 Admin':'🧑 Speler';}
