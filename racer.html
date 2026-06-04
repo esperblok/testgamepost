@@ -21,6 +21,8 @@ canvas{display:block;width:100%;height:100%}
 </style>
 </head>
 <body>
+<h1 style="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:40;font-size:1rem;background:rgba(0,0,0,0.5);padding:4px 14px;border-radius:8px">🏁 Racer</h1>
+
 <div class="hud"><span>🏁 <span id="score">0</span></span><span>❤️ <span id="lives">3</span></span></div>
 <a href="index.html" class="top-link">🎮 Meer Spellen</a>
 <canvas id="c"></canvas>
@@ -177,5 +179,31 @@ if(isAdmin)showAdminBar();
 })();
 </script>
 
+<script>
+(function(){
+  var h1=document.querySelector('h1');
+  if(!h1||h1.closest('.game-over')||h1.closest('#go')||h1.closest('#sGo2'))return;
+  var inp=document.createElement('input');
+  inp.type='text';inp.placeholder='Type /help';
+  inp.style.cssText='display:none;background:rgba(0,0,0,0.7);border:1px solid rgba(255,210,0,0.3);border-radius:6px;color:#fff;font-family:"Fredoka",sans-serif;font-size:1.1rem;text-align:center;outline:none;width:300px;max-width:90vw;padding:6px 12px';
+  h1.parentNode.insertBefore(inp,h1.nextSibling);
+  h1.style.cursor='pointer';
+  h1.addEventListener('click',function(){h1.style.display='none';inp.style.display='inline-block';inp.focus();});
+  inp.addEventListener('keydown',function(e){
+    if(e.key!=='Enter')return;
+    e.preventDefault();var v=inp.value.trim();
+    if(v){
+      var ci=document.getElementById('cmdInput'),ai=document.getElementById('adminIpt');
+      if(ci){ci.value=v;if(typeof runCmd==='function')runCmd();}
+      else if(ai){ai.value=v;ai.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));}
+      else if(typeof showAdminBar==='function'){showAdminBar();setTimeout(function(){var x=document.getElementById('adminIpt');if(x){x.value=v;x.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));}},50);}
+      else if(typeof runCmd2==='function')runCmd2(v);
+    }
+    h1.style.display='';inp.style.display='none';inp.value='';
+  });
+  inp.addEventListener('blur',function(){h1.style.display='';inp.style.display='none';inp.value='';});
+})();
+
+</script>
 </body>
 </html>
