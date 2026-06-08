@@ -470,9 +470,10 @@ if(totalAuto<=0)return;
 const rect=document.getElementById('moonArea').getBoundingClientRect();
 const clickPower=1+G.level+Math.floor(totalBldgs(p)/2);
 const totalEarn=totalAuto*clickPower;
-for(let i=0;i<Math.min(totalAuto,25);i++){
-const x=20+Math.random()*(rect.width-40);
-const y=20+Math.random()*(rect.height-40);
+const burstCount=Math.min(totalAuto,40);
+for(let i=0;i<burstCount;i++){
+const x=10+Math.random()*(rect.width-20);
+const y=10+Math.random()*(rect.height-20);
 const burst=document.createElement('div');
 burst.className='click-burst';
 burst.style.left=(x-20)+'px';burst.style.top=(y-20)+'px';
@@ -480,19 +481,30 @@ burst.style.width='40px';burst.style.height='40px';
 document.getElementById('moonArea').appendChild(burst);
 setTimeout(()=>burst.remove(),600);
 }
-const fx=rect.left+rect.width/2-20;
-const fy=rect.top+30;
+const cx=rect.left+rect.width/2;
+const cy=rect.top+rect.height/2;
 const ft=document.createElement('div');
 ft.className='float-res';
 ft.textContent=`🖱️ +${totalEarn}🪙`;
-ft.style.left=fx+'px';ft.style.top=fy+'px';
+ft.style.left=(cx-60)+'px';ft.style.top=(cy-40)+'px';
 ft.style.color='#00e676';
-ft.style.fontSize='1.5rem';
+ft.style.fontSize='1.8rem';
+ft.style.fontWeight='bold';
 document.body.appendChild(ft);
-setTimeout(()=>ft.remove(),1200);
+setTimeout(()=>ft.remove(),1500);
+if(totalAuto>20){
+const ft2=document.createElement('div');
+ft2.className='float-res';
+ft2.textContent=`⚡ ${totalAuto}x AUTO!`;
+ft2.style.left=(cx-50)+'px';ft2.style.top=(cy-20)+'px';
+ft2.style.color='#ffd200';
+ft2.style.fontSize='1rem';
+document.body.appendChild(ft2);
+setTimeout(()=>ft2.remove(),1500);
+}
 G.p.money+=totalEarn;
 G.clicks+=totalAuto;
-G.log.push(`🖱️ Auto ${totalAuto} clicks +${totalEarn}🪙`);
+G.log.push(`🖱️ Auto ${totalAuto}x +${totalEarn}🪙`);
 }
 
 function endTurn(){
