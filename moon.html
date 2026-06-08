@@ -431,12 +431,6 @@ player.gems=(player.gems||0)+inc.gems;
 if(inc.terra>0)G.log.push(`${label} 🌍+${inc.terra} 💰+${inc.money}`);
 else if(inc.money>0)G.log.push(`${label} 💰+${inc.money}`);
 if(inc.gems>0)G.log.push(`${label} 💎+${inc.gems}`);
-if(inc.autoclick>0||player.autoClickPower>0){
-const totalAuto=inc.autoclick+(player.autoClickPower||0);
-const autoMoney=totalAuto*(1+G.level);
-player.money+=autoMoney;
-G.log.push(`${label} 🖱️ Auto+${autoMoney}🪙`);
-}
 return player.terraform>=WIN;
 }
 
@@ -462,8 +456,42 @@ processTurn(a,'🤖');
 if(a.terraform>=WIN){G.winner='a';G.log.push('💀 AI wint!');}
 }
 
+function simulateAutoClicks(){
+const p=G.p;
+const inc=incomePerTurn(p);
+const totalAuto=inc.autoclick+(p.autoClickPower||0);
+if(totalAuto<=0)return;
+const rect=document.getElementById('moonArea').getBoundingClientRect();
+const clickPower=1+G.level+Math.floor(totalBldgs(p)/2);
+const totalEarn=totalAuto*clickPower;
+for(let i=0;i<Math.min(totalAuto,15);i++){
+const x=20+Math.random()*(rect.width-40);
+const y=20+Math.random()*(rect.height-40);
+const burst=document.createElement('div');
+burst.className='click-burst';
+burst.style.left=(x-20)+'px';burst.style.top=(y-20)+'px';
+burst.style.width='40px';burst.style.height='40px';
+document.getElementById('moonArea').appendChild(burst);
+setTimeout(()=>burst.remove(),600);
+}
+const fx=rect.left+rect.width/2-20;
+const fy=rect.top+30;
+const ft=document.createElement('div');
+ft.className='float-res';
+ft.textContent=`🖱️ +${totalEarn}🪙`;
+ft.style.left=fx+'px';ft.style.top=fy+'px';
+ft.style.color='#00e676';
+ft.style.fontSize='1.5rem';
+document.body.appendChild(ft);
+setTimeout(()=>ft.remove(),1200);
+G.p.money+=totalEarn;
+G.clicks+=totalAuto;
+G.log.push(`🖱️ Auto ${totalAuto} clicks +${totalEarn}🪙`);
+}
+
 function endTurn(){
 if(G.winner)return;
+simulateAutoClicks();
 const clickBonus=Math.floor(G.clicks*0.5);
 if(clickBonus>0){G.p.money+=clickBonus;G.log.push(`🖱️ +${clickBonus}🪙 klik bonus`);}
 processTurn(G.p,'🧑');
