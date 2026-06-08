@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🏎️ Race Simulator</title>
+<title>🏎️ Mario Kart Race 🏁</title>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0a0a1a">
@@ -11,37 +11,37 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Fredoka',sans-serif;background:#0a0a1a;color:#fff;min-height:100vh;overflow:hidden;user-select:none}
+body{font-family:'Fredoka',sans-serif;background:#1a5c9e;color:#fff;min-height:100vh;overflow:hidden;user-select:none}
 html,body{width:100%;height:100%}
 
 /* SECTIONS */
 .screen{display:none;width:100%;height:100%;position:fixed;inset:0}
 .screen.active{display:flex;flex-direction:column}
 
-/* MENU */
-.menu{background:#0a0a1a;padding:12px;max-width:500px;margin:0 auto;width:100%;overflow-y:auto;height:100%}
+/* MENU - Mario Kart style */
+.menu{background:linear-gradient(180deg,#1a5c9e,#0d3b6b);padding:12px;max-width:500px;margin:0 auto;width:100%;overflow-y:auto;height:100%}
 .menu .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.menu .top h1{font-size:1.1rem}
+.menu .top h1{font-size:1.1rem;background:linear-gradient(135deg,#ffd200,#ff6a00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none}
 .menu .top .row{display:flex;gap:6px;align-items:center}
-.menu .top button{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#fff;padding:4px 10px;cursor:pointer;font-size:0.65rem;font-family:'Fredoka',sans-serif}
+.menu .top button{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;padding:4px 10px;cursor:pointer;font-size:0.65rem;font-family:'Fredoka',sans-serif}
 .stats{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
-.stat{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:4px 12px;font-size:0.65rem;display:flex;align-items:center;gap:4px}
+.stat{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:4px 12px;font-size:0.65rem;display:flex;align-items:center;gap:4px}
 .stat .n{font-weight:600;color:#ffd200}
 .tabs{display:flex;gap:4px;margin-bottom:8px}
-.tab-btn{flex:1;text-align:center;padding:8px;border-radius:10px;font-size:0.7rem;cursor:pointer;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);font-weight:500}
-.tab-btn.active{background:rgba(0,200,255,0.1);border-color:rgba(0,200,255,0.25);color:#00c8ff}
+.tab-btn{flex:1;text-align:center;padding:8px;border-radius:10px;font-size:0.7rem;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);font-weight:500}
+.tab-btn.active{background:rgba(255,210,0,0.12);border-color:rgba(255,210,0,0.3);color:#ffd200}
 .page{display:none}
 .page.active{display:block}
 .garage-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
-.car-card{background:rgba(15,15,35,0.9);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer}
-.car-card.owned{border-color:rgba(0,200,255,0.2)}
-.car-card.sel{border-color:#00c8ff;box-shadow:0 0 15px rgba(0,200,255,0.15)}
+.car-card{background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.08);border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer}
+.car-card.owned{border-color:rgba(255,210,0,0.2)}
+.car-card.sel{border-color:#ffd200;box-shadow:0 0 15px rgba(255,210,0,0.15)}
 .car-card .ic{font-size:2rem;margin-bottom:2px}
 .car-card .nm{font-size:0.65rem;font-weight:600}
 .car-card .pr{font-size:0.5rem;color:#ffd200}
 .car-card .sp{font-size:0.45rem;color:rgba(255,255,255,0.3)}
-.customize{background:rgba(15,15,35,0.9);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:10px;margin-bottom:8px}
-.customize .t{font-size:0.6rem;color:rgba(255,255,255,0.2);text-transform:uppercase;margin-bottom:4px}
+.customize{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:10px;margin-bottom:8px}
+.customize .t{font-size:0.6rem;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:4px}
 .cgrid{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-bottom:4px}
 .cbtn{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer}
 .cbtn.active{border-color:#fff}
@@ -49,43 +49,44 @@ html,body{width:100%;height:100%}
 .ug-btn{padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#fff;font-size:0.55rem;cursor:pointer;font-family:'Fredoka',sans-serif}
 .ug-btn .c{color:#ffd200}
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
-.mode-card{background:rgba(15,15,35,0.9);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:12px 6px;text-align:center;cursor:pointer}
+.mode-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px 6px;text-align:center;cursor:pointer}
 .mode-card .ic{font-size:1.6rem}
 .mode-card .nm{font-size:0.65rem;font-weight:600}
 .mode-card .de{font-size:0.5rem;color:rgba(255,255,255,0.3)}
 .mode-card .rw{font-size:0.5rem;color:#ffd200;margin-top:2px}
-.opponents{background:rgba(15,15,35,0.9);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:8px;margin-bottom:8px}
-.opponents .t{font-size:0.55rem;color:rgba(255,255,255,0.2);text-transform:uppercase;margin-bottom:4px}
+.opponents{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:8px;margin-bottom:8px}
+.opponents .t{font-size:0.55rem;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:4px}
 .opp-row{display:flex;justify-content:space-between;align-items:center;padding:2px 6px;font-size:0.6rem}
-.opp-row.you{background:rgba(0,200,255,0.06);border-radius:4px}
+.opp-row.you{background:rgba(255,210,0,0.08);border-radius:4px}
 .btn-big{width:100%;padding:14px;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Fredoka',sans-serif;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-.btn-pri{background:linear-gradient(135deg,#00c8ff,#0066ff);color:#fff}
+.btn-pri{background:linear-gradient(135deg,#ffd200,#ff6a00);color:#222}
 .btn-gold{background:linear-gradient(135deg,#f7971e,#ffd200);color:#222}
 
-/* RACE VIEW - FULL SCREEN */
-.race-view{width:100%;height:100%;position:relative;background:#0a0a1a;overflow:hidden}
+/* RACE VIEW - Mario Kart style */
+.race-view{width:100%;height:100%;position:relative;background:#6bb5ff;overflow:hidden}
 .race-view canvas{width:100%;height:100%;display:block}
+.race-view::after{content:'';position:absolute;inset:0;border:8px solid transparent;border-image:linear-gradient(180deg,transparent 30%,rgba(255,210,0,0.08)) 1;pointer-events:none}
 
 /* HUD overlay */
 .hud{position:absolute;inset:0;pointer-events:none}
 .hud-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:8px 12px}
-.hud-item{background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);border-radius:10px;padding:4px 10px;text-align:center;border:1px solid rgba(255,255,255,0.06);min-width:55px}
-.hud-item .lbl{font-size:0.45rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px}
+.hud-item{background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);border-radius:10px;padding:4px 10px;text-align:center;border:1px solid rgba(255,255,255,0.1);min-width:55px}
+.hud-item .lbl{font-size:0.45rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px}
 .hud-item .val{font-size:0.85rem;font-weight:700;color:#ffd200}
 .hud-item .val.green{color:#00e676}
 .hud-item .val.red{color:#ff5252}
 .hud-bottom{position:absolute;bottom:0;left:0;right:0;padding:6px 12px 10px;display:flex;justify-content:space-between;align-items:flex-end}
 .hud-cmd{position:absolute;bottom:50px;left:12px;right:12px;display:flex;gap:4px;pointer-events:auto}
 .hud-cmd input{flex:1;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:6px 10px;color:#fff;font-size:0.7rem;font-family:'Fredoka',sans-serif;outline:none}
-.hud-cmd input:focus{border-color:rgba(0,200,255,0.3)}
+.hud-cmd input:focus{border-color:rgba(255,210,0,0.3)}
 .hud-cmd input::placeholder{color:rgba(255,255,255,0.15)}
-.hud-cmd .cb{background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.2);border-radius:8px;color:#00c8ff;padding:6px 12px;cursor:pointer;font-size:0.7rem;pointer-events:auto}
+.hud-cmd .cb{background:rgba(255,210,0,0.1);border:1px solid rgba(255,210,0,0.2);border-radius:8px;color:#ffd200;padding:6px 12px;cursor:pointer;font-size:0.7rem;pointer-events:auto}
 .hud-cmd .ab{font-size:0.45rem;padding:2px 6px;border-radius:4px;background:#ffd200;color:#222;display:none;align-items:center;pointer-events:auto}
 .hud-cmd .ab.show{display:flex}
 .hud-gear{position:absolute;right:12px;bottom:70px;pointer-events:auto;display:flex;gap:3px;flex-wrap:wrap;width:70px}
-.gear-btn{width:22px;height:22px;border-radius:4px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);color:#fff;font-size:0.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto}
+.gear-btn{width:22px;height:22px;border-radius:4px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);color:#fff;font-size:0.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;font-family:'Fredoka',sans-serif}
 .gear-btn:active{background:rgba(255,255,255,0.1)}
-.gear-btn.active{background:rgba(0,200,255,0.2);border-color:#00c8ff}
+.gear-btn.active{background:rgba(255,210,0,0.2);border-color:#ffd200}
 
 .hud-big-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:5rem;font-weight:700;color:#ffd200;text-shadow:0 0 40px rgba(255,210,0,0.3);animation:pop 0.5s ease;pointer-events:none}
 @keyframes pop{0%{transform:translate(-50%,-50%) scale(2);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
@@ -110,7 +111,7 @@ html,body{width:100%;height:100%}
 <div class="screen active" id="menuScreen">
 <div class="menu">
 <div class="top">
-<h1>🏎️ Race Simulator</h1>
+<h1>🏎️ Mario Race 🏁</h1>
 <div class="row">
 <button id="profileBtn">👤</button>
 <button id="topRaceBtn">🏁 Race</button>
@@ -354,31 +355,50 @@ raceId=requestAnimationFrame(raceLoop);
 }
 
 function draw3D(ctx,w,h,track,p,G,countdown){
-const cx=w/2,cy=h*0.7;
-const fov=Math.PI*0.6;
+const cx=w/2,cy=h*0.6;
+const fov=Math.PI*0.5;
 const baseX=cx,baseY=h;
 
-// Sky
+// Sky - Mario Kart blue sky gradient
 const sky=ctx.createLinearGradient(0,0,0,cy);
-sky.addColorStop(0,'#0a0a2a');sky.addColorStop(0.5,'#1a1a3a');sky.addColorStop(1,'#2a2a4a');
+sky.addColorStop(0,'#4a90d9');sky.addColorStop(0.3,'#6bb5ff');sky.addColorStop(0.6,'#8fcfff');sky.addColorStop(1,'#b5e0ff');
 ctx.fillStyle=sky;ctx.fillRect(0,0,w,cy);
 
-// Stars
-for(let i=0;i<60;i++){ctx.fillStyle=`rgba(255,255,255,${0.05+Math.random()*0.15})`;ctx.beginPath();ctx.arc(Math.random()*w,Math.random()*cy*0.6,Math.random()+0.5,0,6.28);ctx.fill()}
+// Clouds
+const cloudPositions=[[0.2,0.08,60],[0.5,0.12,80],[0.8,0.06,50],[0.35,0.15,45],[0.65,0.1,55]];
+for(const [cpx,cpY,cs] of cloudPositions){
+ctx.fillStyle='rgba(255,255,255,0.6)';
+const cy2=cpY*cy;
+ctx.beginPath();ctx.arc(cpx*w,cy2,cs,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.arc(cpx*w+cs*0.7,cy2-cs*0.3,cs*0.7,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.arc(cpx*w+cs*1.2,cy2,cs*0.6,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.arc(cpx*w-cs*0.6,cy2+cs*0.2,cs*0.5,0,Math.PI*2);ctx.fill();
+}
 
-// Mountains
-ctx.fillStyle='rgba(30,20,50,0.3)';
-for(let i=0;i<8;i++){const mx=w*(i/8),my=cy*0.3,mw=w/6,mh=cy*0.25;ctx.beginPath();ctx.moveTo(mx,my+mh);ctx.quadraticCurveTo(mx+mw/2,my-mh*0.3,mx+mw,my+mh);ctx.fill()}
+// Distant hills
+ctx.fillStyle='rgba(60,140,60,0.3)';
+for(let i=0;i<5;i++){
+const hx=w*(i/5)-w/10,hy=cy*0.5,hw=w/4,hh=cy*0.2;
+ctx.beginPath();ctx.moveTo(hx,hy+hh);ctx.quadraticCurveTo(hx+hw/2,hy-hh*0.5,hx+hw,hy+hh);ctx.fill();
+}
 
-// Ground
-ctx.fillStyle='#1a2a1a';ctx.fillRect(0,cy,w,h-cy);
-ctx.fillStyle='#2a3a1a';ctx.fillRect(0,cy,w,3);
+// Ground (grass)
+ctx.fillStyle='#4a8c3f';ctx.fillRect(0,cy,w,h-cy);
 
-// Draw road segments
+// Grass stripes (Mario Kart style)
+for(let i=0;i<12;i++){
+ctx.fillStyle=i%2===0?'rgba(60,140,50,0.3)':'rgba(40,120,30,0.2)';
+ctx.fillRect(0,cy+i*(h-cy)/12,w,(h-cy)/12);
+}
+
+// Finish line position
+const finishSeg=TRACK_SEGMENTS-2;
+
+// Draw road segments (back to front)
 const baseSeg=p.seg;
 const basePos=p.pos;
 
-for(let n=0;n<DRAW_DISTANCE;n++){
+for(let n=DRAW_DISTANCE-1;n>=0;n--){
 const idx=(baseSeg+n)%TRACK_SEGMENTS;
 const t=track[idx];
 const nextT=track[(idx+1)%TRACK_SEGMENTS];
@@ -387,100 +407,189 @@ const segUp=t.up;
 
 const z=n-basePos;
 if(z<0)continue;
-const perspect=1+(z/10);
+const perspect=1+(z/8);
 const scale=fov/perspect;
 
 const roadW=ROAD_WIDTH*scale/w;
-const curveX=segCurve*1000*scale/w;
-const upY=segUp*20*scale/h;
+const curveX=segCurve*800*scale/w;
+const upY=segUp*15*scale/h;
 
 const x1=baseX+curveX-roadW/2;
 const x2=baseX+curveX+roadW/2;
-const y1=baseY-z*3+upY;
-const y2=baseY-(z+1)*3+nextT.up*20/h*scale;
+const y1=baseY-z*2.5+upY;
+const y2=baseY-(z+1)*2.5+nextT.up*15/h*scale;
 
 if(y1>h||y2<0)continue;
 
-// Road surface
-const shade=0.2+(1-Math.min(1,z/50))*0.3;
-const isGrass=Math.floor(z/3)%2===0;
-const isCurb=n%12<3&&n>5;
-const isFinish=n>TRACK_SEGMENTS-3||n<2;
+const shade=0.3+(1-Math.min(1,z/40))*0.4;
+const isFinish=idx>=finishSeg-2||idx<3;
+const isCurb=n%12<3&&n>4;
+const isCurb2=n%12>=3&&n%12<6&&n>4;
 
+// Road
 if(isFinish){
-ctx.fillStyle=`rgba(0,0,0,${shade})`;
+ctx.fillStyle=`rgba(80,80,80,${shade})`;
 ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.closePath();ctx.fill();
-// Checkered
-for(let c=0;c<10;c+=2){ctx.fillStyle=c%4<2?'#fff':'#222';ctx.fillRect(x1+c*((x2-x1)/10)-1,y1,((x2-x1)/10)+2,y2-y1)}
-}else if(isCurb){
-ctx.fillStyle=n%2===0?`rgba(255,0,0,${shade})`:`rgba(255,255,255,${shade})`;
+// Checkered pattern
+const cw=(x2-x1)/12;
+for(let c=0;c<12;c++){
+ctx.fillStyle=(c+Math.floor(n))%2===0?'rgba(255,255,255,0.9)':'rgba(30,30,30,0.9)';
+ctx.fillRect(x1+c*cw-1,y1,cw+2,y2-y1);
+}
+} else {
+// Road surface
+ctx.fillStyle=`rgba(90,90,90,${shade})`;
 ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.closePath();ctx.fill();
-}else if(isGrass){
-ctx.fillStyle=`rgba(30,50,30,${shade*0.8})`;
-ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.closePath();ctx.fill();
-}else{
-ctx.fillStyle=`rgba(60,60,60,${shade})`;
-ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.closePath();ctx.fill();
+
+// Road edge (left)
+ctx.fillStyle=`rgba(255,255,255,${shade*0.15})`;
+ctx.fillRect(x1-2,y1,3,y2-y1);
+ctx.fillRect(x2-1,y1,3,y2-y1);
+
+// Curbs (red/white)
+if(isCurb){
+ctx.fillStyle=n%2===0?`rgba(255,50,50,${shade})`:`rgba(255,255,255,${shade})`;
+ctx.fillRect(x1-6,y1,6,y2-y1);
+ctx.fillRect(x2,y1,6,y2-y1);
+}
+if(isCurb2){
+ctx.fillStyle=n%4<2?`rgba(255,50,50,${shade*0.6})`:`rgba(255,255,255,${shade*0.6})`;
+ctx.fillRect(x1-3,y1,3,y2-y1);
+ctx.fillRect(x2,y1,3,y2-y1);
+}
 }
 
-// Lane markings
-if(z%8<4&&z>3){
-ctx.fillStyle=`rgba(255,255,255,${shade*0.4})`;
+// Lane markings (center dashed)
+if(z%6<3&&z>4){
+ctx.fillStyle=`rgba(255,255,255,${shade*0.25})`;
 const lx=baseX+curveX;
-ctx.fillRect(lx-1,y1,2,y2-y1);
+ctx.fillRect(lx-1.5,y1,3,y2-y1);
 }
 
-// Side objects (trees)
-if(z%40<3&&z>10){
-const side=n%3===0?-1:1;
-const ox=baseX+curveX+side*roadW*0.8;
-ctx.fillStyle=`rgba(40,${60+Math.floor(Math.random()*40)},30,${shade})`;
-ctx.fillRect(ox-5,y1-(z%2)*10,10,y2-y1+10);
-ctx.fillStyle=`rgba(30,${80+Math.floor(Math.random()*30)},30,${shade})`;
-ctx.beginPath();ctx.arc(ox, y1-15, 10,0,6.28);ctx.fill();
+// Grass on sides
+ctx.fillStyle=`rgba(60,140,50,${shade*0.6})`;
+const grassL=x1-roadW*0.3;
+const grassR=x2+roadW*0.3;
+ctx.fillRect(grassL,y1,x1-grassL,y2-y1);
+ctx.fillRect(x2,y1,grassR-x2,y2-y1);
+
+// Trees (Mario Kart style - round green)
+if(z%30<2&&z>8){
+const side=n%2===0?-1:1;
+const tx=baseX+curveX+side*roadW*1.1;
+const treeY=Math.min(y1,y2);
+const treeH=50*scale;
+// Trunk
+ctx.fillStyle=`rgba(120,80,50,${shade})`;
+ctx.fillRect(tx-2,treeY-treeH*0.3,4,treeH*0.3);
+// Foliage
+ctx.fillStyle=`rgba(40,${130+Math.floor(Math.random()*40)},30,${shade})`;
+ctx.beginPath();ctx.arc(tx,treeY-treeH*0.5,treeH*0.35,0,Math.PI*2);ctx.fill();
+ctx.fillStyle=`rgba(50,${150+Math.floor(Math.random()*30)},40,${shade})`;
+ctx.beginPath();ctx.arc(tx-4,treeY-treeH*0.6,treeH*0.25,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.arc(tx+5,treeY-treeH*0.55,treeH*0.2,0,Math.PI*2);ctx.fill();
 }
 
-// AI cars on road
-if(n>3&&n<40&&G){
+// Coins on road (golden spinning)
+if(z%15<1.5&&z>5&&n%7!==0){
+const coinX=baseX+curveX+(n%2===0?roadW*0.25:-roadW*0.25);
+ctx.fillStyle=`rgba(255,210,0,${shade*0.9})`;
+ctx.shadowColor='rgba(255,210,0,0.4)';ctx.shadowBlur=8;
+ctx.beginPath();ctx.arc(coinX,Math.min(y1,y2)-5,6*scale,0,Math.PI*2);ctx.fill();
+ctx.shadowBlur=0;
+ctx.fillStyle='rgba(255,255,255,0.6)';ctx.font=`${Math.floor(5*scale)}px sans-serif`;ctx.textAlign='center';
+ctx.fillText('$',coinX,Math.min(y1,y2)-2);
+}
+
+// ? Item boxes (Mario Kart style)
+if(z%60<3&&z>15&&n%13===0){
+const bx=baseX+curveX+roadW*0.45;
+const by=Math.min(y1,y2)-20*scale;
+const bw=16*scale,bh=16*scale;
+ctx.fillStyle=`rgba(255,210,0,${shade})`;
+ctx.shadowColor='rgba(255,210,0,0.3)';ctx.shadowBlur=10;
+ctx.fillRect(bx-bw/2,by-bh,bw,bh);
+ctx.shadowBlur=0;
+ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font=`bold ${Math.floor(10*scale)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='bottom';
+ctx.fillText('?',bx,by);
+ctx.textBaseline='alphabetic';
+}
+
+// AI karts on track
+if(n>3&&n<50&&G){
 for(const ai of G.ai){
 const aiDist=(((ai.seg-baseSeg)%TRACK_SEGMENTS)+TRACK_SEGMENTS)%TRACK_SEGMENTS;
 if(Math.floor(aiDist)===n){
-const acx=baseX+curveX;
-const acy=y1;
-const carZ=Math.min(1,1-(z/40));
-ctx.shadowColor='rgba(0,0,0,0.3)';ctx.shadowBlur=5;
-ctx.fillStyle=ai.col;ctx.beginPath();ctx.arc(acx,acy,6*carZ+3,0,6.28);ctx.fill();
+const acx=baseX+curveX+roadW*0.1*(aiDist%3-1);
+const acy=Math.min(y1,y2);
+const carZ=Math.min(1,1-(z/50));
+const ks=8*carZ+4;
+
+// Kart body
+ctx.shadowColor='rgba(0,0,0,0.2)';ctx.shadowBlur=4;
+ctx.fillStyle=ai.col;
+ctx.beginPath();ctx.roundRect(acx-ks,acy-ks*1.2,ks*2,ks*2.4,2);ctx.fill();
+// Windshield
+ctx.fillStyle='rgba(150,200,255,0.6)';
+ctx.beginPath();ctx.roundRect(acx-ks*0.6,acy-ks*0.8,ks*1.2,ks*0.6,1);ctx.fill();
+// Character icon
 ctx.shadowBlur=0;
-ctx.fillStyle='rgba(255,255,255,0.8)';ctx.font=`${Math.floor(7*carZ+2)}px sans-serif`;ctx.textAlign='center';
-ctx.fillText(ai.icon,acx,acy-12*carZ);
+ctx.font=`${Math.floor(8*carZ+3)}px sans-serif`;ctx.textAlign='center';
+ctx.fillText(ai.icon,acx,acy+ks*0.3);
 break;
-}
 }}
 }
+}
 
-// Player car
-const carY=h*0.85;
-ctx.shadowColor='rgba(255,200,0,0.4)';ctx.shadowBlur=30;
-ctx.font='2.5rem serif';ctx.textAlign='center';
-ctx.fillStyle=scol;ctx.beginPath();ctx.arc(cx,carY-10,22,0,6.28);ctx.fill();
-ctx.fillStyle='rgba(255,255,255,0.3)';ctx.beginPath();ctx.arc(cx-5,carY-15,10,0,6.28);ctx.fill();
+// Player kart (Mario Kart style - seen from behind)
+const carY=h*0.82;
+const ks=24;
+// Shadow
+ctx.fillStyle='rgba(0,0,0,0.2)';
+ctx.beginPath();ctx.ellipse(cx,carY+18,ks*1.2,6,0,0,Math.PI*2);ctx.fill();
+// Kart body
+ctx.shadowColor='rgba(0,0,0,0.3)';ctx.shadowBlur=8;
+ctx.fillStyle=scol;
+ctx.beginPath();ctx.roundRect(cx-ks,carY-ks*1.3,ks*2,ks*2.6,4);ctx.fill();
+// Lighter top
+ctx.fillStyle='rgba(255,255,255,0.15)';
+ctx.beginPath();ctx.roundRect(cx-ks+3,carY-ks*1.3+3,ks*2-6,ks*0.8,3);ctx.fill();
+// Windshield
+ctx.fillStyle='rgba(150,200,255,0.5)';
+ctx.beginPath();ctx.roundRect(cx-ks*0.5,carY-ks*0.9,ks*1,ks*0.5,2);ctx.fill();
+// Wheels
 ctx.shadowBlur=0;
-ctx.font='0.6rem sans-serif';ctx.fillStyle='rgba(255,255,255,0.3)';ctx.textAlign='center';
-ctx.fillText(`🏎️ ${Math.floor(G.player.speed*2.2)} km/h`,cx,carY+15);
+ctx.fillStyle='#333';
+ctx.beginPath();ctx.roundRect(cx-ks-3,carY-ks*0.7,3,ks*0.5,1);ctx.fill();
+ctx.beginPath();ctx.roundRect(cx+ks,carY-ks*0.7,3,ks*0.5,1);ctx.fill();
+ctx.beginPath();ctx.roundRect(cx-ks-3,carY+ks*0.3,3,ks*0.5,1);ctx.fill();
+ctx.beginPath();ctx.roundRect(cx+ks,carY+ks*0.3,3,ks*0.5,1);ctx.fill();
+// Character face icon
+ctx.font='1.2rem sans-serif';ctx.textAlign='center';
+ctx.fillText('🧑',cx,carY+ks*0.3);
+// Speed trail (Mario Kart style)
+if(G.player.speed>5){
+ctx.fillStyle='rgba(200,200,200,0.1)';
+for(let i=1;i<4;i++){
+const tw=ks*0.3*(1-i/5);
+ctx.fillRect(cx-ks*0.2*i,i*8+carY+18,tw,4);
+}
+}
 
 // Gear display
 if(G.started){
 const g=G.player.gear;
-document.getElementById('gearBox').innerHTML=[1,2,3,4,5,6].map(i=>`<div class="gear-btn ${i<=g?'active':''}">${i}</div>`).join('');
+document.getElementById('gearBox').innerHTML=[1,2,3,4,5,6].map(i=>`<div class="gear-btn ${i<=g?'active':''}" style="${i<=g?'background:rgba(255,210,0,0.2);border-color:#ffd200':''}">${i}</div>`).join('');
 }
 
-// Countdown
+// Countdown (Mario Kart style)
 if(G.countdown>0){
-const nums=['3','2','1','GO!'];
+const nums=['3️⃣','2️⃣','1️⃣','🏁 GO!'];
 const idx=Math.floor((3-G.countdown)*3);
 if(idx>=0&&idx<4){
-ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(cx-60,cy-40,120,80);
-ctx.fillStyle='#ffd200';ctx.font='4rem Fredoka,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+ctx.fillStyle='rgba(0,0,0,0.6)';ctx.beginPath();ctx.roundRect(cx-70,cy-35,140,70,12);ctx.fill();
+ctx.strokeStyle='rgba(255,210,0,0.5)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(cx-70,cy-35,140,70,12);ctx.stroke();
+ctx.fillStyle='#ffd200';ctx.font='2.5rem Fredoka,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
 ctx.fillText(nums[idx],cx,cy);
 }}
 ctx.textBaseline='alphabetic';
