@@ -577,27 +577,31 @@ log.scrollTop=log.scrollHeight;
 }
 
 function saveGame(){
-localStorage.setItem('moon_money',G.p.money);
-localStorage.setItem('moon_ore',G.p.ore);
-localStorage.setItem('moon_energy',G.p.energy);
-localStorage.setItem('moon_terraform',G.p.terraform);
-localStorage.setItem('moon_gems',G.p.gems||0);
-localStorage.setItem('moon_autoclick',G.p.autoClickPower||0);
+try{
+const costs={};for(const k in B)costs[k]=B[k].cost;
+const save={p:G.p,a:G.a,turn:G.turn,level:G.level,clicks:G.clicks,winner:G.winner,log:G.log.slice(-20),costs};
+localStorage.setItem('moon_save',JSON.stringify(save));
+}catch(e){}
 }
 function loadGame(){
-const m=parseInt(localStorage.getItem('moon_money'))||0;
-if(m&&G){
-G.p.money=m;
-G.p.ore=parseInt(localStorage.getItem('moon_ore'))||0;
-G.p.energy=parseInt(localStorage.getItem('moon_energy'))||0;
-G.p.terraform=parseInt(localStorage.getItem('moon_terraform'))||0;
-G.p.gems=parseInt(localStorage.getItem('moon_gems'))||0;
-G.p.autoClickPower=parseInt(localStorage.getItem('moon_autoclick'))||0;
-}
+try{
+const raw=localStorage.getItem('moon_save');
+if(!raw)return;
+const save=JSON.parse(raw);
+if(!save||!save.p)return;
+G.p=save.p;
+G.a=save.a||newColony();
+G.turn=save.turn||1;
+G.level=save.level||1;
+G.clicks=save.clicks||0;
+G.winner=save.winner||null;
+G.log=save.log||[];
+if(save.costs){for(const k in B){if(save.costs[k])B[k].cost=save.costs[k];}}
+}catch(e){}
 }
 
 function resetGame(){
-initGame();document.getElementById('overlay').style.display='none';document.getElementById('endBtn').disabled=false;
+initGame();localStorage.removeItem('moon_save');document.getElementById('overlay').style.display='none';document.getElementById('endBtn').disabled=false;
 document.getElementById('log').innerHTML='<p class="hl">🚀 Nieuwe kolonie! Klik op de maan om 🪙 te verdienen!</p>';
 drawMoon();render();
 }
