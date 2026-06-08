@@ -712,7 +712,7 @@ case'/setcoins':const sa=parseInt(args[0])||0;if(sa<0){cmdLog('❌ /setcoins [aa
 case'/resetcoins':G.p.money=0;render();saveGame();cmdLog('🔄 Coins gereset');break;
 case'/gems':const ga=parseInt(args[0])||0;if(ga<=0){cmdLog('❌ /gems [aantal]');break;}G.p.gems=(G.p.gems||0)+ga;render();saveGame();cmdLog(`💎 +${ga} gems!`);break;
 case'/setgems':const gs=parseInt(args[0])||0;if(gs<0){cmdLog('❌ /setgems [aantal]');break;}G.p.gems=gs;render();saveGame();cmdLog(`💎 Gems = ${gs}`);break;
-case'/autoclick':const ac=parseInt(args[0])||0;if(ac<=0||ac>100000){cmdLog('❌ /autoclick [1-100000]');break;}G.p.autoClickPower=(G.p.autoClickPower||0)+ac;render();saveGame();cmdLog(`🖱️ +${ac} auto clicks per turn! (totaal: ${G.p.autoClickPower})`);break;
+case'/autoclick':case'/autoclik':case'/autoclcik':const ac=parseInt(args[0])||0;if(ac<=0||ac>100000){cmdLog('❌ /autoclick [1-100000]');break;}G.p.autoClickPower=(G.p.autoClickPower||0)+ac;render();saveGame();cmdLog(`🖱️ +${ac} auto clicks per turn! (totaal: ${G.p.autoClickPower})`);alert(`🖱️ +${ac} auto clicks!\nKlik op EINDE BEURT om ze te zien!`);break;
 case'/setautoclick':const sac=parseInt(args[0])||0;if(sac<0||sac>100000){cmdLog('❌ /setautoclick [0-100000]');break;}G.p.autoClickPower=sac;render();saveGame();cmdLog(`🖱️ Auto clicks = ${sac}`);break;
 case'/buy':
 if(!isAdmin){cmdLog('❌ Alleen admin!');break;}
