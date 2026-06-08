@@ -13,13 +13,15 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Fredoka','Segoe UI',system-ui,sans-serif;background:#0a0a1a;color:#fff;min-height:100vh;overflow-x:hidden;user-select:none}
 
-.game-layout{display:flex;gap:10px;max-width:960px;margin:0 auto;padding:10px}
-.game-main{flex:1;min-width:0}
-.game-sidebar{width:280px;min-width:280px;display:flex;flex-direction:column;gap:8px}
+.game-layout{display:flex;gap:12px;max-width:960px;margin:0 auto;padding:10px}
+.game-main{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+.game-sidebar{width:300px;min-width:300px;display:flex;flex-direction:column;gap:8px}
+.game-main .header,.game-main .resource-bar,.game-main .ai-row,.game-main .auto-status,.game-main .btn-end,.game-main .log-box{width:100%}
 
 @media(max-width:800px){
 .game-layout{flex-direction:column}
 .game-sidebar{width:100%;min-width:0}
+.moon-area{max-width:320px}
 }
 
 /* HEADER */
@@ -42,14 +44,16 @@ body{font-family:'Fredoka','Segoe UI',system-ui,sans-serif;background:#0a0a1a;co
 .res .val.red{color:#ff5252}
 .res .val.purp{color:#ce93d8}
 
-/* MOON CLICKER AREA */
-.moon-area{position:relative;width:100%;aspect-ratio:4/3;border-radius:20px;overflow:hidden;margin-bottom:10px;border:2px solid rgba(255,255,255,0.1);cursor:pointer;background:#0a0a1a}
-.moon-canvas{width:100%;height:100%;display:block}
-.moon-level{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.7);padding:4px 10px;border-radius:10px;font-size:0.7rem;border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(4px)}
-.moon-level span{color:#ffd200;font-weight:bold}
-.moon-progress{position:absolute;bottom:8px;left:8px;right:8px;height:10px;background:rgba(0,0,0,0.5);border-radius:5px;overflow:hidden}
-.moon-progress-fill{height:100%;background:linear-gradient(90deg,#4fc3f7,#00e676,#ffd200);border-radius:5px;transition:width 0.5s ease;width:0%}
-.moon-progress-label{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:0.6rem;color:#aaa}
+/* MOON CLICKER AREA - Cookie Clicker style */
+.moon-area{position:relative;width:100%;aspect-ratio:1/1;max-width:450px;margin:0 auto 10px;border-radius:50%;overflow:hidden;cursor:pointer;background:#0a0a12;border:3px solid rgba(255,210,0,0.12);box-shadow:0 0 60px rgba(255,210,0,0.04),inset 0 0 80px rgba(0,0,0,0.4);animation:moonPulse 3s ease-in-out infinite}
+.moon-area:active{transform:scale(0.97)}
+@keyframes moonPulse{0%,100%{box-shadow:0 0 40px rgba(255,210,0,0.03),inset 0 0 80px rgba(0,0,0,0.4)}50%{box-shadow:0 0 70px rgba(255,210,0,0.07),inset 0 0 80px rgba(0,0,0,0.4)}}
+.moon-canvas{width:100%;height:100%;display:block;border-radius:50%}
+.moon-level{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);padding:3px 12px;border-radius:8px;font-size:0.65rem;border:1px solid rgba(255,210,0,0.15);color:#ffd200;white-space:nowrap}
+.moon-level span{color:#fff;font-weight:bold}
+.moon-progress{position:absolute;bottom:14px;left:20%;right:20%;height:8px;background:rgba(0,0,0,0.5);border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.05)}
+.moon-progress-fill{height:100%;background:linear-gradient(90deg,#4fc3f7,#00e676,#ffd200);border-radius:4px;transition:width 0.5s ease;width:0%}
+.moon-progress-label{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);font-size:0.55rem;color:rgba(255,255,255,0.4);white-space:nowrap}
 
 /* BUILDINGS ON MAP */
 .map-bldg{position:absolute;font-size:2rem;filter:drop-shadow(0 0 10px rgba(255,255,255,0.2));transition:all 0.2s;cursor:pointer;animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1)}
@@ -58,7 +62,7 @@ body{font-family:'Fredoka','Segoe UI',system-ui,sans-serif;background:#0a0a1a;co
 @keyframes popIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.3)}100%{transform:scale(1);opacity:1}}
 
 /* FLOATING RESOURCES */
-.float-res{position:fixed;pointer-events:none;z-index:100;font-weight:bold;animation:floatUp 1.2s ease forwards;font-size:1.1rem}
+.float-res{position:fixed;pointer-events:none;z-index:100;font-weight:bold;animation:floatUp 1.2s ease forwards;font-size:1.1rem;text-shadow:0 0 10px rgba(255,210,0,0.3)}
 @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(0.5)}100%{opacity:0;transform:translateY(-80px) scale(1.3)}}
 
 /* CLICK BURST */
@@ -257,62 +261,102 @@ const ctx=c.getContext('2d');
 const rect=document.getElementById('moonArea').getBoundingClientRect();
 c.width=rect.width;c.height=rect.height;
 const w=c.width,h=c.height;
+const cx=w/2,cy=h/2;
+const r=Math.min(w,h)*0.4;
 
-const sky=ctx.createLinearGradient(0,0,0,h);
-sky.addColorStop(0,'#050510');
-sky.addColorStop(0.5,'#0a0a1a');
-sky.addColorStop(1,'#1a1a2a');
-ctx.fillStyle=sky;
+// Dark space background with subtle grid (Cookie Clicker style)
+ctx.fillStyle='#0a0a12';
 ctx.fillRect(0,0,w,h);
 
-for(let i=0;i<60;i++){
-ctx.fillStyle=`rgba(255,255,255,${0.1+Math.random()*0.5})`;
-ctx.beginPath();ctx.arc(Math.random()*w,Math.random()*h*0.5,Math.random()*1.5+0.5,0,Math.PI*2);ctx.fill();
+// Subtle grid pattern
+ctx.strokeStyle='rgba(255,255,255,0.015)';
+ctx.lineWidth=0.5;
+for(let x=0;x<w;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}
+for(let y=0;y<h;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+
+// Stars
+for(let i=0;i<40;i++){
+const size=Math.random()*2+0.5;
+const alpha=0.2+Math.random()*0.6;
+const x=Math.random()*w,y=Math.random()*h;
+const dist=Math.hypot(x-cx,y-cy);
+if(dist>r+30){
+ctx.fillStyle=`rgba(255,255,255,${alpha})`;
+ctx.beginPath();ctx.arc(x,y,size,0,Math.PI*2);ctx.fill();
+}
 }
 
-const ew=w*0.15,eh=h*0.15;
-const eg=ctx.createRadialGradient(w*0.82,h*0.12,5,w*0.82,h*0.12,ew);
-eg.addColorStop(0,'rgba(79,195,247,0.15)');
-eg.addColorStop(0.5,'rgba(79,195,247,0.04)');
-eg.addColorStop(1,'rgba(0,0,0,0)');
-ctx.fillStyle=eg;
-ctx.beginPath();ctx.arc(w*0.82,h*0.12,ew,0,Math.PI*2);ctx.fill();
+// Outer glow (warm golden, like Cookie Clicker cookie)
+const glow=ctx.createRadialGradient(cx,cy,r*0.3,cx,cy,r*1.4);
+glow.addColorStop(0,'rgba(255,210,0,0.12)');
+glow.addColorStop(0.5,'rgba(255,180,50,0.06)');
+glow.addColorStop(1,'rgba(0,0,0,0)');
+ctx.fillStyle=glow;
+ctx.beginPath();ctx.arc(cx,cy,r*1.4,0,Math.PI*2);ctx.fill();
 
-const eg2=ctx.createRadialGradient(w*0.82-3,h*0.12-3,3,w*0.82,h*0.12,ew*0.35);
-eg2.addColorStop(0,'#4fc3f7');
-eg2.addColorStop(0.3,'#1a73e8');
-eg2.addColorStop(0.6,'#00e676');
-eg2.addColorStop(0.8,'#1a73e8');
-eg2.addColorStop(1,'#0a3a6a');
-ctx.fillStyle=eg2;
-ctx.beginPath();ctx.arc(w*0.82,h*0.12,ew*0.35,0,Math.PI*2);ctx.fill();
+// Moon shadow (cookie clicker style shading)
+const moonShade=ctx.createRadialGradient(cx-r*0.3,cy-r*0.3,r*0.1,cx,cy,r);
+moonShade.addColorStop(0,'#f5f0e8');
+moonShade.addColorStop(0.3,'#e8e0d0');
+moonShade.addColorStop(0.6,'#d4c8b0');
+moonShade.addColorStop(0.8,'#c0b498');
+moonShade.addColorStop(1,'#a09078');
+ctx.fillStyle=moonShade;
+ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
 
-const mg=ctx.createRadialGradient(w/2,h,20,w/2,h,h);
-mg.addColorStop(0,'#4a4a5a');
-mg.addColorStop(0.3,'#3a3a4a');
-mg.addColorStop(0.6,'#2a2a3a');
-mg.addColorStop(1,'#1a1a2a');
-ctx.fillStyle=mg;
-ctx.beginPath();ctx.ellipse(w/2,h,w*0.6,h*0.15,0,0,Math.PI*2);ctx.fill();
-
-for(let i=0;i<6;i++){
-const cx=rand(40,w-40),cy=h-rand(20,60),cr=rand(6,20);
-ctx.fillStyle='rgba(20,20,35,0.3)';
-ctx.beginPath();ctx.ellipse(cx,cy,cr,cr*0.4,0,0,Math.PI*2);ctx.fill();
-ctx.strokeStyle='rgba(255,255,255,0.02)';ctx.lineWidth=1;ctx.stroke();
+// Moon surface detail - subtle craters
+const craterPositions=[
+[0.15,0.2,0.08],[0.7,0.25,0.06],[0.3,0.7,0.1],[0.65,0.65,0.05],
+[0.8,0.4,0.04],[0.1,0.55,0.05],[0.5,0.5,0.07],[0.4,0.3,0.04],
+[0.85,0.7,0.03],[0.2,0.8,0.04],[0.55,0.2,0.03],[0.7,0.55,0.06]
+];
+for(const [px,py,s] of craterPositions){
+const cx2=cx+(px-0.5)*r*1.6,cy2=cy+(py-0.5)*r*1.6;
+const cr=s*r;
+const dist=Math.hypot(cx2-cx,cy2-cy);
+if(dist>r-cr)continue;
+// Crater shadow (dark side)
+ctx.fillStyle='rgba(80,70,55,0.15)';
+ctx.beginPath();ctx.arc(cx2+cr*0.1,cy2+cr*0.1,cr,0,Math.PI*2);ctx.fill();
+// Crater light side
+ctx.fillStyle='rgba(255,255,240,0.08)';
+ctx.beginPath();ctx.arc(cx2-cr*0.1,cy2-cr*0.1,cr,0,Math.PI*2);ctx.fill();
+// Crater inner
+ctx.fillStyle='rgba(100,90,75,0.12)';
+ctx.beginPath();ctx.arc(cx2,cy2,cr*0.8,0,Math.PI*2);ctx.fill();
 }
 
-ctx.fillStyle='rgba(30,30,50,0.5)';
-ctx.fillRect(0,h-3,w,3);
+// Highlight (Cookie Clicker style shine on top-left)
+const shine=ctx.createRadialGradient(cx-r*0.25,cy-r*0.3,r*0.05,cx-r*0.2,cy-r*0.25,r*0.5);
+shine.addColorStop(0,'rgba(255,255,255,0.25)');
+shine.addColorStop(0.5,'rgba(255,255,255,0.05)');
+shine.addColorStop(1,'rgba(255,255,255,0)');
+ctx.fillStyle=shine;
+ctx.beginPath();ctx.arc(cx-r*0.2,cy-r*0.25,r*0.5,0,Math.PI*2);ctx.fill();
+
+// Rim light (bottom-right)
+const rim=ctx.createRadialGradient(cx+r*0.3,cy+r*0.3,r*0.05,cx+r*0.25,cy+r*0.25,r*0.4);
+rim.addColorStop(0,'rgba(200,180,150,0.15)');
+rim.addColorStop(1,'rgba(200,180,150,0)');
+ctx.fillStyle=rim;
+ctx.beginPath();ctx.arc(cx+r*0.25,cy+r*0.25,r*0.4,0,Math.PI*2);ctx.fill();
+
+// BGLight
+const bgGlow=ctx.createRadialGradient(cx,cy,r*0.5,cx,cy,r*1.6);
+bgGlow.addColorStop(0,'rgba(255,200,100,0.03)');
+bgGlow.addColorStop(0.5,'rgba(255,200,100,0.02)');
+bgGlow.addColorStop(1,'rgba(0,0,0,0)');
+ctx.fillStyle=bgGlow;
+ctx.beginPath();ctx.arc(cx,cy,r*1.6,0,Math.PI*2);ctx.fill();
 
 if(G){
 const pct=Math.min(1,G.p.terraform/WIN);
-const glowIntensity=0.02+pct*0.08;
-const g=ctx.createRadialGradient(w/2,h*0.7,10,w/2,h*0.7,w*0.4);
+const glowIntensity=0.01+pct*0.06;
+const g=ctx.createRadialGradient(cx,cy,r*0.5,cx,cy,r*1.2);
 g.addColorStop(0,`rgba(79,195,247,${glowIntensity})`);
 g.addColorStop(1,'rgba(0,0,0,0)');
 ctx.fillStyle=g;
-ctx.beginPath();ctx.arc(w/2,h*0.7,w*0.4,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.arc(cx,cy,r*1.2,0,Math.PI*2);ctx.fill();
 renderMapBldgs(w,h);
 }
 }
@@ -330,8 +374,8 @@ const cnt=G.p.buildings[key]||0;
 const b=B[key];if(!b||!cnt)continue;
 for(let i=0;i<Math.min(cnt,4);i++){
 let x,y,attempts=0;
-do{x=0.08+rand(0.78);y=0.5+rand(0.38);attempts++;}
-while(placed.some(p=>Math.hypot(p.x-x,p.y-y)<0.09)&&attempts<25);
+do{x=0.15+rand(0.7);y=0.15+rand(0.7);attempts++;}
+while((placed.some(p=>Math.hypot(p.x-x,p.y-y)<0.09)||Math.hypot(x-0.5,y-0.5)>0.35)&&attempts<25);
 placed.push({x,y});
 const el=document.createElement('div');
 el.className='map-bldg';
