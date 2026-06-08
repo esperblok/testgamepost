@@ -3989,11 +3989,19 @@ document.getElementById('logoutBtn').onclick=function(){
 };
 document.getElementById('loginCloseBtn').onclick=()=>{lOverlay.style.display='none'};
 
-// ─── Player avatar (hidden trigger) ───
+// ─── Player avatar ───
 av.onclick=function(){
-  if(loggedInIsAdmin){
-    lOverlay.style.display='flex';
+  lOverlay.style.display='flex';
+  if(loggedInUser){
     showChoicePanel();
+  }else{
+    showLoginPanel();
+    document.getElementById('loginForm').style.display='block';
+    document.getElementById('registerForm').style.display='none';
+    document.getElementById('loginTab').style.background='linear-gradient(135deg,#00c8ff,#0066ff)';
+    document.getElementById('loginTab').style.color='#fff';
+    document.getElementById('registerTab').style.background='rgba(255,255,255,0.04)';
+    document.getElementById('registerTab').style.color='rgba(255,255,255,0.3)';
   }
 };
 
