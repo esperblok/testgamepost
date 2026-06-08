@@ -676,7 +676,7 @@ switch(cmd){
 case'/admin':
 if(args[0]===ADMIN_PW_PROFILE){isAdmin=true;localStorage.setItem('moon_admin','true');updateProfileUI();cmdLog('✅ Admin modus!');}
 break;
-case'/help':cmdLog('/admin, /speler, /coins, /setcoins, /resetcoins, /gems, /setgems, /autoclick, /setautoclick, /kick, /ban, /unban, /mute, /unmute, /kill, /freeze, /unfreeze, /slap, /explode, /heal, /god, /fly, /invisible, /speed, /jump, /time, /day, /night, /weather, /clear, /reset, /restart, /announce, /shutdown, /pm, /ip, /ping, /report, /data');break;
+case'/help':cmdLog('/admin, /speler, /coins, /setcoins, /resetcoins, /gems, /setgems, /autoclick, /setautoclick, /buy [item] [aantal], /buy all, /kick, /ban, /unban, /mute, /unmute, /kill, /freeze, /unfreeze, /slap, /explode, /heal, /god, /fly, /invisible, /speed, /jump, /time, /day, /night, /weather, /clear, /reset, /restart, /announce, /shutdown, /pm, /ip, /ping, /report, /data');break;
 case'/ping':cmdLog('🏓 Pong! 0.001ms');break;
 case'/speler':if(!args[0]){cmdLog('❌ /speler [naam]');break;}cmdLog(`👤 ${args[0]}: Level ${Math.floor(Math.random()*50)+1}, Coins ${Math.floor(Math.random()*9999)+100}, Rank ${['Bronze','Silver','Gold','Diamond','Admin'][Math.floor(Math.random()*5)]}`);break;
 case'/kick':if(!args[0]){cmdLog('❌ /kick [naam]');break;}cmdLog(`🦶 ${args[0]} gekickt!`);break;
@@ -702,6 +702,24 @@ case'/gems':const ga=parseInt(args[0])||0;if(ga<=0){cmdLog('❌ /gems [aantal]')
 case'/setgems':const gs=parseInt(args[0])||0;if(gs<0){cmdLog('❌ /setgems [aantal]');break;}G.p.gems=gs;render();saveGame();cmdLog(`💎 Gems = ${gs}`);break;
 case'/autoclick':const ac=parseInt(args[0])||0;if(ac<=0||ac>100000){cmdLog('❌ /autoclick [1-100000]');break;}G.p.autoClickPower=(G.p.autoClickPower||0)+ac;render();saveGame();cmdLog(`🖱️ +${ac} auto clicks per turn! (totaal: ${G.p.autoClickPower})`);break;
 case'/setautoclick':const sac=parseInt(args[0])||0;if(sac<0||sac>100000){cmdLog('❌ /setautoclick [0-100000]');break;}G.p.autoClickPower=sac;render();saveGame();cmdLog(`🖱️ Auto clicks = ${sac}`);break;
+case'/buy':
+if(!isAdmin){cmdLog('❌ Alleen admin!');break;}
+if(!args[0]){cmdLog('❌ /buy [item] [aantal]  |  /buy all');break;}
+if(args[0]==='all'){
+const keys=Object.keys(B);let bought=0;
+for(let loop=0;loop<50;loop++){
+for(const k of keys){while(canBuy(k)){buy(k);bought++;}}
+}
+cmdLog(`🏗️ ${bought} items gekocht!`);
+render();saveGame();break;
+}
+const item=args[0].toLowerCase();
+const amount=parseInt(args[1])||1;
+if(!B[item]){cmdLog(`❌ Onbekend item: ${item}. /help voor lijst`);break;}
+let count=0;
+for(let i=0;i<amount;i++){if(canBuy(item)){buy(item);count++;}else break;}
+cmdLog(`🏗️ ${count}x ${B[item].icon} ${B[item].name} gekocht!`);
+render();saveGame();break;
 case'/time':if(!args[0]){cmdLog('❌ /time [dag/nacht]');break;}cmdLog(args[0]==='nacht'?'🌙 Nacht!':'☀️ Dag!');break;
 case'/day':cmdLog('☀️ Dag!');break;
 case'/night':cmdLog('🌙 Nacht!');break;
