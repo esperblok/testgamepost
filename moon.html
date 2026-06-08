@@ -464,47 +464,48 @@ if(a.terraform>=WIN){G.winner='a';G.log.push('💀 AI wint!');}
 
 function simulateAutoClicks(){
 const p=G.p;
-const inc=incomePerTurn(p);
-const totalAuto=inc.autoclick+(p.autoClickPower||0);
+const totalAuto=(p.autoClickPower||0);
 if(totalAuto<=0)return;
 const rect=document.getElementById('moonArea').getBoundingClientRect();
 const clickPower=1+G.level+Math.floor(totalBldgs(p)/2);
 const totalEarn=totalAuto*clickPower;
-const burstCount=Math.min(totalAuto,40);
+G.p.money+=totalEarn;
+G.clicks+=totalAuto;
+G.log.push(`🖱️ Auto ${totalAuto}x +${totalEarn}🪙`);
+const area=document.getElementById('moonArea');
+const burstCount=Math.min(totalAuto,50);
 for(let i=0;i<burstCount;i++){
+setTimeout(()=>{
 const x=10+Math.random()*(rect.width-20);
 const y=10+Math.random()*(rect.height-20);
 const burst=document.createElement('div');
 burst.className='click-burst';
 burst.style.left=(x-20)+'px';burst.style.top=(y-20)+'px';
 burst.style.width='40px';burst.style.height='40px';
-document.getElementById('moonArea').appendChild(burst);
+area.appendChild(burst);
 setTimeout(()=>burst.remove(),600);
-}
-const cx=rect.left+rect.width/2;
-const cy=rect.top+rect.height/2;
 const ft=document.createElement('div');
 ft.className='float-res';
-ft.textContent=`🖱️ +${totalEarn}🪙`;
-ft.style.left=(cx-60)+'px';ft.style.top=(cy-40)+'px';
+ft.textContent=`+${clickPower}🪙`;
+ft.style.left=(rect.left+x-15)+'px';ft.style.top=(rect.top+y-30)+'px';
+ft.style.color='#ffd200';
+ft.style.fontSize='0.9rem';
+document.body.appendChild(ft);
+setTimeout(()=>ft.remove(),1000);
+},i*40);
+}
+setTimeout(()=>{
+const ft=document.createElement('div');
+ft.className='float-res';
+ft.textContent=`⚡ ${totalAuto}x AUTO +${totalEarn}🪙 ⚡`;
+ft.style.left=(rect.left+rect.width/2-100)+'px';
+ft.style.top=(rect.top+rect.height/2-20)+'px';
 ft.style.color='#00e676';
-ft.style.fontSize='1.8rem';
+ft.style.fontSize='1.6rem';
 ft.style.fontWeight='bold';
 document.body.appendChild(ft);
-setTimeout(()=>ft.remove(),1500);
-if(totalAuto>20){
-const ft2=document.createElement('div');
-ft2.className='float-res';
-ft2.textContent=`⚡ ${totalAuto}x AUTO!`;
-ft2.style.left=(cx-50)+'px';ft2.style.top=(cy-20)+'px';
-ft2.style.color='#ffd200';
-ft2.style.fontSize='1rem';
-document.body.appendChild(ft2);
-setTimeout(()=>ft2.remove(),1500);
-}
-G.p.money+=totalEarn;
-G.clicks+=totalAuto;
-G.log.push(`🖱️ Auto ${totalAuto}x +${totalEarn}🪙`);
+setTimeout(()=>ft.remove(),2000);
+},burstCount*40+100);
 }
 
 function endTurn(){
