@@ -239,7 +239,13 @@ const B = {
   gemmine:{name:'Edelsteen',icon:'💎',baseCost:40,cost:40,desc:'💎+2/t',mapIcon:'💎',req:{tower:1,robot:1},income:{gems:2}},
   alchemy:{name:'Alchemie',icon:'🧪',baseCost:35,cost:35,desc:'🌍+10/t',mapIcon:'🧪',req:{lab:3,garden:1},income:{terra:10}},
   rocket:{name:'Raket',icon:'🚀',baseCost:60,cost:60,desc:'🌍+20/t 💎+3/t',mapIcon:'🚀',req:{gemmine:1,alchemy:1,atmo:1},income:{terra:20,gems:3}},
-  autoclicker:{name:'Klikker',icon:'🖱️',baseCost:25,cost:25,desc:'🖱️+5 auto/t',mapIcon:'🖱️',req:{robot:1},income:{autoclick:5}}
+  autoclicker:{name:'Klikker',icon:'🖱️',baseCost:25,cost:25,desc:'🖱️+5 auto/t',mapIcon:'🖱️',req:{robot:1},income:{autoclick:5}},
+  muis:{name:'Muis',icon:'🐭',baseCost:15,cost:15,desc:'🖱️+3 auto/t',mapIcon:'🐭',income:{autoclick:3}},
+  rat:{name:'Rat',icon:'🐀',baseCost:30,cost:30,desc:'🖱️+8 auto/t',mapIcon:'🐀',req:{muis:3},income:{autoclick:8}},
+  hamster:{name:'Hamster',icon:'🐹',baseCost:50,cost:50,desc:'🖱️+15 auto/t',mapIcon:'🐹',req:{rat:2},income:{autoclick:15}},
+  kat:{name:'Kat',icon:'🐱',baseCost:60,cost:60,desc:'🖱️+20 auto/t',mapIcon:'🐱',req:{hamster:1,muis:5},income:{autoclick:20}},
+  kaas:{name:'Kaas',icon:'🧀',baseCost:20,cost:20,desc:'💰+25/t',mapIcon:'🧀',req:{muis:2},income:{money:25}},
+  muizenval:{name:'Muizenval',icon:'🪤',baseCost:45,cost:45,desc:'🖱️+12 auto/t',mapIcon:'🪤',req:{rat:1,kaas:1},income:{autoclick:12}}
 };
 const WIN=80;
 let G=null;
@@ -318,7 +324,7 @@ const container=document.getElementById('mapBuildings');
 container.innerHTML='';
 if(!G)return;
 const placed=[];
-const bldgKeys=['mine','solar','habitat','greenhouse','lab','water','atmo','factory','tower','garden','robot','tree','gemmine','alchemy','rocket','autoclicker'];
+const bldgKeys=['mine','solar','habitat','greenhouse','lab','water','atmo','factory','tower','garden','robot','tree','gemmine','alchemy','rocket','autoclicker','muis','rat','hamster','kat','kaas','muizenval'];
 for(const key of bldgKeys){
 const cnt=G.p.buildings[key]||0;
 const b=B[key];if(!b||!cnt)continue;
@@ -339,7 +345,7 @@ window.addEventListener('resize',()=>{setTimeout(drawMoon,50)});
 
 //============== GAME LOGIC ==============
 function newColony(){
-return{money:25,ore:10,energy:10,gems:0,autoClickPower:0,buildings:{mine:0,solar:0,habitat:0,greenhouse:0,lab:0,water:0,atmo:0,factory:0,tower:0,garden:0,robot:0,tree:0,gemmine:0,alchemy:0,rocket:0,autoclicker:0},terraform:0,pop:1};}
+return{money:25,ore:10,energy:10,gems:0,autoClickPower:0,buildings:{mine:0,solar:0,habitat:0,greenhouse:0,lab:0,water:0,atmo:0,factory:0,tower:0,garden:0,robot:0,tree:0,gemmine:0,alchemy:0,rocket:0,autoclicker:0,muis:0,rat:0,hamster:0,kat:0,kaas:0,muizenval:0},terraform:0,pop:1};}
 
 function initGame(){
 G={p:newColony(),a:newColony(),turn:1,log:[],winner:null,level:1,clicks:0};
@@ -443,7 +449,7 @@ return true;
 
 function aiTurn(){
 const a=G.a;
-const order=['mine','solar','habitat','greenhouse','water','lab','atmo','factory','tower','garden','robot','tree','gemmine','alchemy','rocket','autoclicker'];
+const order=['mine','solar','habitat','muis','greenhouse','water','lab','atmo','kaas','rat','factory','tower','garden','robot','muizenval','tree','gemmine','alchemy','autoclicker','hamster','kat','rocket'];
 for(const k of order){
 if(aiCanBuy(k)){
 const b=B[k];
@@ -464,7 +470,7 @@ if(totalAuto<=0)return;
 const rect=document.getElementById('moonArea').getBoundingClientRect();
 const clickPower=1+G.level+Math.floor(totalBldgs(p)/2);
 const totalEarn=totalAuto*clickPower;
-for(let i=0;i<Math.min(totalAuto,15);i++){
+for(let i=0;i<Math.min(totalAuto,25);i++){
 const x=20+Math.random()*(rect.width-40);
 const y=20+Math.random()*(rect.height-40);
 const burst=document.createElement('div');
