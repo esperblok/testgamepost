@@ -1,4 +1,4 @@
-const CACHE = 'spacegames-v3';
+const CACHE = 'spacegames-v4';
 const FILES = [
   './',
   './index.html',
@@ -27,9 +27,16 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(r =>
-      r || fetch(e.request).catch(() => caches.match('/index.html'))
-    )
-  );
+  const url = new URL(e.request.url);
+  if (url.pathname.endsWith('.html') || url.pathname.endsWith('/')) {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match(e.request))
+    );
+  } else {
+    e.respondWith(
+      caches.match(e.request).then(r =>
+        r || fetch(e.request).catch(() => caches.match('/index.html'))
+      )
+    );
+  }
 });
