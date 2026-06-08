@@ -238,7 +238,8 @@ const B = {
   tree:{name:'Boom',icon:'🌳',baseCost:22,cost:22,desc:'🌍+8/t',mapIcon:'🌳',req:{water:1},income:{terra:8}},
   gemmine:{name:'Edelsteen',icon:'💎',baseCost:40,cost:40,desc:'💎+2/t',mapIcon:'💎',req:{tower:1,robot:1},income:{gems:2}},
   alchemy:{name:'Alchemie',icon:'🧪',baseCost:35,cost:35,desc:'🌍+10/t',mapIcon:'🧪',req:{lab:3,garden:1},income:{terra:10}},
-  rocket:{name:'Raket',icon:'🚀',baseCost:60,cost:60,desc:'🌍+20/t 💎+3/t',mapIcon:'🚀',req:{gemmine:1,alchemy:1,atmo:1},income:{terra:20,gems:3}}
+  rocket:{name:'Raket',icon:'🚀',baseCost:60,cost:60,desc:'🌍+20/t 💎+3/t',mapIcon:'🚀',req:{gemmine:1,alchemy:1,atmo:1},income:{terra:20,gems:3}},
+  autoclicker:{name:'Klikker',icon:'🖱️',baseCost:25,cost:25,desc:'🖱️+5 auto/t',mapIcon:'🖱️',req:{robot:1},income:{autoclick:5}}
 };
 const WIN=80;
 let G=null;
@@ -317,7 +318,7 @@ const container=document.getElementById('mapBuildings');
 container.innerHTML='';
 if(!G)return;
 const placed=[];
-const bldgKeys=['mine','solar','habitat','greenhouse','lab','water','atmo','factory','tower','garden','robot','tree','gemmine','alchemy','rocket'];
+const bldgKeys=['mine','solar','habitat','greenhouse','lab','water','atmo','factory','tower','garden','robot','tree','gemmine','alchemy','rocket','autoclicker'];
 for(const key of bldgKeys){
 const cnt=G.p.buildings[key]||0;
 const b=B[key];if(!b||!cnt)continue;
@@ -338,7 +339,7 @@ window.addEventListener('resize',()=>{setTimeout(drawMoon,50)});
 
 //============== GAME LOGIC ==============
 function newColony(){
-return{money:25,ore:10,energy:10,gems:0,buildings:{mine:0,solar:0,habitat:0,greenhouse:0,lab:0,water:0,atmo:0,factory:0,tower:0,garden:0,robot:0,tree:0,gemmine:0,alchemy:0,rocket:0},terraform:0,pop:1};}
+return{money:25,ore:10,energy:10,gems:0,autoClickPower:0,buildings:{mine:0,solar:0,habitat:0,greenhouse:0,lab:0,water:0,atmo:0,factory:0,tower:0,garden:0,robot:0,tree:0,gemmine:0,alchemy:0,rocket:0,autoclicker:0},terraform:0,pop:1};}
 
 function initGame(){
 G={p:newColony(),a:newColony(),turn:1,log:[],winner:null,level:1,clicks:0};
@@ -350,7 +351,7 @@ return Object.values(p.buildings).reduce((a,b)=>a+b,0);
 }
 
 function incomePerTurn(p){
-let money=0,ore=0,energy=0,pop=0,terra=0,gems=0;
+let money=0,ore=0,energy=0,pop=0,terra=0,gems=0,autoclick=0;
 for(const [key,cnt]of Object.entries(p.buildings)){
 if(!cnt)continue;
 const b=B[key];if(!b||!b.income)continue;
@@ -361,9 +362,10 @@ energy+=((inc.energy||0)*cnt);
 pop+=((inc.pop||0)*cnt);
 terra+=((inc.terra||0)*cnt);
 gems+=((inc.gems||0)*cnt);
+autoclick+=((inc.autoclick||0)*cnt);
 }
 money+=ore*3+energy*2;
-return{money,ore,energy,pop,terra,gems};
+return{money,ore,energy,pop,terra,gems,autoclick};
 }
 
 function canBuy(key){
@@ -429,6 +431,12 @@ player.gems=(player.gems||0)+inc.gems;
 if(inc.terra>0)G.log.push(`${label} 🌍+${inc.terra} 💰+${inc.money}`);
 else if(inc.money>0)G.log.push(`${label} 💰+${inc.money}`);
 if(inc.gems>0)G.log.push(`${label} 💎+${inc.gems}`);
+if(inc.autoclick>0||player.autoClickPower>0){
+const totalAuto=inc.autoclick+(player.autoClickPower||0);
+const autoMoney=totalAuto*(1+G.level);
+player.money+=autoMoney;
+G.log.push(`${label} 🖱️ Auto+${autoMoney}🪙`);
+}
 return player.terraform>=WIN;
 }
 
@@ -441,7 +449,7 @@ return true;
 
 function aiTurn(){
 const a=G.a;
-const order=['mine','solar','habitat','greenhouse','water','lab','atmo','factory','tower','garden','robot','tree','gemmine','alchemy','rocket'];
+const order=['mine','solar','habitat','greenhouse','water','lab','atmo','factory','tower','garden','robot','tree','gemmine','alchemy','rocket','autoclicker'];
 for(const k of order){
 if(aiCanBuy(k)){
 const b=B[k];
@@ -487,7 +495,8 @@ document.getElementById('progLabel').textContent=`🌍 Terraforming: ${Math.floo
 
 const inc=incomePerTurn(p);
 const clickPow=1+G.level+Math.floor(totalBldgs(p)/2);
-document.getElementById('autoStatus').innerHTML=`🖱️+${clickPow}/klik | 💰+${inc.money}/t | 🌍+${inc.terra}/t | 💎+${inc.gems}/t | 🏗️${totalBldgs(p)} bldgs`;
+const autoTotal=inc.autoclick+(p.autoClickPower||0);
+document.getElementById('autoStatus').innerHTML=`🖱️+${clickPow}/klik | 💰+${inc.money}/t | 🌍+${inc.terra}/t | 💎+${inc.gems}/t | 🖱️Auto+${autoTotal}/t | 🏗️${totalBldgs(p)} bldgs`;
 
 const grid=document.getElementById('shopGrid');
 const entries=Object.entries(B);
@@ -504,6 +513,7 @@ if(b.income.ore)parts.push(`⛏️+${b.income.ore}`);
 if(b.income.energy)parts.push(`⚡+${b.income.energy}`);
 if(b.income.gems)parts.push(`💎+${b.income.gems}`);
 if(b.income.pop)parts.push(`👥+${b.income.pop}`);
+if(b.income.autoclick)parts.push(`🖱️+${b.income.autoclick}`);
 if(parts.length)incStr=`<div class="sincome">${parts.join(' ')}</div>`;
 }
 return `<div class="shop-item ${ok?'':'locked'}" onclick="${ok?`buy('${k}')`:''}">
@@ -538,6 +548,7 @@ localStorage.setItem('moon_ore',G.p.ore);
 localStorage.setItem('moon_energy',G.p.energy);
 localStorage.setItem('moon_terraform',G.p.terraform);
 localStorage.setItem('moon_gems',G.p.gems||0);
+localStorage.setItem('moon_autoclick',G.p.autoClickPower||0);
 }
 function loadGame(){
 const m=parseInt(localStorage.getItem('moon_money'))||0;
@@ -547,6 +558,7 @@ G.p.ore=parseInt(localStorage.getItem('moon_ore'))||0;
 G.p.energy=parseInt(localStorage.getItem('moon_energy'))||0;
 G.p.terraform=parseInt(localStorage.getItem('moon_terraform'))||0;
 G.p.gems=parseInt(localStorage.getItem('moon_gems'))||0;
+G.p.autoClickPower=parseInt(localStorage.getItem('moon_autoclick'))||0;
 }
 }
 
@@ -626,7 +638,7 @@ switch(cmd){
 case'/admin':
 if(args[0]===ADMIN_PW_PROFILE){isAdmin=true;localStorage.setItem('moon_admin','true');updateProfileUI();cmdLog('✅ Admin modus!');}
 break;
-case'/help':cmdLog('/admin, /speler, /kick, /ban, /unban, /mute, /unmute, /kill, /freeze, /unfreeze, /slap, /explode, /heal, /god, /fly, /invisible, /speed, /jump, /coins, /setcoins, /resetcoins, /gems, /setgems, /time, /day, /night, /weather, /clear, /reset, /restart, /announce, /shutdown, /pm, /ip, /ping, /report');break;
+case'/help':cmdLog('/admin, /speler, /coins, /setcoins, /resetcoins, /gems, /setgems, /autoclick, /setautoclick, /kick, /ban, /unban, /mute, /unmute, /kill, /freeze, /unfreeze, /slap, /explode, /heal, /god, /fly, /invisible, /speed, /jump, /time, /day, /night, /weather, /clear, /reset, /restart, /announce, /shutdown, /pm, /ip, /ping, /report, /data');break;
 case'/ping':cmdLog('🏓 Pong! 0.001ms');break;
 case'/speler':if(!args[0]){cmdLog('❌ /speler [naam]');break;}cmdLog(`👤 ${args[0]}: Level ${Math.floor(Math.random()*50)+1}, Coins ${Math.floor(Math.random()*9999)+100}, Rank ${['Bronze','Silver','Gold','Diamond','Admin'][Math.floor(Math.random()*5)]}`);break;
 case'/kick':if(!args[0]){cmdLog('❌ /kick [naam]');break;}cmdLog(`🦶 ${args[0]} gekickt!`);break;
@@ -650,6 +662,8 @@ case'/setcoins':const sa=parseInt(args[0])||0;if(sa<0){cmdLog('❌ /setcoins [aa
 case'/resetcoins':G.p.money=0;render();saveGame();cmdLog('🔄 Coins gereset');break;
 case'/gems':const ga=parseInt(args[0])||0;if(ga<=0){cmdLog('❌ /gems [aantal]');break;}G.p.gems=(G.p.gems||0)+ga;render();saveGame();cmdLog(`💎 +${ga} gems!`);break;
 case'/setgems':const gs=parseInt(args[0])||0;if(gs<0){cmdLog('❌ /setgems [aantal]');break;}G.p.gems=gs;render();saveGame();cmdLog(`💎 Gems = ${gs}`);break;
+case'/autoclick':const ac=parseInt(args[0])||0;if(ac<=0||ac>100000){cmdLog('❌ /autoclick [1-100000]');break;}G.p.autoClickPower=(G.p.autoClickPower||0)+ac;render();saveGame();cmdLog(`🖱️ +${ac} auto clicks per turn! (totaal: ${G.p.autoClickPower})`);break;
+case'/setautoclick':const sac=parseInt(args[0])||0;if(sac<0||sac>100000){cmdLog('❌ /setautoclick [0-100000]');break;}G.p.autoClickPower=sac;render();saveGame();cmdLog(`🖱️ Auto clicks = ${sac}`);break;
 case'/time':if(!args[0]){cmdLog('❌ /time [dag/nacht]');break;}cmdLog(args[0]==='nacht'?'🌙 Nacht!':'☀️ Dag!');break;
 case'/day':cmdLog('☀️ Dag!');break;
 case'/night':cmdLog('🌙 Nacht!');break;
