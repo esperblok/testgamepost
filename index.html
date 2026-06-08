@@ -3825,14 +3825,13 @@ function logActivity(user,action){
 
 function updateLoginUI(){
   const isAdmin=loggedInIsAdmin&&!undercover;
-  loginBtn.textContent=loggedInUser?'👤':'👤';
+  loginBtn.textContent=loggedInUser?(isAdmin?'👑':'👤'):'👤';
   loginBtn.style.background=isAdmin?'linear-gradient(135deg,#ffd200,#ff6a00)':loggedInUser?'rgba(0,200,255,0.15)':'rgba(255,255,255,0.04)';
   loginBtn.style.borderColor=isAdmin?'rgba(255,210,0,0.3)':loggedInUser?'rgba(0,200,255,0.2)':'rgba(255,255,255,0.06)';
   loginBtn.style.color=isAdmin?'#222':loggedInUser?'#4fc3f7':'rgba(255,255,255,0.2)';
   loginBtn.title=loggedInUser ? (isAdmin ? 'Admin: '+loggedInUser : (loggedInUser===ADMIN_USER&&undercover?'Undercover: ':'Ingelogd: ')+loggedInUser) : 'Inloggen';
   av.classList.toggle('admin',isAdmin);
-  if(isAdmin)document.getElementById('adminCmdBar').style.display='flex';
-  else document.getElementById('adminCmdBar').style.display='none';
+  document.getElementById('adminCmdBar').style.display='flex';
 }
 
 function showLoginPanel(){
@@ -4009,7 +4008,8 @@ document.getElementById('adminCmdInput').addEventListener('keydown',function(e){
   const cmd=parts[0].toLowerCase();
   const a=parts.slice(1);
   const n=a.join(' ');
-  if(!loggedInIsAdmin&&cmd!=='/admin'){alert('❌ Alleen admin!');return;}
+  const pubCmds=['/coins','/give','/setcoins','/resetcoins','/ping','/clear','/reset','/restart'];
+  if(!loggedInIsAdmin&&cmd!=='/admin'&&!pubCmds.includes(cmd)){alert('❌ Alleen admin!');return;}
   switch(cmd){
     case'/admin':
       const pw=n;
