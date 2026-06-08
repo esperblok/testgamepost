@@ -467,13 +467,14 @@ const p=G.p;
 const totalAuto=(p.autoClickPower||0);
 if(totalAuto<=0)return;
 const rect=document.getElementById('moonArea').getBoundingClientRect();
-const clickPower=1+G.level+Math.floor(totalBldgs(p)/2);
+const acMul=3;
+const clickPower=(1+G.level+Math.floor(totalBldgs(p)/2))*acMul;
 const totalEarn=totalAuto*clickPower;
 G.p.money+=totalEarn;
 G.clicks+=totalAuto;
-G.log.push(`🖱️ Auto ${totalAuto}x +${totalEarn}🪙`);
+G.log.push(`🖱️ ${totalAuto}x AUTO +${totalEarn}🪙`);
 const area=document.getElementById('moonArea');
-const burstCount=Math.min(totalAuto,50);
+const burstCount=Math.min(totalAuto,80);
 for(let i=0;i<burstCount;i++){
 setTimeout(()=>{
 const x=10+Math.random()*(rect.width-20);
@@ -492,20 +493,20 @@ ft.style.color='#ffd200';
 ft.style.fontSize='0.9rem';
 document.body.appendChild(ft);
 setTimeout(()=>ft.remove(),1000);
-},i*40);
+},i*5);
 }
 setTimeout(()=>{
 const ft=document.createElement('div');
 ft.className='float-res';
 ft.textContent=`⚡ ${totalAuto}x AUTO +${totalEarn}🪙 ⚡`;
-ft.style.left=(rect.left+rect.width/2-100)+'px';
+ft.style.left=(rect.left+rect.width/2-120)+'px';
 ft.style.top=(rect.top+rect.height/2-20)+'px';
 ft.style.color='#00e676';
-ft.style.fontSize='1.6rem';
+ft.style.fontSize='2rem';
 ft.style.fontWeight='bold';
 document.body.appendChild(ft);
-setTimeout(()=>ft.remove(),2000);
-},burstCount*40+100);
+setTimeout(()=>ft.remove(),3000);
+},burstCount*5+200);
 }
 
 function endTurn(){
@@ -543,7 +544,7 @@ document.getElementById('progLabel').textContent=`🌍 Terraforming: ${Math.floo
 const inc=incomePerTurn(p);
 const clickPow=1+G.level+Math.floor(totalBldgs(p)/2);
 const autoTotal=inc.autoclick+(p.autoClickPower||0);
-document.getElementById('autoStatus').innerHTML=`🖱️+${clickPow}/klik | 💰+${inc.money}/t | 🌍+${inc.terra}/t | 💎+${inc.gems}/t | 🖱️Auto+${autoTotal}/t | 🏗️${totalBldgs(p)} bldgs`;
+document.getElementById('autoStatus').innerHTML=`🖱️+${clickPow}/klik (x3 auto) | 💰+${inc.money}/t | 🌍+${inc.terra}/t | 💎+${inc.gems}/t | 🖱️Auto+${autoTotal}/t | 🏗️${totalBldgs(p)} bldgs`;
 
 const grid=document.getElementById('shopGrid');
 const entries=Object.entries(B);
@@ -713,7 +714,7 @@ case'/setcoins':const sa=parseInt(args[0])||0;if(sa<0){cmdLog('❌ /setcoins [aa
 case'/resetcoins':G.p.money=0;render();saveGame();cmdLog('🔄 Coins gereset');break;
 case'/gems':const ga=parseInt(args[0])||0;if(ga<=0){cmdLog('❌ /gems [aantal]');break;}G.p.gems=(G.p.gems||0)+ga;render();saveGame();cmdLog(`💎 +${ga} gems!`);break;
 case'/setgems':const gs=parseInt(args[0])||0;if(gs<0){cmdLog('❌ /setgems [aantal]');break;}G.p.gems=gs;render();saveGame();cmdLog(`💎 Gems = ${gs}`);break;
-case'/autoclick':case'/autoclik':case'/autoclcik':const ac=parseInt(args[0])||0;if(ac<=0||ac>100000){cmdLog('❌ /autoclick [1-100000]');break;}G.p.autoClickPower=(G.p.autoClickPower||0)+ac;render();saveGame();cmdLog(`🖱️ +${ac} auto clicks per turn! (totaal: ${G.p.autoClickPower})`);alert(`🖱️ +${ac} auto clicks!\nKlik op EINDE BEURT om ze te zien!`);break;
+case'/autoclick':case'/autoclik':case'/autoclcik':const ac=parseInt(args[0])||0;if(ac<=0||ac>100000){cmdLog('❌ /autoclick [1-100000]');break;}G.p.autoClickPower=(G.p.autoClickPower||0)+ac;const acMul=3;const acPow=1+G.level+Math.floor(totalBldgs(G.p)/2);G.p.money+=ac*acPow*acMul;render();saveGame();cmdLog(`🖱️ +${ac} auto clicks/t! +${ac*acPow*acMul}🪙 direct! (totaal: ${G.p.autoClickPower})`);break;
 case'/setautoclick':const sac=parseInt(args[0])||0;if(sac<0||sac>100000){cmdLog('❌ /setautoclick [0-100000]');break;}G.p.autoClickPower=sac;render();saveGame();cmdLog(`🖱️ Auto clicks = ${sac}`);break;
 case'/buy':
 if(!isAdmin){cmdLog('❌ Alleen admin!');break;}
