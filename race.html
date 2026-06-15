@@ -134,6 +134,11 @@ html,body{width:100%;height:100%}
 <div class="cgrid" id="colorGrid"></div>
 <div class="t" style="margin-top:4px">⚡ Upgrades</div>
 <div class="ug-row" id="upgradeRow"></div>
+<div class="t" style="margin-top:4px">⚙️ Schakeling</div>
+<div style="display:flex;gap:6px;justify-content:center">
+<button class="ug-btn" id="btnManual" style="flex:1;padding:8px">🔧 Handmatig</button>
+<button class="ug-btn" id="btnAuto" style="flex:1;padding:8px">🤖 Automatisch</button>
+</div>
 </div>
 <button class="btn-big btn-pri" id="goRace">🏁 GA RACEN!</button>
 </div>
@@ -159,12 +164,12 @@ html,body{width:100%;height:100%}
 <div class="hud-gear" id="gearBox"></div>
 <div class="hud-bottom">
 <div style="display:flex;gap:4px;pointer-events:auto">
-<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnGas">⬆ GAS [W]</button>
-<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnBrake">⬇ REM [S]</button>
-<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnBoost">🚀 BOOST [A]</button>
+<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnGas">⬆ [W]</button>
+<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnBrake">⬇ [S]</button>
+<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnBoost">🚀 [A]</button>
 </div>
 <div style="color:rgba(255,255,255,0.15);font-size:0.45rem;pointer-events:auto">
-<span>W↑GAS S↓REM A␣BOOST</span>
+<span id="ctrlHint">W↑GAS S↓REM A␣BOOST</span>
 <span id="cDist">0</span>m | <span id="cTime">0:00</span>
 <button style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:6px;color:#888;padding:4px 8px;cursor:pointer;font-size:0.5rem;margin-left:6px;font-family:'Fredoka',sans-serif" id="exitRace">✕</button>
 </div>
@@ -200,9 +205,9 @@ const CARS=[
 {id:'a',name:'Alien',icon:'🛸',price:8000,speed:12,accel:10,handle:8},
 ];
 const COLS=['#ff0000','#00c8ff','#00e676','#ffd200','#ff6a00','#ff0066','#aa00ff','#fff','#888','#222'];
-let pm,pw,oc,sc,scol,upg;
-function save(){try{localStorage.setItem('r1',pm);localStorage.setItem('r2',pw);localStorage.setItem('r3',JSON.stringify(oc));localStorage.setItem('r4',sc);localStorage.setItem('r5',scol);localStorage.setItem('r6',JSON.stringify(upg));}catch(e){}}
-function load(){try{pm=parseInt(localStorage.getItem('r1'))||500;pw=parseInt(localStorage.getItem('r2'))||0;oc=JSON.parse(localStorage.getItem('r3'))||['s'];sc=localStorage.getItem('r4')||'s';scol=localStorage.getItem('r5')||'#ff0000';upg=JSON.parse(localStorage.getItem('r6'))||{};}catch(e){}}
+let pm,pw,oc,sc,scol,upg,autoShift;
+function save(){try{localStorage.setItem('r1',pm);localStorage.setItem('r2',pw);localStorage.setItem('r3',JSON.stringify(oc));localStorage.setItem('r4',sc);localStorage.setItem('r5',scol);localStorage.setItem('r6',JSON.stringify(upg));localStorage.setItem('r7',autoShift?'1':'0');}catch(e){}}
+function load(){try{pm=parseInt(localStorage.getItem('r1'))||500;pw=parseInt(localStorage.getItem('r2'))||0;oc=JSON.parse(localStorage.getItem('r3'))||['s'];sc=localStorage.getItem('r4')||'s';scol=localStorage.getItem('r5')||'#ff0000';upg=JSON.parse(localStorage.getItem('r6'))||{};autoShift=localStorage.getItem('r7')==='1';}catch(e){}}
 load();
 
 let G=null,currentMode='q',raceLoop=null,raceId=null;
@@ -302,6 +307,7 @@ return;
 if(G.started){
 const accel=p.stats.a*2.5;
 const drag=p.speed*0.03;
+if(autoShift){const mg=Math.min(Math.floor(p.speed/35)+1,6);p.gear=Math.max(1,mg);}
 if(p.gear>0)p.speed=clamp(p.speed+accel-drag,0,p.stats.s*p.gear*60);
 else p.speed=Math.max(0,p.speed-drag*3);
 p.speed=clamp(p.speed,0,500);
@@ -328,6 +334,7 @@ G.allCars.sort((a,b)=>b.dist-a.dist);
 const pos=G.allCars.indexOf(G.player)+1;
 
 // HUD
+document.getElementById('ctrlHint').textContent=autoShift?'W↑GAS S↓REM A␣BOOST (AUTO)':'W↑SCHAKEL S↓SCHAKEL A␣BOOST';
 document.getElementById('hSpeed').textContent=Math.floor(p.speed*2.2);
 document.getElementById('hLap').textContent=`${Math.min(p.lap+1,p.maxLaps)}/${p.maxLaps}`;
 document.getElementById('hPos').textContent=`${pos}e`;
@@ -580,7 +587,11 @@ ctx.fillRect(cx-ks*0.2*i,i*8+carY+18,tw,4);
 // Gear display
 if(G.started){
 const g=G.player.gear;
+if(autoShift){
+document.getElementById('gearBox').innerHTML=`<div style="font-size:0.5rem;color:rgba(255,255,255,0.3);text-align:center;width:100%;padding:2px">AUTO ${g}</div>`;
+}else{
 document.getElementById('gearBox').innerHTML=[1,2,3,4,5,6].map(i=>`<div class="gear-btn ${i<=g?'active':''}" style="${i<=g?'background:rgba(255,210,0,0.2);border-color:#ffd200':''}">${i}</div>`).join('');
+}
 }
 
 // Countdown (Mario Kart style)
@@ -607,11 +618,17 @@ rMenu();
 function raceAction(a){
 if(!G||G.winner)return;
 G.started=true;const p=G.player;
+if(autoShift){
+switch(a){
+case'gas':p.speed=clamp(p.speed+p.stats.a*8,0,500);break;
+case'brake':p.speed=Math.max(0,p.speed-p.stats.a*12);break;
+case'boost':if(p.boost<=0)break;p.boost--;p.speed+=p.stats.s*20;break;
+}}else{
 switch(a){
 case'gas':p.gear=Math.min(p.gear+1,6);p.speed=Math.max(p.speed+5,5);break;
 case'brake':p.gear=Math.max(p.gear-1,0);p.speed*=0.3;break;
 case'boost':if(p.boost<=0)break;p.boost--;p.speed+=p.stats.s*20;break;
-}
+}}
 }
 
 function showScreen(id){
@@ -640,6 +657,9 @@ document.getElementById('upgradeRow').addEventListener('click',function(e){
 const b=e.target.closest('.ug-btn');if(!b||b.disabled)return;
 upCar(b.dataset.k);
 });
+function upShiftUI(){document.getElementById('btnManual').style.borderColor=autoShift?'rgba(255,255,255,0.1)':'#ffd200';document.getElementById('btnAuto').style.borderColor=autoShift?'#ffd200':'rgba(255,255,255,0.1)';}
+document.getElementById('btnManual').onclick=()=>{autoShift=false;save();upShiftUI();};
+document.getElementById('btnAuto').onclick=()=>{autoShift=true;save();upShiftUI();};
 document.getElementById('goRace').addEventListener('click',goRaceTab);
 document.getElementById('topRaceBtn').addEventListener('click',goRaceTab);
 function goRaceTab(){
@@ -669,7 +689,7 @@ document.querySelector('.race-view').requestFullscreen?.()||document.querySelect
 // Keyboard
 document.addEventListener('keydown',function(e){
   if(document.activeElement?.tagName==='INPUT')return;
-  switch(e.key){case'w':case'W':case'ArrowUp':raceAction('gas');break;case's':case'S':case'ArrowDown':raceAction('brake');break;case'a':case'A':case' ':e.preventDefault();raceAction('boost');break;}
+  switch(e.key){case'w':case'W':raceAction('gas');break;case's':case'S':raceAction('brake');break;case'a':case'A':case' ':e.preventDefault();raceAction('boost');break;}
 });
 
 // Profile
@@ -731,7 +751,7 @@ case'/cleardata':if(confirm('Wissen?')){localStorage.clear();alert('Gewist!');}b
 case'/report':if(!a[0]){alert('❌ /report [naam]');break;}alert('🚨 '+a[0]+' gerapporteerd!');break;
 default:alert('❌ /admin, /help, /speler, /kick, /ban, /unban, /mute, /unmute, /kill, /freeze, /unfreeze, /slap, /explode, /heal, /god, /fly, /invisible, /speed, /jump, /coins, /setcoins, /resetcoins, /time, /day, /night, /weather, /clear, /reset, /restart, /announce, /shutdown, /pm, /ip, /ping, /report');}}
 
-updStats();gGrid();rMenu();
+updStats();gGrid();rMenu();upShiftUI();
 });
 
 function updStats(){document.getElementById('money').textContent=pm;document.getElementById('wins').textContent=pw;document.getElementById('carCount').textContent=oc.length;}
