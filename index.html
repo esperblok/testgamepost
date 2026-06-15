@@ -4141,36 +4141,58 @@ if(loggedInUser)logActivity(loggedInUser,'Terug op startscherm');console.log('ðŸ
 </div>
 </div>
 <div class="group">
+<div class="lbl">Resolutie Schaal</div>
+<div class="desc">Lager = hogere FPS (maakt game waziger)</div>
+<div class="quality-opt" id="scaleOpts">
+<div class="qbtn" data-s="0.25">25%</div>
+<div class="qbtn" data-s="0.5">50%</div>
+<div class="qbtn active" data-s="0.75">75%</div>
+<div class="qbtn" data-s="1">100%</div>
+</div>
+</div>
+<div class="group">
+<div class="lbl">FPS Limiet</div>
+<div class="desc">Maximale frames per seconde</div>
+<div class="quality-opt" id="fpsOpts">
+<div class="qbtn" data-f="30">30 FPS</div>
+<div class="qbtn active" data-f="60">60 FPS</div>
+<div class="qbtn" data-f="120">120 FPS</div>
+<div class="qbtn" data-f="0">Onbeperkt</div>
+</div>
+</div>
+<div class="group">
+<div class="lbl">FPS Teller</div>
+<div class="quality-opt" id="fpsShowOpts" style="gap:8px">
+<div class="qbtn" data-c="0" style="flex:0.5">Uit</div>
+<div class="qbtn active" data-c="1" style="flex:0.5">Aan</div>
+</div>
+</div>
+<div class="group">
 <div class="lbl">Info</div>
-<div class="desc" style="font-size:0.5rem">Kwaliteit wordt opgeslagen en toegepast op games die dit ondersteunen (Race, etc.)</div>
+<div class="desc" style="font-size:0.5rem">Deze instellingen worden opgeslagen en toegepast op alle ondersteunde games. Lagere resolutie = veel hogere FPS! ðŸ˜Ž</div>
 </div>
 </div>
 </div>
 
 <script>
 (function(){
-const key='sbg_gfx';
-let quality=localStorage.getItem(key)||'high';
+const SK=localStorage;
+const keys={gfx:'sbg_gfx',scale:'sbg_scale',fps:'sbg_fps',fpsShow:'sbg_fpsshow'};
+const vals={gfx:SK.getItem(keys.gfx)||'high',scale:parseFloat(SK.getItem(keys.scale))||0.75,fps:parseInt(SK.getItem(keys.fps))||60,fpsShow:SK.getItem(keys.fpsShow)==='1'?1:0};
 function applyUI(){
-document.querySelectorAll('#qualityOpts .qbtn').forEach(b=>{
-b.classList.toggle('active',b.dataset.q===quality);
-});
+document.querySelectorAll('#qualityOpts .qbtn').forEach(b=>b.classList.toggle('active',b.dataset.q===vals.gfx));
+document.querySelectorAll('#scaleOpts .qbtn').forEach(b=>b.classList.toggle('active',parseFloat(b.dataset.s)===vals.scale));
+document.querySelectorAll('#fpsOpts .qbtn').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.f)===vals.fps));
+document.querySelectorAll('#fpsShowOpts .qbtn').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.c)===vals.fpsShow));
 }
-function setQuality(q){
-quality=q;localStorage.setItem(key,q);applyUI();
-}
-document.getElementById('settingsBtn').onclick=function(){
-document.getElementById('settingsOverlay').classList.add('open');
-};
-document.getElementById('settingsClose').onclick=function(){
-document.getElementById('settingsOverlay').classList.remove('open');
-};
-document.getElementById('settingsOverlay').onclick=function(e){
-if(e.target===this)this.classList.remove('open');
-};
-document.querySelectorAll('#qualityOpts .qbtn').forEach(b=>{
-b.onclick=function(){setQuality(this.dataset.q);};
-});
+function setVal(k,v){vals[k]=v;SK.setItem(keys[k],v);applyUI();}
+document.getElementById('settingsBtn').onclick=()=>document.getElementById('settingsOverlay').classList.add('open');
+document.getElementById('settingsClose').onclick=()=>document.getElementById('settingsOverlay').classList.remove('open');
+document.getElementById('settingsOverlay').onclick=function(e){if(e.target===this)this.classList.remove('open');};
+document.querySelectorAll('#qualityOpts .qbtn').forEach(b=>b.onclick=function(){setVal('gfx',this.dataset.q);});
+document.querySelectorAll('#scaleOpts .qbtn').forEach(b=>b.onclick=function(){setVal('scale',this.dataset.s);});
+document.querySelectorAll('#fpsOpts .qbtn').forEach(b=>b.onclick=function(){setVal('fps',this.dataset.f);});
+document.querySelectorAll('#fpsShowOpts .qbtn').forEach(b=>b.onclick=function(){setVal('fpsShow',this.dataset.c);});
 applyUI();
 })();
 </script>
