@@ -240,6 +240,9 @@ for(let i=0;i<m.opp;i++)ol.innerHTML+=`<div class="opp-row"><span>${n[i]}</span>
 function clvl(id){const u=upg[id]||{};return(u.s||0)+(u.a||0)+(u.h||0);}
 
 // ======== 3D ROAD RACER ========
+const SBG_SCALE=parseFloat(localStorage.getItem('sbg_scale'))||0.75;
+const SBG_FPS_LIMIT=parseInt(localStorage.getItem('sbg_fps'))||60;
+const SBG_FPS_SHOW=localStorage.getItem('sbg_fpsshow')==='1';
 const GFX_QUALITY=localStorage.getItem('sbg_gfx')||'high';
 const GFX_SETTINGS={
 low:{dd:120,seg:200,trees:false,houses:false,shadows:false,particles:false,curbs:false,clouds:false},
@@ -278,12 +281,16 @@ document.getElementById('menuScreen').classList.remove('active');
 
 const c=document.getElementById('raceCanvas');
 const wrap=document.querySelector('.race-view');
-function resize(){c.width=wrap.clientWidth;c.height=wrap.clientHeight}
+function resize(){
+const rw=wrap.clientWidth,rh=wrap.clientHeight;
+c.width=Math.floor(rw*SBG_SCALE);c.height=Math.floor(rh*SBG_SCALE);
+c.style.width=rw+'px';c.style.height=rh+'px';
+}
 resize();window.addEventListener('resize',resize);
 
 const ctx=c.getContext('2d');
 ctx.imageSmoothingEnabled=GFX_QUALITY!=='low';
-let lastTime=0;
+let lastTime=0,fpsTimer=0,fpsCount=0,fpsDisplay=0;
 
 // Generate track segments (random curves)
 const track=[];let curve=0;
@@ -296,7 +303,7 @@ function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v))}
 
 function raceLoop(time){
 if(!G||G.winner)return;
-if(time-lastTime<20){raceId=requestAnimationFrame(raceLoop);return}
+if(SBG_FPS_LIMIT>0&&time-lastTime<1000/SBG_FPS_LIMIT){raceId=requestAnimationFrame(raceLoop);return}
 lastTime=time;
 const w=c.width,h=c.height;
 
@@ -350,6 +357,11 @@ document.getElementById('hPos').textContent=`${pos}e`;
 document.getElementById('cDist').textContent=Math.floor(p.dist||p.seg);
 const mins=Math.floor(G.time/60);const secs=Math.floor(G.time%60);
 document.getElementById('cTime').textContent=`${mins}:${secs.toString().padStart(2,'0')}`;
+
+// FPS counter
+fpsCount++;
+fpsTimer+=0.02;
+if(fpsTimer>=1){fpsDisplay=fpsCount;fpsCount=0;fpsTimer=0;}
 
 // Draw
 draw3D(ctx,w,h,track,p,G,false);
@@ -636,6 +648,14 @@ ctx.fillStyle='#ffd200';ctx.font='2.5rem Fredoka,sans-serif';ctx.textAlign='cent
 ctx.fillText(nums[idx],cx,cy);
 }}
 ctx.textBaseline='alphabetic';
+
+// FPS display
+if(SBG_FPS_SHOW){
+ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(w-70,6,64,22);
+ctx.fillStyle='#00e676';ctx.font='bold 13px monospace';ctx.textAlign='right';ctx.textBaseline='top';
+ctx.fillText(fpsDisplay+' FPS',w-10,9);
+ctx.textBaseline='alphabetic';
+}
 }
 
 function closeResult(){
