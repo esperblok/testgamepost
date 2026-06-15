@@ -367,36 +367,38 @@ const cx=w/2,cy=h*0.6;
 const fov=Math.PI*0.5;
 const baseX=cx,baseY=h;
 
-// Sky - Mario Kart blue sky gradient
+// Sky - Roblox bright blue
 const sky=ctx.createLinearGradient(0,0,0,cy);
-sky.addColorStop(0,'#4a90d9');sky.addColorStop(0.3,'#6bb5ff');sky.addColorStop(0.6,'#8fcfff');sky.addColorStop(1,'#b5e0ff');
+sky.addColorStop(0,'#0066cc');sky.addColorStop(0.4,'#3399ff');sky.addColorStop(0.7,'#66bbff');sky.addColorStop(1,'#99ddff');
 ctx.fillStyle=sky;ctx.fillRect(0,0,w,cy);
 
-// Clouds
-const cloudPositions=[[0.2,0.08,60],[0.5,0.12,80],[0.8,0.06,50],[0.35,0.15,45],[0.65,0.1,55]];
-for(const [cpx,cpY,cs] of cloudPositions){
-ctx.fillStyle='rgba(255,255,255,0.6)';
-const cy2=cpY*cy;
-ctx.beginPath();ctx.arc(cpx*w,cy2,cs,0,Math.PI*2);ctx.fill();
-ctx.beginPath();ctx.arc(cpx*w+cs*0.7,cy2-cs*0.3,cs*0.7,0,Math.PI*2);ctx.fill();
-ctx.beginPath();ctx.arc(cpx*w+cs*1.2,cy2,cs*0.6,0,Math.PI*2);ctx.fill();
-ctx.beginPath();ctx.arc(cpx*w-cs*0.6,cy2+cs*0.2,cs*0.5,0,Math.PI*2);ctx.fill();
+// Clouds - Roblox block style
+const cloudPositions=[[0.15,0.08,50,25],[0.45,0.12,70,30],[0.78,0.06,40,20],[0.3,0.15,35,18],[0.6,0.1,45,22]];
+for(const [cpx,cpY,cw2,ch2] of cloudPositions){
+ctx.fillStyle='rgba(255,255,255,0.7)';
+ctx.fillRect(cpx*w-cw2/2,cpY*cy-ch2/2,cw2,ch2);
+ctx.fillRect(cpx*w-cw2/2+cw2*0.3,cpY*cy-ch2/2-ch2*0.3,cw2*0.6,ch2*0.7);
+ctx.fillRect(cpx*w-cw2/2-cw2*0.2,cpY*cy-ch2/2+ch2*0.1,cw2*0.4,ch2*0.5);
 }
 
-// Distant hills
-ctx.fillStyle='rgba(60,140,60,0.3)';
-for(let i=0;i<5;i++){
-const hx=w*(i/5)-w/10,hy=cy*0.5,hw=w/4,hh=cy*0.2;
-ctx.beginPath();ctx.moveTo(hx,hy+hh);ctx.quadraticCurveTo(hx+hw/2,hy-hh*0.5,hx+hw,hy+hh);ctx.fill();
+// Distant hills - blocky Roblox style
+for(let i=0;i<6;i++){
+ctx.fillStyle=`hsl(${100+i*20},50%,${30+i*5}%)`;
+const hx=w*(i/6)-w/12,hy=cy*0.5,hw=w/3,hh=cy*0.15;
+ctx.fillRect(hx,hy+hh-hh,hw,hh+10);
+ctx.fillRect(hx+hw*0.1,hy+hh-hh*1.3,hw*0.3,hh*1.3);
+ctx.fillRect(hx+hw*0.5,hy+hh-hh*1.5,hw*0.35,hh*1.5);
 }
 
-// Ground (grass)
-ctx.fillStyle='#4a8c3f';ctx.fillRect(0,cy,w,h-cy);
+// Ground - Roblox grass green
+ctx.fillStyle='#5cad3f';ctx.fillRect(0,cy,w,h-cy);
 
-// Grass stripes (Mario Kart style)
-for(let i=0;i<12;i++){
-ctx.fillStyle=i%2===0?'rgba(60,140,50,0.3)':'rgba(40,120,30,0.2)';
-ctx.fillRect(0,cy+i*(h-cy)/12,w,(h-cy)/12);
+// Grass patches (blocky grid like Roblox terrain)
+for(let i=0;i<16;i++){
+for(let j=0;j<8;j++){
+ctx.fillStyle=(i+j)%2===0?'rgba(70,170,50,0.25)':'rgba(50,140,30,0.15)';
+ctx.fillRect(i*w/16,cy+j*(h-cy)/8,w/16,(h-cy)/8);
+}
 }
 
 // Finish line position
@@ -437,93 +439,108 @@ const isCurb2=n%12>=3&&n%12<6&&n>4;
 // Road
 if(isFinish){
 ctx.fillStyle=`rgba(80,80,80,${shade})`;
-ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.closePath();ctx.fill();
-// Checkered pattern
+ctx.fillRect(x1,y1,x2-x1,y2-y1);
 const cw=(x2-x1)/12;
 for(let c=0;c<12;c++){
 ctx.fillStyle=(c+Math.floor(n))%2===0?'rgba(255,255,255,0.9)':'rgba(30,30,30,0.9)';
 ctx.fillRect(x1+c*cw-1,y1,cw+2,y2-y1);
 }
 } else {
-// Road surface
 ctx.fillStyle=`rgba(90,90,90,${shade})`;
-ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.closePath();ctx.fill();
+ctx.fillRect(x1,y1,x2-x1,y2-y1);
 
-// Road edge (left)
-ctx.fillStyle=`rgba(255,255,255,${shade*0.15})`;
-ctx.fillRect(x1-2,y1,3,y2-y1);
-ctx.fillRect(x2-1,y1,3,y2-y1);
+// Road edge - thicker
+ctx.fillStyle=`rgba(255,255,255,${shade*0.2})`;
+ctx.fillRect(x1-3,y1,4,y2-y1);
+ctx.fillRect(x2-1,y1,4,y2-y1);
 
-// Curbs (red/white)
+// Curbs - Roblox brick style
 if(isCurb){
+const curbH=(y2-y1)/3;
+for(let b=0;b<3;b++){
 ctx.fillStyle=n%2===0?`rgba(255,50,50,${shade})`:`rgba(255,255,255,${shade})`;
-ctx.fillRect(x1-6,y1,6,y2-y1);
-ctx.fillRect(x2,y1,6,y2-y1);
-}
+ctx.fillRect(x1-7,y1+b*curbH,7,curbH-1);
+ctx.fillRect(x2,y1+b*curbH,7,curbH-1);
+}}
 if(isCurb2){
 ctx.fillStyle=n%4<2?`rgba(255,50,50,${shade*0.6})`:`rgba(255,255,255,${shade*0.6})`;
-ctx.fillRect(x1-3,y1,3,y2-y1);
-ctx.fillRect(x2,y1,3,y2-y1);
+ctx.fillRect(x1-4,y1,4,y2-y1);
+ctx.fillRect(x2,y1,4,y2-y1);
 }
 }
 
-// Lane markings (center dashed)
+// Lane markings
 if(z%6<3&&z>4){
-ctx.fillStyle=`rgba(255,255,255,${shade*0.25})`;
+ctx.fillStyle=`rgba(255,255,255,${shade*0.3})`;
 const lx=baseX+curveX;
-ctx.fillRect(lx-1.5,y1,3,y2-y1);
+ctx.fillRect(lx-2,y1,4,y2-y1);
 }
 
 // Grass on sides
-ctx.fillStyle=`rgba(60,140,50,${shade*0.6})`;
-const grassL=x1-roadW*0.3;
-const grassR=x2+roadW*0.3;
+ctx.fillStyle=`rgba(50,170,40,${shade*0.5})`;
+const grassL=x1-roadW*0.4;
+const grassR=x2+roadW*0.4;
 ctx.fillRect(grassL,y1,x1-grassL,y2-y1);
 ctx.fillRect(x2,y1,grassR-x2,y2-y1);
 
-// Trees (Mario Kart style - round green)
-if(z%30<2&&z>8){
+// Roblox-style blocky trees (cube on a trunk)
+if(z%28<2&&z>8){
 const side=n%2===0?-1:1;
-const tx=baseX+curveX+side*roadW*1.1;
+const tx=baseX+curveX+side*roadW*1.2;
 const treeY=Math.min(y1,y2);
-const treeH=50*scale;
-// Trunk
+const ts=16*scale;
 ctx.fillStyle=`rgba(120,80,50,${shade})`;
-ctx.fillRect(tx-2,treeY-treeH*0.3,4,treeH*0.3);
-// Foliage
-ctx.fillStyle=`rgba(40,${130+Math.floor(Math.random()*40)},30,${shade})`;
-ctx.beginPath();ctx.arc(tx,treeY-treeH*0.5,treeH*0.35,0,Math.PI*2);ctx.fill();
-ctx.fillStyle=`rgba(50,${150+Math.floor(Math.random()*30)},40,${shade})`;
-ctx.beginPath();ctx.arc(tx-4,treeY-treeH*0.6,treeH*0.25,0,Math.PI*2);ctx.fill();
-ctx.beginPath();ctx.arc(tx+5,treeY-treeH*0.55,treeH*0.2,0,Math.PI*2);ctx.fill();
+ctx.fillRect(tx-2,treeY-ts*1.5,4,ts*0.8);
+ctx.fillStyle=`rgba(30,${160+Math.floor(Math.random()*40)},30,${shade})`;
+ctx.fillRect(tx-ts/2,treeY-ts*2,ts,ts);
+ctx.fillStyle=`rgba(40,${180+Math.floor(Math.random()*30)},40,${shade*0.8})`;
+ctx.fillRect(tx-ts/3,treeY-ts*2.3,ts*0.7,ts*0.5);
 }
 
-// Coins on road (golden spinning)
-if(z%15<1.5&&z>5&&n%7!==0){
+// Roblox houses (blocky colored buildings)
+if(z%45<2&&z>12&&n%17===0){
+const side=n%3===0?-1:1;
+const hx=baseX+curveX+side*roadW*1.5;
+const hy2=Math.min(y1,y2);
+const hs=35*scale;
+ctx.fillStyle=`hsl(${n*37%360},60%,50%)`;
+ctx.fillRect(hx-hs/2,hy2-hs*1.5,hs,hs);
+ctx.fillStyle=`hsl(${n*37%360},50%,35%)`;
+ctx.fillRect(hx-hs/2,hy2-hs*1.5,hs,hs*0.3);
+ctx.fillStyle='rgba(255,255,200,0.4)';
+ctx.fillRect(hx-hs/4,hy2-hs,hs/4,hs/4);
+ctx.fillRect(hx+hs/8,hy2-hs,hs/4,hs/4);
+}
+
+// Coins - Roblox gold brick coins
+if(z%14<1.5&&z>5&&n%7!==0){
 const coinX=baseX+curveX+(n%2===0?roadW*0.25:-roadW*0.25);
+const coinY=Math.min(y1,y2)-5;
+const cs=5*scale;
 ctx.fillStyle=`rgba(255,210,0,${shade*0.9})`;
-ctx.shadowColor='rgba(255,210,0,0.4)';ctx.shadowBlur=8;
-ctx.beginPath();ctx.arc(coinX,Math.min(y1,y2)-5,6*scale,0,Math.PI*2);ctx.fill();
-ctx.shadowBlur=0;
-ctx.fillStyle='rgba(255,255,255,0.6)';ctx.font=`${Math.floor(5*scale)}px sans-serif`;ctx.textAlign='center';
-ctx.fillText('$',coinX,Math.min(y1,y2)-2);
+ctx.fillRect(coinX-cs,coinY-cs,cs*2,cs*2);
+ctx.fillStyle=`rgba(255,180,0,${shade*0.6})`;
+ctx.fillRect(coinX-cs+1,coinY-cs+1,cs*2-2,2);
+ctx.fillStyle=`rgba(255,255,200,${shade*0.4})`;
+ctx.fillRect(coinX-cs+2,coinY-cs+3,cs*2-4,2);
 }
 
-// ? Item boxes (Mario Kart style)
+// ? Item boxes - Roblox brick style
 if(z%60<3&&z>15&&n%13===0){
 const bx=baseX+curveX+roadW*0.45;
 const by=Math.min(y1,y2)-20*scale;
 const bw=16*scale,bh=16*scale;
-ctx.fillStyle=`rgba(255,210,0,${shade})`;
-ctx.shadowColor='rgba(255,210,0,0.3)';ctx.shadowBlur=10;
+ctx.fillStyle=`rgba(255,200,0,${shade})`;
 ctx.fillRect(bx-bw/2,by-bh,bw,bh);
-ctx.shadowBlur=0;
+ctx.fillStyle=`rgba(200,150,0,${shade*0.6})`;
+ctx.fillRect(bx-bw/2,by-bh,bw,3);
+ctx.fillRect(bx-bw/2,by-3,bw,3);
 ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font=`bold ${Math.floor(10*scale)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='bottom';
 ctx.fillText('?',bx,by);
 ctx.textBaseline='alphabetic';
 }
 
-// AI karts on track
+// AI karts on track - Roblox block style
 if(n>3&&n<50&&G){
 for(const ai of G.ai){
 const aiDist=(((ai.seg-baseSeg)%TRACK_SEGMENTS)+TRACK_SEGMENTS)%TRACK_SEGMENTS;
@@ -533,54 +550,58 @@ const acy=Math.min(y1,y2);
 const carZ=Math.min(1,1-(z/50));
 const ks=8*carZ+4;
 
-// Kart body
 ctx.shadowColor='rgba(0,0,0,0.2)';ctx.shadowBlur=4;
 ctx.fillStyle=ai.col;
-ctx.beginPath();ctx.roundRect(acx-ks,acy-ks*1.2,ks*2,ks*2.4,2);ctx.fill();
-// Windshield
-ctx.fillStyle='rgba(150,200,255,0.6)';
-ctx.beginPath();ctx.roundRect(acx-ks*0.6,acy-ks*0.8,ks*1.2,ks*0.6,1);ctx.fill();
-// Character icon
+ctx.fillRect(acx-ks,acy-ks*1.3,ks*2,ks*2.6);
+ctx.fillStyle='rgba(255,255,255,0.2)';
+ctx.fillRect(acx-ks+1,acy-ks*1.3+1,ks*2-2,3);
+ctx.fillStyle='rgba(150,200,255,0.7)';
+ctx.fillRect(acx-ks*0.5,acy-ks*0.7,ks*1,ks*0.5);
 ctx.shadowBlur=0;
-ctx.font=`${Math.floor(8*carZ+3)}px sans-serif`;ctx.textAlign='center';
-ctx.fillText(ai.icon,acx,acy+ks*0.3);
+ctx.fillStyle='#333';
+ctx.fillRect(acx-ks-1,acy-ks*0.5,2,ks*0.4);
+ctx.fillRect(acx+ks-1,acy-ks*0.5,2,ks*0.4);
+ctx.fillRect(acx-ks-1,acy+ks*0.3,2,ks*0.4);
+ctx.fillRect(acx+ks-1,acy+ks*0.3,2,ks*0.4);
 break;
 }}
 }
 }
 
-// Player kart (Mario Kart style - seen from behind)
+// Player kart - Roblox block style
 const carY=h*0.82;
 const ks=24;
 // Shadow
 ctx.fillStyle='rgba(0,0,0,0.2)';
-ctx.beginPath();ctx.ellipse(cx,carY+18,ks*1.2,6,0,0,Math.PI*2);ctx.fill();
+ctx.fillRect(cx-ks*1.2,carY+16,ks*2.4,6);
 // Kart body
 ctx.shadowColor='rgba(0,0,0,0.3)';ctx.shadowBlur=8;
 ctx.fillStyle=scol;
-ctx.beginPath();ctx.roundRect(cx-ks,carY-ks*1.3,ks*2,ks*2.6,4);ctx.fill();
-// Lighter top
-ctx.fillStyle='rgba(255,255,255,0.15)';
-ctx.beginPath();ctx.roundRect(cx-ks+3,carY-ks*1.3+3,ks*2-6,ks*0.8,3);ctx.fill();
+ctx.fillRect(cx-ks,carY-ks*1.4,ks*2,ks*2.8);
+ctx.fillStyle='rgba(255,255,255,0.12)';
+ctx.fillRect(cx-ks+2,carY-ks*1.4+2,ks*2-4,ks*0.6);
 // Windshield
-ctx.fillStyle='rgba(150,200,255,0.5)';
-ctx.beginPath();ctx.roundRect(cx-ks*0.5,carY-ks*0.9,ks*1,ks*0.5,2);ctx.fill();
-// Wheels
+ctx.fillStyle='rgba(150,200,255,0.6)';
+ctx.fillRect(cx-ks*0.6,carY-ks*0.8,ks*1.2,ks*0.5);
+// Wheels - Roblox cylinder style (rectangles)
 ctx.shadowBlur=0;
-ctx.fillStyle='#333';
-ctx.beginPath();ctx.roundRect(cx-ks-3,carY-ks*0.7,3,ks*0.5,1);ctx.fill();
-ctx.beginPath();ctx.roundRect(cx+ks,carY-ks*0.7,3,ks*0.5,1);ctx.fill();
-ctx.beginPath();ctx.roundRect(cx-ks-3,carY+ks*0.3,3,ks*0.5,1);ctx.fill();
-ctx.beginPath();ctx.roundRect(cx+ks,carY+ks*0.3,3,ks*0.5,1);ctx.fill();
+ctx.fillStyle='#222';
+ctx.fillRect(cx-ks-4,carY-ks*0.6,4,ks*0.4);
+ctx.fillRect(cx+ks,carY-ks*0.6,4,ks*0.4);
+ctx.fillRect(cx-ks-4,carY+ks*0.2,4,ks*0.4);
+ctx.fillRect(cx+ks,carY+ks*0.2,4,ks*0.4);
+// Headlight
+ctx.fillStyle='rgba(255,255,200,0.5)';
+ctx.fillRect(cx-ks*0.4,carY-ks*1.4-2,ks*0.3,2);
+ctx.fillRect(cx+ks*0.1,carY-ks*1.4-2,ks*0.3,2);
 // Character face icon
 ctx.font='1.2rem sans-serif';ctx.textAlign='center';
 ctx.fillText('🧑',cx,carY+ks*0.3);
-// Speed trail (Mario Kart style)
+// Speed trail (blocky)
 if(G.player.speed>5){
-ctx.fillStyle='rgba(200,200,200,0.1)';
+ctx.fillStyle='rgba(200,200,200,0.08)';
 for(let i=1;i<4;i++){
-const tw=ks*0.3*(1-i/5);
-ctx.fillRect(cx-ks*0.2*i,i*8+carY+18,tw,4);
+ctx.fillRect(cx-ks*0.15*i,i*6+carY+20,ks*0.3*i,3);
 }
 }
 
