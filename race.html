@@ -240,10 +240,18 @@ for(let i=0;i<m.opp;i++)ol.innerHTML+=`<div class="opp-row"><span>${n[i]}</span>
 function clvl(id){const u=upg[id]||{};return(u.s||0)+(u.a||0)+(u.h||0);}
 
 // ======== 3D ROAD RACER ========
-const TRACK_SEGMENTS=500;
+const GFX_QUALITY=localStorage.getItem('sbg_gfx')||'high';
+const GFX_SETTINGS={
+low:{dd:120,seg:200,trees:false,houses:false,shadows:false,particles:false,curbs:false,clouds:false},
+medium:{dd:200,seg:350,trees:true,houses:false,shadows:false,particles:false,curbs:true,clouds:true},
+high:{dd:300,seg:500,trees:true,houses:true,shadows:true,particles:true,curbs:true,clouds:true},
+ultra:{dd:450,seg:700,trees:true,houses:true,shadows:true,particles:true,curbs:true,clouds:true}
+};
+const GFX=GFX_SETTINGS[GFX_QUALITY]||GFX_SETTINGS.high;
+const TRACK_SEGMENTS=GFX.seg;
 const SEGMENT_LENGTH=200;
 const ROAD_WIDTH=2000;
-const DRAW_DISTANCE=300;
+const DRAW_DISTANCE=GFX.dd;
 
 function startRace(){
 if(raceId){cancelAnimationFrame(raceId);raceId=null;raceLoop=null;}
@@ -274,6 +282,7 @@ function resize(){c.width=wrap.clientWidth;c.height=wrap.clientHeight}
 resize();window.addEventListener('resize',resize);
 
 const ctx=c.getContext('2d');
+ctx.imageSmoothingEnabled=GFX_QUALITY!=='low';
 let lastTime=0;
 
 // Generate track segments (random curves)
@@ -373,15 +382,16 @@ sky.addColorStop(0,'#0066cc');sky.addColorStop(0.4,'#3399ff');sky.addColorStop(0
 ctx.fillStyle=sky;ctx.fillRect(0,0,w,cy);
 
 // Clouds - Roblox block style
+if(GFX.clouds){
 const cloudPositions=[[0.15,0.08,50,25],[0.45,0.12,70,30],[0.78,0.06,40,20],[0.3,0.15,35,18],[0.6,0.1,45,22]];
 for(const [cpx,cpY,cw2,ch2] of cloudPositions){
 ctx.fillStyle='rgba(255,255,255,0.7)';
 ctx.fillRect(cpx*w-cw2/2,cpY*cy-ch2/2,cw2,ch2);
 ctx.fillRect(cpx*w-cw2/2+cw2*0.3,cpY*cy-ch2/2-ch2*0.3,cw2*0.6,ch2*0.7);
 ctx.fillRect(cpx*w-cw2/2-cw2*0.2,cpY*cy-ch2/2+ch2*0.1,cw2*0.4,ch2*0.5);
-}
+}}
 
-// Distant hills - blocky Roblox style
+// Distant hills
 for(let i=0;i<6;i++){
 ctx.fillStyle=`hsl(${100+i*20},50%,${30+i*5}%)`;
 const hx=w*(i/6)-w/12,hy=cy*0.5,hw=w/3,hh=cy*0.15;
@@ -455,6 +465,7 @@ ctx.fillRect(x1-3,y1,4,y2-y1);
 ctx.fillRect(x2-1,y1,4,y2-y1);
 
 // Curbs - Roblox brick style
+if(GFX.curbs){
 if(isCurb){
 const curbH=(y2-y1)/3;
 for(let b=0;b<3;b++){
@@ -466,7 +477,7 @@ if(isCurb2){
 ctx.fillStyle=n%4<2?`rgba(255,50,50,${shade*0.6})`:`rgba(255,255,255,${shade*0.6})`;
 ctx.fillRect(x1-4,y1,4,y2-y1);
 ctx.fillRect(x2,y1,4,y2-y1);
-}
+}}
 }
 
 // Lane markings
@@ -484,7 +495,7 @@ ctx.fillRect(grassL,y1,x1-grassL,y2-y1);
 ctx.fillRect(x2,y1,grassR-x2,y2-y1);
 
 // Roblox-style blocky trees (cube on a trunk)
-if(z%28<2&&z>8){
+if(GFX.trees&&z%28<2&&z>8){
 const side=n%2===0?-1:1;
 const tx=baseX+curveX+side*roadW*1.2;
 const treeY=Math.min(y1,y2);
@@ -498,7 +509,7 @@ ctx.fillRect(tx-ts/3,treeY-ts*2.3,ts*0.7,ts*0.5);
 }
 
 // Roblox houses (blocky colored buildings)
-if(z%45<2&&z>12&&n%17===0){
+if(GFX.houses&&z%45<2&&z>12&&n%17===0){
 const side=n%3===0?-1:1;
 const hx=baseX+curveX+side*roadW*1.5;
 const hy2=Math.min(y1,y2);
@@ -572,10 +583,9 @@ break;
 const carY=h*0.82;
 const ks=24;
 // Shadow
-ctx.fillStyle='rgba(0,0,0,0.2)';
-ctx.fillRect(cx-ks*1.2,carY+16,ks*2.4,6);
+if(GFX.shadows){ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(cx-ks*1.2,carY+16,ks*2.4,6);}
 // Kart body
-ctx.shadowColor='rgba(0,0,0,0.3)';ctx.shadowBlur=8;
+ctx.shadowColor=GFX.shadows?'rgba(0,0,0,0.3)':'transparent';ctx.shadowBlur=GFX.shadows?8:0;
 ctx.fillStyle=scol;
 ctx.fillRect(cx-ks,carY-ks*1.4,ks*2,ks*2.8);
 ctx.fillStyle='rgba(255,255,255,0.12)';
@@ -598,7 +608,7 @@ ctx.fillRect(cx+ks*0.1,carY-ks*1.4-2,ks*0.3,2);
 ctx.font='1.2rem sans-serif';ctx.textAlign='center';
 ctx.fillText('🧑',cx,carY+ks*0.3);
 // Speed trail (blocky)
-if(G.player.speed>5){
+if(GFX.particles&&G.player.speed>5){
 ctx.fillStyle='rgba(200,200,200,0.08)';
 for(let i=1;i<4;i++){
 ctx.fillRect(cx-ks*0.15*i,i*6+carY+20,ks*0.3*i,3);
