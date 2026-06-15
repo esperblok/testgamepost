@@ -159,11 +159,12 @@ html,body{width:100%;height:100%}
 <div class="hud-gear" id="gearBox"></div>
 <div class="hud-bottom">
 <div style="display:flex;gap:4px;pointer-events:auto">
-<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnGas">⬆ GAS</button>
-<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnBrake">⬇ REM</button>
-<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnBoost">🚀</button>
+<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnGas">⬆ GAS [W]</button>
+<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnBrake">⬇ REM [S]</button>
+<button class="gear-btn" style="width:auto;padding:4px 12px;font-size:0.55rem" id="btnBoost">🚀 BOOST [A]</button>
 </div>
 <div style="color:rgba(255,255,255,0.15);font-size:0.45rem;pointer-events:auto">
+<span>W↑GAS S↓REM A␣BOOST</span>
 <span id="cDist">0</span>m | <span id="cTime">0:00</span>
 <button style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:6px;color:#888;padding:4px 8px;cursor:pointer;font-size:0.5rem;margin-left:6px;font-family:'Fredoka',sans-serif" id="exitRace">✕</button>
 </div>
@@ -667,8 +668,8 @@ document.querySelector('.race-view').requestFullscreen?.()||document.querySelect
 
 // Keyboard
 document.addEventListener('keydown',function(e){
-if(document.activeElement?.tagName==='INPUT')return;
-switch(e.key){case'ArrowUp':case'w':raceAction('gas');break;case'ArrowDown':case's':raceAction('brake');break;case' ':e.preventDefault();raceAction('boost');break;}
+  if(document.activeElement?.tagName==='INPUT')return;
+  switch(e.key){case'w':case'W':case'ArrowUp':raceAction('gas');break;case's':case'S':case'ArrowDown':raceAction('brake');break;case'a':case'A':case' ':e.preventDefault();raceAction('boost');break;}
 });
 
 // Profile
