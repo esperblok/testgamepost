@@ -125,6 +125,20 @@ body{font-family:'Fredoka',sans-serif;background:#12121a;color:#fff;min-height:1
 ::-webkit-scrollbar-track{background:#12121a}
 ::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:3px}
 
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:400;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.settings-overlay.open{display:flex}
+.settings-box{background:#1a1a2a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;max-width:360px;width:90%;max-height:80vh;overflow-y:auto}
+.settings-box h2{font-size:1rem;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.settings-box .close{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;color:#fff;padding:4px 10px;cursor:pointer;font-size:0.65rem;font-family:'Fredoka',sans-serif;float:right}
+.settings-box .group{margin-bottom:16px}
+.settings-box .group .lbl{font-size:0.6rem;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:6px;letter-spacing:1px}
+.settings-box .group .desc{font-size:0.55rem;color:rgba(255,255,255,0.15);margin-bottom:8px}
+.settings-box .quality-opt{display:flex;gap:6px;flex-wrap:wrap}
+.settings-box .qbtn{flex:1;min-width:60px;text-align:center;padding:10px 6px;border-radius:10px;border:2px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:#fff;cursor:pointer;font-size:0.6rem;font-family:'Fredoka',sans-serif;transition:all 0.2s}
+.settings-box .qbtn:hover{border-color:rgba(255,255,255,0.15)}
+.settings-box .qbtn.active{border-color:#ffd200;background:rgba(255,210,0,0.08);color:#ffd200}
+.settings-box .qbtn .icon{font-size:1.2rem;display:block;margin-bottom:2px}
+
 @media(max-width:700px){
 .creator-body{flex-direction:column}
 .creator-side{width:100%;min-width:0;max-height:50%;border-right:none;border-bottom:1px solid rgba(255,255,255,0.04)}
@@ -146,6 +160,7 @@ body{font-family:'Fredoka',sans-serif;background:#12121a;color:#fff;min-height:1
 </div>
 <div class="search">🔍 <input type="text" placeholder="Zoeken..." value=""></div>
 <div class="avatar" id="loginBtn" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:0.7rem;cursor:pointer;flex-shrink:0;color:rgba(255,255,255,0.2)" title="Inloggen">👤</div>
+<div class="avatar" id="settingsBtn" style="background:none;border:1px solid rgba(255,255,255,0.06);font-size:0.9rem;cursor:pointer;margin-left:4px;color:rgba(255,255,255,0.2)" title="Instellingen">⚙️</div>
 <div class="avatar" id="createBtn" style="background:linear-gradient(135deg,#ffd200,#ff6a00);font-size:1.1rem;cursor:pointer;margin-left:4px" title="Eigen game maken">➕</div>
 </div>
 
@@ -4108,6 +4123,56 @@ updateLoginUI();
   }
 })();
 if(loggedInUser)logActivity(loggedInUser,'Terug op startscherm');console.log('🌟 SpaceBlox Game Kiezer geladen! Klik een game om te spelen.');
+</script>
+
+<!-- SETTINGS OVERLAY -->
+<div class="settings-overlay" id="settingsOverlay">
+<div class="settings-box">
+<span class="close" id="settingsClose">✕</span>
+<h2>⚙️ Instellingen</h2>
+<div class="group">
+<div class="lbl">Graphics Kwaliteit</div>
+<div class="desc">Past de graphics aan voor alle spellen</div>
+<div class="quality-opt" id="qualityOpts">
+<div class="qbtn" data-q="low"><span class="icon">🔋</span>Laag</div>
+<div class="qbtn" data-q="medium"><span class="icon">⚡</span>Midden</div>
+<div class="qbtn active" data-q="high"><span class="icon">🌟</span>Hoog</div>
+<div class="qbtn" data-q="ultra"><span class="icon">💎</span>Ultra</div>
+</div>
+</div>
+<div class="group">
+<div class="lbl">Info</div>
+<div class="desc" style="font-size:0.5rem">Kwaliteit wordt opgeslagen en toegepast op games die dit ondersteunen (Race, etc.)</div>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+const key='sbg_gfx';
+let quality=localStorage.getItem(key)||'high';
+function applyUI(){
+document.querySelectorAll('#qualityOpts .qbtn').forEach(b=>{
+b.classList.toggle('active',b.dataset.q===quality);
+});
+}
+function setQuality(q){
+quality=q;localStorage.setItem(key,q);applyUI();
+}
+document.getElementById('settingsBtn').onclick=function(){
+document.getElementById('settingsOverlay').classList.add('open');
+};
+document.getElementById('settingsClose').onclick=function(){
+document.getElementById('settingsOverlay').classList.remove('open');
+};
+document.getElementById('settingsOverlay').onclick=function(e){
+if(e.target===this)this.classList.remove('open');
+};
+document.querySelectorAll('#qualityOpts .qbtn').forEach(b=>{
+b.onclick=function(){setQuality(this.dataset.q);};
+});
+applyUI();
+})();
 </script>
 </body>
 </html>
