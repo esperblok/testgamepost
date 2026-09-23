@@ -561,4 +561,31 @@ await test('uitgelicht is een deelverzameling van alle games', () => {
   feat.forEach((g) => assert(g.featured === true));
 });
 
+
+/* ═══════════════════════ Admin-console ═══════════════════════ */
+
+suite('Admin-console (bans & toekennen)');
+
+await test('gebande gebruiker kan niet inloggen of registreren', async () => {
+  const s = fakeStorage();
+  ok((await SBAuth.register(s, 'boefje', 'Wacht123', 'Wacht123')).ok);
+  ok((await SBAuth.login(s, 'boefje', 'Wacht123')).ok);
+  ok(SB.banUser(s, 'boefje').ok);
+  eq((await SBAuth.login(s, 'boefje', 'Wacht123')).ok, false);
+  eq((await SBAuth.register(s, 'boefje', 'Wacht123', 'Wacht123')).ok, false);
+  SB.unbanUser(s, 'boefje');
+  ok((await SBAuth.login(s, 'boefje', 'Wacht123')).ok);
+});
+
+await test('de admin kan niet geband worden', () => {
+  eq(SB.banUser(fakeStorage(), 'esper').ok, false);
+});
+
+await test('grantItem geeft winkelitems gratis', () => {
+  const s = fakeStorage();
+  ok(SB.grantItem(s, 'pet').ok);
+  ok(SB.owns(s, 'hat', 'pet'));
+  eq(SB.grantItem(s, 'bestaat-niet').ok, false);
+});
+
 report();

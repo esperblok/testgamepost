@@ -9,7 +9,7 @@
  * Belangrijk: verhoog CACHE bij elke wijziging, anders blijven bezoekers
  * een oude versie zien.
  */
-const CACHE = 'spaceblox-v7';
+const CACHE = 'spaceblox-v8';
 
 const SHELL = [
   './',
@@ -38,6 +38,7 @@ const SHELL = [
   './assets/js/maker.js',
   './custom.html',
   './assets/js/custom.js',
+  './assets/js/console.js',
   './assets/img/race.jpg',
   './assets/img/snake.jpg',
   './assets/img/shooter.jpg',

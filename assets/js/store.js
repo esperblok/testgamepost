@@ -457,6 +457,43 @@
     return l;
   }
 
+  /* ─────────────────── bans & toekennen (admin) ─────────────────── */
+
+  function getBans(store) {
+    try { return JSON.parse(store.getItem('sbBans') || '[]') || []; }
+    catch (e) { return []; }
+  }
+  function isBanned(store, name) {
+    return getBans(store).indexOf(String(name || '').toLowerCase()) !== -1;
+  }
+  function banUser(store, name) {
+    const n = String(name || '').toLowerCase().trim();
+    if (!n) return { ok: false, reason: 'naam' };
+    const g = typeof self !== 'undefined' ? self : globalThis;
+    const admin = (g.SB_ADMIN || {}).user;
+    if (admin && n === admin.toLowerCase()) return { ok: false, reason: 'admin' };
+    const l = getBans(store);
+    if (l.indexOf(n) === -1) l.push(n);
+    store.setItem('sbBans', JSON.stringify(l));
+    return { ok: true };
+  }
+  function unbanUser(store, name) {
+    const n = String(name || '').toLowerCase().trim();
+    store.setItem('sbBans', JSON.stringify(getBans(store).filter((b) => b !== n)));
+    return { ok: true };
+  }
+
+  /** Item gratis toekennen (admin /give). */
+  function grantItem(store, itemId) {
+    const item = itemById(itemId);
+    if (!item) return { ok: false, reason: 'onbekend' };
+    const p = getProfile(store);
+    const bag = p.owned[item.type] || (p.owned[item.type] = []);
+    if (bag.indexOf(item.id) === -1) bag.push(item.id);
+    saveProfile(store, p);
+    return { ok: true, item: item };
+  }
+
   /* ─────────────── Roblox loading screen (alle pagina's) ─────────────── */
 
   function bootScreen() {
@@ -531,6 +568,11 @@
     saveCustomGame: saveCustomGame,
     deleteCustomGame: deleteCustomGame,
     bootScreen: bootScreen,
+    getBans: getBans,
+    isBanned: isBanned,
+    banUser: banUser,
+    unbanUser: unbanUser,
+    grantItem: grantItem,
     readUsers: readUsers,
     writeUsers: writeUsers,
     wipe: wipe,

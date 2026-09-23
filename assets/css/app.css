@@ -265,3 +265,17 @@ body::before {
   0%, 100% { box-shadow: 0 0 0 0 rgba(0, 176, 111, 0.45); }
   50%      { box-shadow: 0 0 18px 4px rgba(0, 176, 111, 0.28); }
 }
+
+/* ═════════ admin: /shader en /styl ═════════ */
+
+body.sb-shader { filter: saturate(1.3) contrast(1.07) brightness(1.04); }
+body.sb-shader::before { opacity: 1; animation-duration: 4s; }
+
+body.sb-theme-neon {
+  --rb-bg: #0d0d16; --rb-nav: #12121c; --rb-surface: #191926; --rb-card: #1e1e2e;
+  --rb-green: #69f0ae; --rb-blue: #7c4dff; --rb-line: #2a2a3d;
+}
+body.sb-theme-licht {
+  --rb-bg: #eef1f4; --rb-nav: #ffffff; --rb-surface: #e2e6ea; --rb-card: #f7f9fa;
+  --rb-text: #232527; --rb-muted: #5c646b; --rb-faint: #8a9198; --rb-line: #c6ccd2;
+}

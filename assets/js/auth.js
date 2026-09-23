@@ -151,6 +151,7 @@
 
     const users = readUsers(store);
     if (users[name.toLowerCase()]) return { ok: false, error: 'Die naam is al in gebruik.' };
+    if (SB().isBanned(store, name)) return { ok: false, error: 'Deze naam is geband.' };
     const admin = adminConfig();
     if (name.toLowerCase() === admin.user.toLowerCase()) {
       return { ok: false, error: 'Die naam is gereserveerd.' };
@@ -170,6 +171,7 @@
 
   async function login(store, rawName, password) {
     const name = cleanName(rawName);
+    if (SB().isBanned(store, name)) return { ok: false, error: 'Deze gebruiker is geband.' };
     const admin = adminConfig();
 
     if (name.toLowerCase() === admin.user.toLowerCase()) {
