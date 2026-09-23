@@ -206,6 +206,11 @@
     host.innerHTML = '';
     if (query || cat !== 'alle') return;
 
+    // Roblox-"Continue": eerst de games die jij op dit apparaat speelt
+    const mine = Lib.GAMES.filter((g) => playsOf(g) > 0)
+      .sort((a, b) => playsOf(b) - playsOf(a));
+    if (mine.length) host.appendChild(makeRow('▶️ Verder spelen', 'jouw recentste games', mine.slice(0, 8)));
+
     const popular = Lib.GAMES.slice().sort((a, b) => playersFor(b) - playersFor(a));
     host.appendChild(makeRow('🔥 Populair nu', 'meest gespeeld op dit apparaat', popular.slice(0, 8)));
 
@@ -373,6 +378,13 @@
     Av.renderSkins($('avSkins'), store, avatarHooks());
     Av.renderHats($('avHats'), store, avatarHooks());
     $('avName').textContent = p.name;
+    const st = $('avStats');
+    if (st) {
+      st.innerHTML =
+        '<span><b>' + SB.getFriends(store).length + '</b><small>vrienden</small></span>' +
+        '<span><b>' + (SB.getLevel(store).level || 1) + '</b><small>level</small></span>' +
+        '<span><b>' + SB.getCoins(store) + '</b><small>muntjes</small></span>';
+    }
     $('avProfileName').value = p.name;
     const skin = SB.itemById(p.skin);
     const hat = SB.itemById(p.hat);

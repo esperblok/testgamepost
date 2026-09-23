@@ -34,6 +34,13 @@
     Av.renderHats($('avHats'), store, hooks());
 
     $('avName').textContent = p.name;
+    const st = $('avStats');
+    if (st) {
+      st.innerHTML =
+        '<span><b>' + SB.getFriends(store).length + '</b><small>vrienden</small></span>' +
+        '<span><b>' + (SB.getLevel(store).level || 1) + '</b><small>level</small></span>' +
+        '<span><b>' + SB.getCoins(store) + '</b><small>muntjes</small></span>';
+    }
     $('avProfileName').value = p.name;
     $('coins').textContent = SB.formatCoins(SB.getCoins(store));
 

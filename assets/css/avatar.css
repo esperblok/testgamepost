@@ -254,3 +254,48 @@
   border-radius: 999px;
 }
 .shop-item.equipped { box-shadow: inset 0 0 0 2px var(--rb-green); }
+
+/* ═════════ Roblox avatar-tab foto-look: lichte studio ═════════ */
+
+.av-layout {
+  background: linear-gradient(180deg, #f2f4f6, #dfe3e7);
+  border-radius: 16px;
+  padding: 18px;
+  color: #232527;
+}
+.av-layout .rb-row-head h2, .av-layout h2, .av-layout h3 {
+  color: #232527;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: .9rem;
+}
+.av-layout .hint { color: #5c646b; }
+
+.av-stage {
+  background: radial-gradient(60% 50% at 50% 28%, #ffffff, #dfe3e7 78%);
+  border: 1px solid #c6ccd2;
+}
+.av-name { color: #232527; }
+
+/* stats-rij zoals Friends / Followers / Following */
+.av-stats { display: flex; gap: 26px; margin-top: 10px; }
+.av-stats span { display: flex; flex-direction: column; }
+.av-stats b { font-size: 1.15rem; font-weight: 800; color: #232527; }
+.av-stats small { color: #5c646b; font-size: .72rem; }
+
+/* lichte vierkante item-kaarten ("Currently Wearing") */
+.av-swatch { border: 2px solid #c6ccd2; box-shadow: none; border-radius: 10px; }
+.av-swatch.on { border-color: #232527; }
+.av-tile, .shop-item {
+  background: #e9edf0;
+  border: 1px solid #c6ccd2;
+  color: #232527;
+  border-radius: 10px;
+}
+.av-tile .nm, .shop-item .nm { color: #232527; }
+.av-tile .pr, .shop-item .pr { color: #5c646b; }
+.av-tile.on, .shop-item.equipped { border-color: #232527; box-shadow: 0 0 0 2px #232527; }
+
+/* donkere "Edit Profile"-knop */
+.av-layout .sb-btn-primary { background: #393b3d; color: #fff; animation: none; }
+.av-layout input { background: #fff; color: #232527; border: 1px solid #c6ccd2; }

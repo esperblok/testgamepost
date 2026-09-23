@@ -818,3 +818,14 @@ a.rb-side-item { text-decoration: none; }
 
 .rb-hero-kicker { text-transform: uppercase; letter-spacing: .22em; color: var(--rb-gold); }
 #heroTitle { text-transform: uppercase; letter-spacing: .06em; }
+
+/* ═════════ Roblox home-screen look ═════════ */
+
+:root { --rb-bg: #1b1d1f; --rb-nav: #141517; }
+
+/* dicht vierkant tegelraster zoals de Roblox-app */
+#grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+#grid .game .tag { display: none; }
+#grid .game-info h3 { font-size: .85rem; }
+#grid .game-info .meta { font-size: .7rem; }
+.game-thumb { border-radius: 8px; }
