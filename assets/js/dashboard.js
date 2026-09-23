@@ -10,6 +10,23 @@
 
   const store = root.localStorage;
   const Lib = root.SBLib;
+
+  if (root.SB && root.SB.bootScreen) root.SB.bootScreen();
+
+  // Alleen de beheerder mag het dashboard zien
+  if (!root.SB || !root.SB.isAdmin(store)) {
+    const lock = () => {
+      document.body.innerHTML =
+        '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#232527;color:#eee;font-family:system-ui,sans-serif">' +
+        '<div style="font-size:52px">🔒</div>' +
+        '<h1 style="margin:0">Dit dashboard is alleen voor de beheerder</h1>' +
+        '<p style="color:#9aa0a6">Log in als beheerder via Profiel → Instellingen.</p>' +
+        '<a href="index.html" style="color:#00b06f;font-weight:700">← terug naar SpaceBlox</a></div>';
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lock);
+    else lock();
+    return;
+  }
   const $ = (id) => document.getElementById(id);
 
   function card(label, value, sub, tone) {

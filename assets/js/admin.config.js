@@ -22,6 +22,6 @@
   root.SB_ADMIN = {
     user: 'esper',
     salt: 'b3a78bd5432ddf89234c1e1431d55a06',
-    hash: '739ab06b2d49b101f9365350fb4a806776daa8bfffb5194ccf0f061b68fff9f8',
+    hash: 'e65570bbf08c1bc79cdee0cd84c3cc1897a4a1c057da84b02a3f06a084c3bc5e', // 'Blokies2026!' (door beheerder gekozen)
   };
 })(typeof self !== 'undefined' ? self : globalThis);

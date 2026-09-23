@@ -433,6 +433,63 @@
     } catch (e) { /* noop */ }
   }
 
+
+  /* ─────────────────── admin & eigen games ─────────────────── */
+
+  function isAdmin(store) {
+    const s = getSession(store);
+    return !!(s && s.admin);
+  }
+
+  function getCustomGames(store) {
+    try { return JSON.parse(store.getItem('sbCustomGames') || '[]') || []; }
+    catch (e) { return []; }
+  }
+  function saveCustomGame(store, g) {
+    const l = getCustomGames(store);
+    l.push(g);
+    store.setItem('sbCustomGames', JSON.stringify(l));
+    return l;
+  }
+  function deleteCustomGame(store, id) {
+    const l = getCustomGames(store).filter((g) => g.id !== id);
+    store.setItem('sbCustomGames', JSON.stringify(l));
+    return l;
+  }
+
+  /* ─────────────── Roblox loading screen (alle pagina's) ─────────────── */
+
+  function bootScreen() {
+    if (typeof document === 'undefined' || document.getElementById('sbBoot')) return;
+    const el = document.createElement('div');
+    el.id = 'sbBoot';
+    el.innerHTML =
+      '<style>' +
+      '#sbBoot{position:fixed;inset:0;z-index:9999;background:#232527;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s}' +
+      '#sbBoot .bb-logo{width:64px;height:64px;background:#f2f4f5;border-radius:12px;transform:rotate(-12deg);position:relative;animation:bbpop .7s cubic-bezier(.34,1.56,.64,1)}' +
+      '#sbBoot .bb-logo::after{content:"";position:absolute;inset:24px;background:#232527;border-radius:4px}' +
+      '#sbBoot .bb-name{font:800 26px Hanken Grotesk,system-ui,sans-serif;color:#fff;letter-spacing:.5px}' +
+      '#sbBoot .bb-bar{width:230px;height:8px;border-radius:99px;background:#393b3d;overflow:hidden}' +
+      '#sbBoot .bb-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#00b06f,#00a2ff);animation:bbload 1s .1s forwards}' +
+      '#sbBoot .bb-tip{color:#9aa0a6;font-size:13px}' +
+      '@keyframes bbpop{from{transform:rotate(-12deg) scale(.4);opacity:0}}' +
+      '@keyframes bbload{to{width:100%}}' +
+      '</style>' +
+      '<div class="bb-logo"></div><div class="bb-name">SpaceBlox</div>' +
+      '<div class="bb-bar"><i></i></div><div class="bb-tip">even laden…</div>';
+    (document.body || document.documentElement).appendChild(el);
+    const t0 = Date.now();
+    const hide = function () {
+      const wait = Math.max(0, 750 - (Date.now() - t0));
+      setTimeout(function () {
+        el.style.opacity = '0';
+        setTimeout(function () { el.remove(); }, 500);
+      }, wait);
+    };
+    if (document.readyState === 'complete') hide();
+    else window.addEventListener('load', hide);
+  }
+
   return {
     KEY: KEY,
     SEED_FRIENDS: SEED_FRIENDS,
@@ -469,6 +526,11 @@
     saveSettings: saveSettings,
     getSession: getSession,
     setSession: setSession,
+    isAdmin: isAdmin,
+    getCustomGames: getCustomGames,
+    saveCustomGame: saveCustomGame,
+    deleteCustomGame: deleteCustomGame,
+    bootScreen: bootScreen,
     readUsers: readUsers,
     writeUsers: writeUsers,
     wipe: wipe,

@@ -7,6 +7,8 @@
 (function (root) {
   'use strict';
 
+  if (root.SB && root.SB.bootScreen) root.SB.bootScreen();
+
   const store = root.localStorage;
   const Lib = root.SBLib;
   const Av = root.SBAvatar;
@@ -91,3 +93,14 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })(typeof self !== 'undefined' ? self : globalThis);
+
+;(function () {
+  const r = typeof self !== 'undefined' ? self : globalThis;
+  const hide = () => {
+    if (r.SB && !r.SB.isAdmin(r.localStorage)) {
+      document.querySelectorAll('a[href="dashboard.html"]').forEach((n) => { n.style.display = 'none'; });
+    }
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hide);
+  else hide();
+})();

@@ -99,8 +99,8 @@
       best: 'lowest', unit: 'gokken',
     },
     {
-      id: 'clicker', thumb: 'assets/img/clicker.jpg', name: 'Munt Clicker', icon: '🪙', cat: 'casual',
-      tagline: 'Klik, upgrade, automatiseer',
+      id: 'clicker', thumb: 'assets/img/clicker.jpg', name: 'Klik Tycoon', icon: '🪙', cat: 'casual',
+      tagline: 'Jouw eigen tycoon: klik en bouw rijkdom',
       desc: 'Bouw een muntfabriek. Upgrades maken het leuker, niet makkelijker.',
       players: 1, touches: true,
       grad: ['#ffd200', '#ff6a00'], accent: '#ffd200',
@@ -123,10 +123,10 @@
       best: 'highest', unit: 'dagen',
     },
     {
-      id: 'blockrun', thumb: 'assets/img/blockrun.jpg', name: 'Block Run', icon: '🧱', cat: 'avontuur',
+      id: 'blockrun', thumb: 'assets/img/blockrun.jpg', name: 'Mega Obby', icon: '🧱', cat: 'avontuur',
       render: 'canvas',
       width: 640, height: 360,
-      tagline: 'Platformen door de blokkenwereld',
+      tagline: 'Echte Roblox-obby: klim, spring, win',
       desc: 'Spring, verzamel kristallen en haal de vlag. Vijf levels, steeds lastiger.',
       players: 1, touches: true, featured: true,
       grad: ['#69f0ae', '#00897b'], accent: '#69f0ae',

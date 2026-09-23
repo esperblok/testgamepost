@@ -47,6 +47,7 @@
   transform: rotate(-12deg);
   transition: transform 0.18s ease;
 }
+.sb-logo-mark { transform: rotate(-10deg); }
 .sb-logo:hover .sb-logo-mark { transform: rotate(6deg) scale(1.08); }
 
 .sb-topbar-right { display: flex; align-items: center; gap: 8px; }

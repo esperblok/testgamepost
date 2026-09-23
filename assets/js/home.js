@@ -186,6 +186,21 @@
     return sec;
   }
 
+  function customCard(c) {
+    const card = document.createElement('a');
+    card.className = 'game';
+    card.href = 'custom.html?id=' + encodeURIComponent(c.id);
+    card.innerHTML =
+      '<div class="game-thumb" style="background:linear-gradient(135deg,' + (c.c1 || '#00b06f') + ',' + (c.c2 || '#00a2ff') + ')">' +
+        '<span class="art" aria-hidden="true">' + SB.esc(c.emoji || '🛠️') + '</span>' +
+        '<span class="badge"><span class="dot"></span>van jou</span>' +
+        '<span class="play"><span class="play-pill">▶ Spelen</span></span>' +
+      '</div>' +
+      '<div class="game-info"><h3>' + SB.esc(c.name) + '</h3>' +
+        '<div class="tag">' + (c.type === 'upload' ? 'geüploade game' : 'gebouwde klik-game') + '</div></div>';
+    return card;
+  }
+
   function paintRows() {
     const host = $('rows');
     host.innerHTML = '';
@@ -198,6 +213,27 @@
       const list = Lib.byCategory(c.id);
       if (list.length) host.appendChild(makeRow(c.icon + ' ' + c.name, list.length + ' spellen', list));
     });
+
+    // Eigen games: geüpload of gebouwd in de Game Maker
+    const customs = SB.getCustomGames(store);
+    const sec = document.createElement('section');
+    sec.className = 'rb-row';
+    sec.innerHTML = '<div class="rb-row-head"><h2>🛠️ Games van spelers</h2><span class="hint">gemaakt in de Game Maker</span></div>';
+    const track = document.createElement('div');
+    track.className = 'rb-track';
+    customs.forEach((c) => track.appendChild(customCard(c)));
+    const mk = document.createElement('a');
+    mk.className = 'game';
+    mk.href = 'maker.html';
+    mk.innerHTML =
+      '<div class="game-thumb" style="background:linear-gradient(135deg,#00b06f,#00a2ff)">' +
+        '<span class="art" aria-hidden="true">🛠️</span>' +
+        '<span class="play"><span class="play-pill">➕ Maker</span></span>' +
+      '</div>' +
+      '<div class="game-info"><h3>Maak je eigen game</h3><div class="tag">upload een html-game of bouw een klik-game</div></div>';
+    track.appendChild(mk);
+    sec.appendChild(track);
+    host.appendChild(sec);
   }
 
   function paintGrid() {
@@ -617,9 +653,17 @@
   /* ───────────────────────── start ─────────────────────────── */
 
   function init() {
+    SB.bootScreen();
+
     // Eerste bezoek: geef een klein startkapitaal zodat de winkel niet leeg voelt.
     if (SB.read(store, SB.KEY.coins, null) === null) SB.addCoins(store, 100);
     wire();
+
+    // Dashboard-knoppen zijn alleen voor de beheerder
+    if (!SB.isAdmin(store)) {
+      document.querySelectorAll('a[href="dashboard.html"], #goDashboard, #goDashboard2')
+        .forEach((n) => { n.style.display = 'none'; });
+    }
     paintCats();
     paintHero();
     restartHeroTimer();

@@ -15,6 +15,8 @@
   const SB = root.SB;
   const Lib = root.SBLib;
 
+  if (SB && SB.bootScreen) SB.bootScreen();
+
   /* ───────────────────────── geluid ────────────────────────── */
 
   const Sound = (function () {
@@ -586,6 +588,18 @@
     document.title = def.icon + ' ' + def.name + ' — SpaceBlox';
     const shell = Shell(def, mount);
     shell.start();
+    // Als de service worker naar een nieuwe versie wisselt: één keer automatisch
+    // herladen, zodat knoppen nooit oude JavaScript tegen een nieuwe pagina krijgen.
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!sessionStorage.getItem('sbSwReload')) {
+          sessionStorage.setItem('sbSwReload', '1');
+          location.reload();
+        }
+      });
+      window.addEventListener('load', () => setTimeout(() => sessionStorage.removeItem('sbSwReload'), 3000));
+    }
+
     root.SBShell = shell;
   }
 

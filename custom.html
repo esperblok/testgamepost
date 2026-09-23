@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpaceBlox — eigen game</title>
+<meta name="theme-color" content="#232527">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="assets/css/app.css">
+<style>
+  .cu-top { display: flex; align-items: center; gap: 12px; padding: 14px 18px; }
+  .cu-top a { color: #9aa0a6; text-decoration: none; font-weight: 700; }
+  .cu-top h1 { font-size: 18px; margin: 0; }
+  .cu-stage { max-width: 900px; margin: 0 auto; padding: 0 16px 40px; }
+  .cu-frame { width: 100%; height: 72vh; border: 1px solid #46484a; border-radius: 16px; background: #fff; }
+  .cu-click { text-align: center; padding: 30px 0; }
+  .cu-big { font-size: 90px; background: none; border: 0; cursor: pointer; transition: transform .08s; }
+  .cu-big:active { transform: scale(0.86); }
+  .cu-bar { max-width: 420px; margin: 18px auto 0; height: 12px; border-radius: 99px; background: #393b3d; overflow: hidden; }
+  .cu-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #00b06f, #00a2ff); transition: width .15s; }
+  .cu-count { margin-top: 10px; color: #cfd3d6; font-weight: 700; }
+  .cu-win { margin-top: 16px; font-size: 20px; font-weight: 800; color: var(--gold); }
+  .cu-none { text-align: center; color: #9aa0a6; padding: 60px 0; }
+</style>
+</head>
+<body>
+<div class="cu-top">
+  <a href="index.html">← SpaceBlox</a>
+  <h1 id="cuTitle">Eigen game</h1>
+</div>
+<div class="cu-stage" id="cuStage"></div>
+
+<script src="assets/js/store.js"></script>
+<script src="assets/js/juice.js"></script>
+<script src="assets/js/custom.js"></script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
+</body>
+</html>

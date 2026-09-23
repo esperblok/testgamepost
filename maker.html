@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpaceBlox — Game Maker</title>
+<meta name="theme-color" content="#232527">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="assets/css/app.css">
+<style>
+  .mk-wrap { max-width: 860px; margin: 0 auto; padding: 22px 16px 60px; }
+  .mk-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .mk-top a { color: #9aa0a6; text-decoration: none; font-weight: 700; }
+  .mk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .mk-grid { grid-template-columns: 1fr; } }
+  .mk-card { background: var(--card); border: 1px solid #46484a; border-radius: 16px; padding: 18px; }
+  .mk-card h2 { margin: 0 0 6px; font-size: 18px; }
+  .mk-card p { color: #9aa0a6; margin: 0 0 14px; font-size: 13px; }
+  .mk-card label { display: block; font-size: 13px; color: #cfd3d6; margin: 10px 0 4px; }
+  .mk-card input[type=text], .mk-card input[type=number], .mk-card input[type=color] {
+    width: 100%; background: #2b2d2f; color: #fff; border: 1px solid #46484a;
+    border-radius: 10px; padding: 9px 10px; font: inherit;
+  }
+  .mk-card input[type=file] { color: #cfd3d6; font-size: 13px; }
+  .mk-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mk-list { margin-top: 22px; }
+  .mk-item { display: flex; align-items: center; gap: 12px; background: var(--card);
+    border: 1px solid #46484a; border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+  .mk-item .em { font-size: 26px; }
+  .mk-item b { display: block; }
+  .mk-item small { color: #9aa0a6; }
+  .mk-item .sp { margin-left: auto; display: flex; gap: 8px; }
+  .mk-msg { margin-top: 10px; font-weight: 700; min-height: 20px; }
+  .mk-msg.ok { color: var(--green); }
+  .mk-msg.err { color: #ff5d5d; }
+</style>
+</head>
+<body>
+<div class="mk-wrap">
+  <div class="mk-top">
+    <a href="index.html">← SpaceBlox</a>
+    <h1>🛠️ Game Maker</h1>
+  </div>
+
+  <div class="mk-grid">
+    <form class="mk-card" id="upForm">
+      <h2>📤 Upload je eigen game</h2>
+      <p>Heb je zelf een game gemaakt (een html-bestand, jouw "rom")? Zet hem hier op SpaceBlox.</p>
+      <label>Naam van je game</label>
+      <input type="text" id="upName" maxlength="24" placeholder="bv. Super Obby 3000" required>
+      <label>Emoji</label>
+      <input type="text" id="upEmoji" maxlength="4" value="🎮">
+      <label>Jouw game-bestand (.html)</label>
+      <input type="file" id="upFile" accept=".html,.htm" required>
+      <button class="sb-btn sb-btn-primary" type="submit" style="margin-top:14px">⬆️ Uploaden</button>
+      <div class="mk-msg" id="upMsg"></div>
+    </form>
+
+    <form class="mk-card" id="buildForm">
+      <h2>🏗️ Bouw een klik-game</h2>
+      <p>Kies een naam, emoji en kleuren; SpaceBlox bouwt er een speelbare klik-game van.</p>
+      <label>Naam</label>
+      <input type="text" id="bName" maxlength="24" placeholder="bv. Muntjes-klikker" required>
+      <label>Emoji</label>
+      <input type="text" id="bEmoji" maxlength="4" value="💎">
+      <div class="mk-row2">
+        <div><label>Kleur 1</label><input type="color" id="bC1" value="#00b06f"></div>
+        <div><label>Kleur 2</label><input type="color" id="bC2" value="#00a2ff"></div>
+      </div>
+      <label>Doel (aantal kliks om te winnen)</label>
+      <input type="number" id="bTarget" min="5" max="500" value="50">
+      <button class="sb-btn sb-btn-primary" type="submit" style="margin-top:14px">🏗️ Bouwen</button>
+      <div class="mk-msg" id="bMsg"></div>
+    </form>
+  </div>
+
+  <div class="mk-list">
+    <h2>🎒 Jouw games</h2>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script src="assets/js/store.js"></script>
+<script src="assets/js/maker.js"></script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
+</body>
+</html>

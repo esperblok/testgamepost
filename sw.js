@@ -9,7 +9,7 @@
  * Belangrijk: verhoog CACHE bij elke wijziging, anders blijven bezoekers
  * een oude versie zien.
  */
-const CACHE = 'spaceblox-v5';
+const CACHE = 'spaceblox-v7';
 
 const SHELL = [
   './',
@@ -34,6 +34,10 @@ const SHELL = [
   './assets/js/home.js',
   './assets/js/profile.js',
   './assets/js/dashboard.js',
+  './maker.html',
+  './assets/js/maker.js',
+  './custom.html',
+  './assets/js/custom.js',
   './assets/img/race.jpg',
   './assets/img/snake.jpg',
   './assets/img/shooter.jpg',
@@ -88,11 +92,14 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+  // netwerk eerst met cache als fallback: nooit meer oude JS/CSS tegen een nieuwe pagina
   e.respondWith(
-    caches.match(req).then((hit) => hit || fetch(req).then((res) => {
-      const copy = res.clone();
-      caches.open(CACHE).then((c) => c.put(req, copy));
+    fetch(req).then((res) => {
+      if (res && res.ok) {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, copy));
+      }
       return res;
-    }))
+    }).catch(() => caches.match(req))
   );
 });
