@@ -1,0 +1,83 @@
+/* Orlog — dobbelduel */
+
+.ol-wrap {
+  gap: 9px;
+  padding: 12px 14px;
+  overflow-y: auto;
+}
+
+.ol-row {
+  display: grid;
+  grid-template-columns: 88px 52px 1fr;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+}
+.ol-who { font-size: 0.78rem; color: var(--muted); }
+
+.ol-hp {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid var(--green);
+  font-size: 1.05rem;
+}
+.ol-hp.low { border-color: var(--red); color: var(--red); animation: ol-pulse 0.7s infinite; }
+@keyframes ol-pulse { 50% { transform: scale(1.07); } }
+
+.ol-pool { min-width: 0; }
+.ol-tokens { display: flex; flex-wrap: wrap; gap: 3px; }
+.ol-tok {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 0.68rem;
+}
+.ol-empty { font-size: 0.68rem; color: var(--muted-2); }
+
+.ol-dice { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+
+.ol-die {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  border: 2px solid var(--line);
+  background: linear-gradient(145deg, #2e2e44, #1e1e2c);
+  color: #fff;
+  font-size: 1.35rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+.ol-die:hover:not([disabled]) { transform: translateY(-2px); }
+.ol-die.held {
+  border-color: var(--gold);
+  background: linear-gradient(145deg, #4a3d00, #2e2600);
+  box-shadow: 0 0 12px rgba(255, 210, 0, 0.35);
+}
+.ol-die[disabled] { opacity: 0.5; cursor: default; }
+
+.ol-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.ol-actions .sb-btn { padding: 8px 14px; font-size: 0.78rem; }
+.ol-play { min-width: 58px; }
+
+.ol-log {
+  list-style: none;
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  max-width: 420px;
+  min-height: 78px;
+  align-content: start;
+}
+.ol-log li {
+  font-size: 0.7rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding: 3px 9px;
+}
+.ol-log li:first-child { color: var(--text); }

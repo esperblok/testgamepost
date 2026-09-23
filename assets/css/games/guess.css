@@ -1,0 +1,43 @@
+/* Raad het Getal */
+
+.guess-wrap {
+  gap: 10px;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+.guess-range { font-size: 0.82rem; color: var(--muted); }
+
+.guess-hint {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gold);
+  min-height: 1.4em;
+}
+
+.guess-row { display: flex; gap: 8px; width: 100%; max-width: 300px; }
+.guess-input { flex: 1; text-align: center; font-size: 1.1rem; }
+
+.guess-quick { display: flex; gap: 6px; }
+.guess-quick .sb-btn { padding: 6px 14px; font-size: 0.78rem; }
+
+.guess-list {
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  max-width: 300px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+.guess-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+}
+.guess-list .g-num { font-weight: 700; }
+.guess-list .g-tag { color: var(--muted); font-size: 0.75rem; }

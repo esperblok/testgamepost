@@ -1,12 +1,15 @@
 {
-  "name": "Space Games",
-  "short_name": "SpaceGames",
-  "description": "Orlog met geweren, space racen & maan kolonisatie simulator",
-  "start_url": "/index.html",
+  "name": "SpaceBlox — gratis games",
+  "short_name": "SpaceBlox",
+  "description": "Twaalf gratis spellen voor kinderen: racen, bouwen, puzzelen en muntjes verzamelen. Werkt in je browser, zonder download.",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#0a0a1a",
-  "theme_color": "#4fc3f7",
-  "orientation": "portrait",
+  "background_color": "#0d0d16",
+  "theme_color": "#0d0d16",
+  "orientation": "any",
+  "lang": "nl",
+  "categories": ["games", "entertainment"],
   "icons": [
     {
       "src": "icon-192.png",

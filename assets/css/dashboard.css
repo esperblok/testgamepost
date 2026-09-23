@@ -1,0 +1,103 @@
+/* SpaceBlox — dashboard */
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 11px;
+}
+
+.dash-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.dash-card .dc-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.dash-card .dc-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 2px;
+}
+.dash-card .dc-sub { font-size: 0.68rem; color: var(--muted-2); }
+.dash-card.gold .dc-value { color: var(--gold); }
+.dash-card.green .dc-value { color: var(--green); }
+.dash-card.blue .dc-value { color: var(--blue); }
+
+.dash-card .dc-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.dash-card .dc-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--orange));
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.dash-table th {
+  text-align: left;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.dash-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  white-space: nowrap;
+}
+.dash-table tr:last-child td { border-bottom: none; }
+.dash-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+.dash-table .g-name { font-weight: 600; }
+.dash-table .num { color: var(--gold); font-weight: 700; }
+.dash-table .none { color: var(--muted-2); }
+.dash-table .link {
+  background: none;
+  border: none;
+  color: var(--blue);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.dash-table .link:hover { background: rgba(0, 200, 255, 0.12); }
+
+/* scorebord in de modal (normaal in shell.css, hier apart omdat de dashboard
+   pagina die niet laadt) */
+.sb-board { list-style: none; display: grid; gap: 4px; margin-top: 10px; }
+.sb-board li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 0.8rem;
+}
+.sb-board .rk { color: var(--muted-2); width: 16px; text-align: right; font-size: 0.72rem; }
+.sb-board .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-board .vl { font-weight: 700; color: var(--gold); }

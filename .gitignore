@@ -1,0 +1,18 @@
+# Afhankelijkheden en buildresten — horen niet in Git
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Lokale hulpmiddelen
+*.local
+.env
+.env.*
+
+# Systeembestanden
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
