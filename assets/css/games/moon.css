@@ -1,0 +1,63 @@
+/* Maan Kolonie */
+
+.mn-wrap {
+  gap: 8px;
+  padding: 12px 14px;
+  overflow-y: auto;
+  align-items: stretch;
+}
+
+.mn-day { font-size: 0.9rem; font-weight: 700; color: var(--gold); text-align: center; }
+
+.mn-resources { display: grid; gap: 4px; }
+
+.mn-res {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 5px 11px;
+}
+.mn-res.bad { border-color: rgba(255, 82, 82, 0.5); background: rgba(255, 82, 82, 0.09); }
+.mn-ico { font-size: 1.1rem; }
+.mn-txt { display: grid; gap: 0; min-width: 0; }
+.mn-txt b { font-size: 0.95rem; line-height: 1.15; }
+.mn-txt i { font-style: normal; font-size: 0.64rem; color: var(--muted); }
+
+.mn-pop, .mn-credits {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+}
+.mn-credits { color: var(--gold); font-weight: 600; }
+
+.mn-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  min-height: 30px;
+  padding: 5px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 9px;
+}
+.mn-cell { font-size: 1.15rem; }
+.mn-none { font-size: 0.7rem; color: var(--muted-2); }
+
+.mn-log {
+  list-style: none;
+  display: grid;
+  gap: 2px;
+  min-height: 62px;
+  align-content: start;
+}
+.mn-log li {
+  font-size: 0.68rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding: 3px 9px;
+}
+.mn-log li.fresh { color: var(--text); }

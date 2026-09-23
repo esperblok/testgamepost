@@ -1,0 +1,29 @@
+/* Pong Duo — moeilijkheidskeuze */
+
+.pong-picker {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  z-index: 6;
+}
+
+.pong-lvl {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  color: var(--muted);
+  padding: 3px 11px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(3px);
+}
+.pong-lvl:hover { color: #fff; border-color: var(--line-2); }
+.pong-lvl.on {
+  background: rgba(0, 200, 255, 0.18);
+  border-color: rgba(0, 200, 255, 0.45);
+  color: var(--blue);
+}

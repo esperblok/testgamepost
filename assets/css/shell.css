@@ -1,0 +1,293 @@
+/* SpaceBlox — game-shell layout
+ * Wordt geladen op games/<id>.html. Zie assets/js/shell.js voor de markup.
+ */
+
+.sb-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px 28px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ── topbar ── */
+
+.sb-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  background: rgba(20, 20, 31, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sb-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+.sb-logo-mark {
+  display: grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  font-size: 0.95rem;
+  color: #2a1600;
+}
+.sb-topbar-right { display: flex; align-items: center; gap: 8px; }
+.sb-avatar {
+  width: 34px; height: 34px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1rem;
+  background: linear-gradient(135deg, var(--blue), #1a73e8);
+  border-color: transparent;
+}
+
+/* ── game-kop ── */
+
+.sb-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 2px;
+}
+.sb-head-icon {
+  width: 52px; height: 52px;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  font-size: 1.7rem;
+  box-shadow: var(--shadow);
+}
+.sb-head-text { flex: 1; min-width: 0; }
+.sb-head-text h1 { font-size: 1.25rem; line-height: 1.2; }
+.sb-head-text p { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.sb-head-best { text-align: right; flex-shrink: 0; }
+.sb-head-best .sb-label { display: block; font-size: 0.62rem; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.4px; }
+.sb-head-best .sb-value { font-size: 0.85rem; color: var(--gold); font-weight: 700; }
+
+/* ── speelveld ── */
+
+.sb-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 62vh;
+  background: #0a0a12;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow);
+  touch-action: none;
+}
+.sb-stage.paused::after {
+  content: '⏸ Gepauzeerd';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(6, 6, 12, 0.72);
+  backdrop-filter: blur(3px);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  z-index: 8;
+}
+.sb-canvas { display: block; image-rendering: pixelated; }
+
+.sb-hud {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  z-index: 5;
+  pointer-events: none;
+}
+.sb-hud-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 3px 9px;
+  font-size: 0.72rem;
+  backdrop-filter: blur(3px);
+}
+.sb-hud-item em { font-style: normal; color: var(--muted); }
+.sb-hud-item b { font-weight: 700; }
+
+.sb-missing {
+  text-align: center;
+  padding: 30px 20px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+.sb-missing h2 { font-size: 1.2rem; }
+.sb-missing p { color: var(--muted); font-size: 0.85rem; }
+
+/* DOM-games (geen canvas) vullen het veld zelf */
+.sb-dom-game {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  text-align: center;
+  overflow: auto;
+}
+
+/* ── touch-bediening ── */
+
+.sb-touch {
+  width: 100%;
+  display: none;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sb-tbtn {
+  flex: 1;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  font-size: 1.2rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.sb-tbtn:active { background: var(--card-2); transform: scale(0.97); }
+.sb-tbtn-primary {
+  flex: 1.4;
+  background: linear-gradient(135deg, var(--green), #00a152);
+  border-color: transparent;
+  color: #04150c;
+}
+@media (pointer: coarse) {
+  .sb-touch { display: flex; }
+  .sb-info-keys { display: none; }
+}
+
+/* ── bediening + info ── */
+
+.sb-controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.sb-controls .sb-btn { font-size: 0.78rem; padding: 8px 14px; }
+
+.sb-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  max-width: 560px;
+}
+.sb-info-keys { font-size: 0.68rem; color: var(--muted-2); }
+
+/* ── overlay ── */
+
+.sb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(4, 4, 10, 0.74);
+  backdrop-filter: blur(6px);
+}
+.sb-overlay.open { display: flex; }
+
+.sb-modal {
+  width: 100%;
+  max-width: 380px;
+  max-height: 86vh;
+  overflow: auto;
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  border-radius: 18px;
+  padding: 22px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  animation: sb-pop 0.22s ease;
+}
+@keyframes sb-pop {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.sb-modal h2 { font-size: 1.3rem; margin-bottom: 6px; }
+.sb-modal-sub { color: var(--muted); font-size: 0.8rem; margin-bottom: 12px; }
+.sb-modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+.sb-modal-actions .sb-btn { flex: 1; }
+
+.sb-final { display: flex; align-items: baseline; justify-content: center; gap: 6px; margin: 8px 0; }
+.sb-final-num { font-size: 2.6rem; font-weight: 700; color: var(--gold); line-height: 1; }
+.sb-final-unit { font-size: 0.85rem; color: var(--muted); }
+
+.sb-badge-new {
+  display: inline-block;
+  background: rgba(255, 210, 0, 0.14);
+  color: var(--gold);
+  border: 1px solid rgba(255, 210, 0, 0.3);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.sb-coins-earned {
+  color: var(--green);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.sb-empty { color: var(--muted); font-size: 0.82rem; padding: 12px 0; }
+
+.sb-board { list-style: none; display: grid; gap: 4px; margin-top: 10px; text-align: left; }
+.sb-board li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 0.8rem;
+}
+.sb-board li.me { background: rgba(0, 200, 255, 0.1); border: 1px solid rgba(0, 200, 255, 0.25); }
+.sb-board .rk { color: var(--muted-2); width: 16px; text-align: right; font-size: 0.72rem; }
+.sb-board .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-board .vl { font-weight: 700; color: var(--gold); }
+
+@media (max-width: 420px) {
+  .sb-head-icon { width: 42px; height: 42px; font-size: 1.4rem; }
+  .sb-head-text h1 { font-size: 1.05rem; }
+  .sb-topbar { padding: 8px 12px; }
+  .sb-chip { padding: 4px 9px; font-size: 0.72rem; }
+}

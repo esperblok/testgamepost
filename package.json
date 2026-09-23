@@ -1,0 +1,22 @@
+{
+  "name": "testgamepost",
+  "version": "2.0.0",
+  "private": true,
+  "description": "SpaceBlox — twaalf gratis, echt speelbare browsergames voor kinderen.",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/run.mjs",
+    "check": "node tests/run.mjs && node scripts/check-pages.mjs",
+    "smoke": "node scripts/smoke-pages.mjs",
+    "play": "node scripts/play-games.mjs",
+    "verify": "node tests/run.mjs && node scripts/check-pages.mjs && node scripts/smoke-pages.mjs && node scripts/play-games.mjs",
+    "hash": "node scripts/hash-password.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.1"
+  }
+}
