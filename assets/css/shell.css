@@ -348,3 +348,25 @@
   .sb-tbtn { width: 54px; height: 54px; }
   .sb-tbtn-primary { width: 66px; height: 66px; }
 }
+
+/* ═════════ "zoals op de Roblox-foto's" ═════════
+ * Zwarte tabbar, dunne lichte randen, uppercase headers met
+ * letter-spacing en gouden accenten — als de in-game screenshots. */
+
+.sb-topbar { background: #0a0b0c; border-bottom: 1px solid #43474c; }
+.sb-logo { text-transform: uppercase; letter-spacing: .16em; font-size: .88rem; }
+
+.sb-head-text h1 { text-transform: uppercase; letter-spacing: .1em; }
+.sb-head-text p { text-transform: uppercase; letter-spacing: .14em; font-size: .68rem; }
+
+.sb-hud { background: rgba(8, 10, 11, .92); border: 1px solid #565b62; border-radius: 6px; }
+.sb-hud-item em { font-style: normal; text-transform: uppercase; letter-spacing: .14em; font-size: .6rem; color: #9aa0a6; }
+
+/* game-over/scores als Roblox "SUMMARY"-paneel */
+.sb-modal { background: rgba(10, 12, 13, .96); border: 1px solid #6b7076; border-radius: 6px; box-shadow: 0 0 0 4px rgba(0, 0, 0, .35); }
+.sb-modal h2 { text-transform: uppercase; letter-spacing: .18em; font-size: 1rem; text-align: center; }
+.sb-modal h2::before, .sb-modal h2::after { content: '—'; color: #6b7076; margin: 0 10px; }
+.sb-board li { border-bottom: 1px solid #2e3236; }
+
+/* knoppen hoekiger + uppercase, zoals de tabs op de foto */
+.sb-btn { border-radius: 4px; text-transform: uppercase; letter-spacing: .08em; }
