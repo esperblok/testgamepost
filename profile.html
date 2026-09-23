@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Avatar — SpaceBlox</title>
+<meta name="description" content="Pas je SpaceBlox-avatar aan: huidkleur, hoofddeksel en naam.">
+<meta name="theme-color" content="#232527">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="assets/css/app.css">
+<link rel="stylesheet" href="assets/css/home.css">
+<link rel="stylesheet" href="assets/css/avatar.css">
+</head>
+<body>
+
+<header class="rb-nav">
+  <div class="rb-nav-in">
+    <a class="rb-logo" href="index.html">
+      <span class="rb-logo-mark" aria-hidden="true">⬛</span>
+      <span>SpaceBlox</span>
+    </a>
+    <nav class="rb-navlinks" aria-label="Hoofdmenu">
+      <a class="rb-navlink" href="index.html">Games</a>
+      <a class="rb-navlink active" href="profile.html">Avatar</a>
+      <a class="rb-navlink" href="index.html#vrienden">Vrienden</a>
+    </nav>
+    <div class="rb-nav-right">
+      <div class="sb-chip sb-coins" title="Jouw muntjes">
+        <span class="sb-coin-ico" aria-hidden="true">🪙</span><span id="coins">0</span>
+      </div>
+      <a class="sb-btn sb-btn-primary" href="index.html">🎮 Spellen</a>
+    </div>
+  </div>
+</header>
+
+<div class="rb-shell">
+  <aside class="rb-side" aria-label="Zijmenu">
+    <div class="rb-side-title">Menu</div>
+    <a class="rb-side-item" href="index.html"><span class="ico" aria-hidden="true">🏠</span><span class="lbl">Home</span></a>
+    <a class="rb-side-item active" href="profile.html"><span class="ico" aria-hidden="true">🧍</span><span class="lbl">Avatar</span></a>
+    <a class="rb-side-item" href="index.html#winkel"><span class="ico" aria-hidden="true">🛍️</span><span class="lbl">Winkel</span></a>
+    <a class="rb-side-item" href="dashboard.html"><span class="ico" aria-hidden="true">📊</span><span class="lbl">Dashboard</span></a>
+  </aside>
+
+  <main class="rb-main">
+    <div class="rb-row-head"><h2>🧍 Avatar</h2><span class="hint">zo zien je vrienden jou</span></div>
+    <div class="av-layout">
+      <div class="av-stage">
+        <div class="av-figure" id="avFigure"></div>
+        <div class="av-name" id="avName">Speler</div>
+      </div>
+      <div class="av-panel">
+        <div class="rb-row-head"><h2>Kleur</h2><span class="hint" id="avSkinName"></span></div>
+        <div class="av-swatches" id="avSkins"></div>
+
+        <div class="rb-row-head" style="margin-top:18px"><h2>Hoofddeksel</h2><span class="hint" id="avHatName"></span></div>
+        <div class="av-hats" id="avHats"></div>
+
+        <div class="rb-row-head" style="margin-top:18px"><h2>Naam &amp; emoji</h2></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input class="sb-field" id="avProfileName" maxlength="16" placeholder="Jouw naam" aria-label="Jouw naam" style="max-width:220px">
+          <button class="sb-btn sb-btn-primary" id="avSave">💾 Opslaan</button>
+        </div>
+        <div class="av-swatches" id="avEmojis" style="margin-top:10px"></div>
+        <p class="sb-ok" id="avOk"></p>
+        <p class="sb-error" id="shopErr"></p>
+      </div>
+    </div>
+
+    <div class="rb-row-head" style="margin-top:26px"><h2>🏆 Jouw records</h2></div>
+    <div class="friends" id="recordList"></div>
+  </main>
+</div>
+
+<footer class="foot">
+  <span>SpaceBlox — alles staat lokaal op dit apparaat.</span>
+  <span><a href="index.html">🎮 Terug naar de spellen</a></span>
+</footer>
+
+<script src="assets/js/store.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/admin.config.js"></script>
+<script src="assets/js/games.js"></script>
+<script src="assets/js/juice.js"></script>
+<script src="assets/js/avatar.js"></script>
+<script src="assets/js/profile.js"></script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
+</body>
+</html>

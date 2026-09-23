@@ -61,3 +61,22 @@
   padding: 3px 9px;
 }
 .mn-log li.fresh { color: var(--text); }
+
+/* ── extra laag: de kolonie leeft ── */
+.mn-wrap {
+  background:
+    radial-gradient(circle at 20% 12%, rgba(255, 255, 255, 0.16) 1px, transparent 2px) 0 0 / 46px 46px,
+    radial-gradient(circle at 70% 40%, rgba(255, 255, 255, 0.12) 1px, transparent 2px) 12px 22px / 62px 62px;
+}
+.mn-res {
+  background: var(--rb-card);
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+.mn-res.bad { animation: mn-alarm 0.9s ease-in-out infinite; }
+@keyframes mn-alarm { 50% { transform: translateX(2px); border-color: var(--rb-red); } }
+.mn-cell { animation: mn-build 0.4s cubic-bezier(0.34, 1.6, 0.64, 1) both; }
+@keyframes mn-build {
+  0%   { transform: scale(0) translateY(6px); }
+  100% { transform: scale(1) translateY(0); }
+}
+.mn-day { animation: sb-float 4s ease-in-out infinite; }

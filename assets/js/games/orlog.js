@@ -25,6 +25,7 @@
   const TOKEN_POOL = ['🗡', '🛡', '🪓', '❤', '⚡'];
 
   root.SBGames.orlog = function (ctx) {
+    const J = root.SBJuice;
     let hpP, hpE, tokensP, tokensE, dice, held, rerolls, phase, round, winsP, winsE;
     let wrap, hpPEl, hpEEl, diceEl, poolEl, logEl, tokenPEl, tokenEEl, actionEl;
 
@@ -216,7 +217,10 @@
 
     function endRound() {
       phase = 'roundover';
-      if (hpE <= 0 && hpP > 0) { winsP++; log('🎉 Ronde gewonnen!'); ctx.sound('win'); }
+      if (hpE <= 0 && hpP > 0) {
+        winsP++; log('🎉 Ronde gewonnen!'); ctx.sound('win');
+        if (J) J.confetti({ count: 80, life: 1.8 });
+      }
       else if (hpP <= 0) { winsE++; log('💀 Ronde verloren.'); ctx.sound('lose'); }
       else { log('🤝 Gelijk — beide blijven staan.'); }
 

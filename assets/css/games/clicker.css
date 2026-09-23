@@ -74,3 +74,31 @@
 .cl-up-text b { font-size: 0.78rem; font-weight: 600; }
 .cl-up-text i { font-style: normal; font-size: 0.66rem; color: var(--muted); }
 .cl-up-cost { font-size: 0.75rem; font-weight: 700; color: var(--gold); white-space: nowrap; }
+
+/* ── extra laag: glans over de munt en veerkracht bij elke klik ── */
+.cl-pad {
+  transition: transform 0.09s cubic-bezier(0.34, 1.6, 0.64, 1), box-shadow 0.15s ease;
+  overflow: hidden;
+}
+.cl-pad::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
+  background-size: 250% 100%;
+  animation: sb-shimmer 2.6s linear infinite;
+  pointer-events: none;
+}
+.cl-pad:hover { box-shadow: 0 12px 34px rgba(255, 179, 0, 0.55); }
+.cl-coin { transition: transform 0.12s ease; }
+.cl-up { position: relative; overflow: hidden; }
+.cl-up:not(.locked):hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.14) 50%, transparent 60%);
+  background-size: 220% 100%;
+  animation: sb-shimmer 1.8s linear infinite;
+}
+.cl-up-cost { font-weight: 800; color: var(--rb-gold); font-size: 0.8rem; white-space: nowrap; }

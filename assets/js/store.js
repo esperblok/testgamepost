@@ -263,6 +263,67 @@
   /* ─────────────────────── winkel / bezit ──────────────────── */
 
   /**
+   * De hele winkelcatalogus. Een item is altijd van één type ('skin' of 'hat')
+   * en kost muntjes. Gratis items (price 0) zitten er ook in, zodat een nieuw
+   * profiel meteen iets heeft om aan te trekken.
+   */
+  const SHOP = [
+    // lichaamskleuren
+    { id: 'groen',     type: 'skin', name: 'Grasgroen',   price: 0,    color: '#3ecf6a' },
+    { id: 'blauw',     type: 'skin', name: 'Oceaanblauw', price: 60,   color: '#2f9bff' },
+    { id: 'rood',      type: 'skin', name: 'Lavarood',    price: 60,   color: '#ff5a4d' },
+    { id: 'geel',      type: 'skin', name: 'Citroen',     price: 90,   color: '#ffd83d' },
+    { id: 'paars',     type: 'skin', name: 'Druivenpaars', price: 140,  color: '#8b5cff' },
+    { id: 'roze',      type: 'skin', name: 'Kauwgum',     price: 140,  color: '#ff6fb5' },
+    { id: 'goud',      type: 'skin', name: 'Massief goud', price: 400,  color: '#ffc700' },
+    { id: 'robloxgrijs', type: 'skin', name: 'Steenblok', price: 220,  color: '#a8adb3' },
+    { id: 'neon',      type: 'skin', name: 'Neon',        price: 320,  color: '#00ffcc' },
+    { id: 'regenboog', type: 'skin', name: 'Regenboog',   price: 750,  color: 'rainbow' },
+
+    // hoofddeksels
+    { id: 'geen',      type: 'hat', name: 'Niets',        price: 0,   icon: '🚫', css: '' },
+    { id: 'pet',       type: 'hat', name: 'Pet',          price: 50,  icon: '🧢', css: 'cap' },
+    { id: 'party',     type: 'hat', name: 'Feesthoed',    price: 80,  icon: '🥳', css: 'party' },
+    { id: 'koptel',    type: 'hat', name: 'Koptelefoon',  price: 120, icon: '🎧', css: 'phones' },
+    { id: 'kroon',     type: 'hat', name: 'Kroon',        price: 300, icon: '👑', css: 'crown' },
+    { id: 'tophat',    type: 'hat', name: 'Hoge hoed',    price: 250, icon: '🎩', css: 'tophat' },
+    { id: 'halo',      type: 'hat', name: 'Halo',         price: 450, icon: '😇', css: 'halo' },
+    { id: 'duivel',    type: 'hat', name: 'Duivelshoorns', price: 450, icon: '😈', css: 'horns' },
+    { id: 'raket',     type: 'hat', name: 'Raket op je rug', price: 600, icon: '🚀', css: 'rocket' },
+    { id: 'draak',     type: 'hat', name: 'Drakenkop',    price: 900, icon: '🐲', css: 'dragon' },
+  ];
+
+  function itemById(id) {
+    for (let i = 0; i < SHOP.length; i++) if (SHOP[i].id === id) return SHOP[i];
+    return null;
+  }
+
+  /** Alle items van één type. */
+  function shopFor(type) {
+    return SHOP.filter((i) => i.type === type);
+  }
+
+  /** Bezit je dit item al? */
+  function owns(store, type, id) {
+    const bag = getProfile(store).owned[type] || [];
+    return bag.indexOf(id) !== -1;
+  }
+
+  /**
+   * Doe een item aan dat je al bezit. Onbekende of niet-bezaten items worden
+   * geweigerd, zodat een foute klik nooit het profiel in de war schopt.
+   * @returns {{ok:boolean, reason?:string}}
+   */
+  function equipItem(store, type, id) {
+    if (type !== 'skin' && type !== 'hat') return { ok: false, reason: 'onbekend type' };
+    const item = itemById(id);
+    if (!item || item.type !== type) return { ok: false, reason: 'onbekend item' };
+    if (!owns(store, type, id)) return { ok: false, reason: 'niet in bezit' };
+    saveProfile(store, { [type]: id });
+    return { ok: true };
+  }
+
+  /**
    * Koopt een item. Failt netjes bij te weinig muntjes of dubbel bezit.
    * @returns {{ok:boolean, reason?:string, coins:number}}
    */
@@ -375,6 +436,7 @@
   return {
     KEY: KEY,
     SEED_FRIENDS: SEED_FRIENDS,
+    SHOP: SHOP,
     DEFAULT_PROFILE: DEFAULT_PROFILE,
     DEFAULT_SETTINGS: DEFAULT_SETTINGS,
     read: read,
@@ -395,6 +457,10 @@
     getLevel: getLevel,
     getProfile: getProfile,
     saveProfile: saveProfile,
+    itemById: itemById,
+    shopFor: shopFor,
+    owns: owns,
+    equipItem: equipItem,
     buyItem: buyItem,
     getFriends: getFriends,
     addFriend: addFriend,

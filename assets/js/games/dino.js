@@ -9,6 +9,7 @@
 
   root.SBGames.dino = function (ctx) {
     const g = ctx.ctx2d;
+    const J = root.SBJuice;
     const W = ctx.logical.w;
     const H = ctx.logical.h;
 
@@ -19,7 +20,10 @@
     const RUN_H = 44;
     const DINO_W = 34;
 
+    const fx = J.fx(g, { w: W, h: H });
+
     let dino, obstacles, clouds, speed, dist, alive, spawnIn, legPhase, started;
+    let milestone, squash;
 
     function reset() {
       dino = { y: GROUND - RUN_H, vy: 0, duck: false, onGround: true };
@@ -33,6 +37,9 @@
       started = false;
       spawnIn = 1.2;
       legPhase = 0;
+      milestone = 0;
+      squash = 0;
+      fx.clear();
       paintHud();
       draw();
     }
@@ -76,7 +83,9 @@
       dino.vy = JUMP_V;
       dino.onGround = false;
       dino.duck = false;
+      squash = 1;
       ctx.sound('jump');
+      fx.dust(24, GROUND, { count: 10, speed: 90 });
     }
 
     function setDuck(on) {
@@ -95,6 +104,8 @@
     }
 
     function update(dt) {
+      fx.update(dt);
+      squash = J.lerp(squash, 0, Math.min(1, dt * 10));
       if (!alive) return;
       if (!started) { draw(); return; }
 
@@ -102,14 +113,29 @@
       dist += speed * dt * 0.1;
       legPhase += dt * (dino.onGround ? 14 : 0);
 
+      // elke 100 meter een klein feestje
+      if (Math.floor(dist / 100) > milestone) {
+        milestone = Math.floor(dist / 100);
+        fx.pop(W - 90, 40, milestone * 100 + ' m', { color: '#ffd200', size: 22 });
+        fx.burst(W - 90, 46, { colors: ['#ffd200', '#ffffff'], count: 12, speed: 150, life: 0.5 });
+        ctx.sound('coin');
+      }
+
       dino.vy += GRAVITY * dt;
       dino.y += dino.vy * dt;
       const floorY = GROUND - (dino.duck ? DUCK_H : RUN_H);
+      const wasAir = !dino.onGround;
       if (dino.y >= floorY) {
         dino.y = floorY;
         dino.vy = 0;
         dino.onGround = true;
+        if (wasAir) {
+          squash = -1;
+          fx.dust(24, GROUND, { count: 8 });
+        }
       }
+      // renstof
+      if (dino.onGround && Math.random() < 0.4) fx.dust(16, GROUND, { count: 1, size: 2.2 });
 
       spawnIn -= dt;
       if (spawnIn <= 0) {
@@ -134,6 +160,9 @@
         if (overlaps(db, o)) {
           alive = false;
           ctx.sound('lose');
+          fx.shake(15);
+          fx.burst(db.x + db.w / 2, db.y + db.h / 2,
+            { colors: ['#00e676', '#ff5252', '#ffffff'], count: 30, speed: 270, life: 0.8 });
           ctx.onEnd({ score: Math.floor(dist) });
           break;
         }
@@ -143,8 +172,27 @@
     }
 
     function draw() {
-      g.fillStyle = '#0a0a12';
+      // lucht: 's nachts donker, overdag een beetje blauw — wisselt met de afstand
+      const night = (Math.sin(dist * 0.004) + 1) / 2;      // 0..1
+      g.fillStyle = J.vgrad(g, 0, H,
+        night > 0.5 ? '#0b0b18' : '#131a2e',
+        night > 0.5 ? '#171731' : '#1d2b45');
       g.fillRect(0, 0, W, H);
+
+      fx.begin();
+
+      // bergen op de achtergrond
+      const drift = (dist * 6 * 0.2) % 220;
+      g.fillStyle = 'rgba(255,255,255,0.05)';
+      for (let i = -1; i < 5; i++) {
+        const bx = i * 220 - drift;
+        g.beginPath();
+        g.moveTo(bx, GROUND);
+        g.lineTo(bx + 110, GROUND - 90);
+        g.lineTo(bx + 220, GROUND);
+        g.closePath();
+        g.fill();
+      }
 
       // wolken
       g.fillStyle = 'rgba(255,255,255,0.09)';
@@ -156,13 +204,15 @@
         g.fill();
       });
 
-      // grond
-      g.strokeStyle = 'rgba(255,255,255,0.28)';
-      g.lineWidth = 2;
-      g.beginPath();
-      g.moveTo(0, GROUND);
-      g.lineTo(W, GROUND);
-      g.stroke();
+      // grond met een neonrand
+      J.glow(g, '#00e676', 10, () => {
+        g.strokeStyle = 'rgba(0,230,118,0.55)';
+        g.lineWidth = 2;
+        g.beginPath();
+        g.moveTo(0, GROUND);
+        g.lineTo(W, GROUND);
+        g.stroke();
+      });
       g.fillStyle = 'rgba(255,255,255,0.12)';
       const scroll = (dist * 6) % 40;
       for (let x = -scroll; x < W; x += 40) g.fillRect(x, GROUND + 8, 16, 2);
@@ -186,9 +236,13 @@
         }
       });
 
-      // dino
+      // dino (met schaduw en een deukje bij het landen)
       const h = dino.duck ? DUCK_H : RUN_H;
       const bodyY = dino.duck ? GROUND - DUCK_H : dino.y;
+      g.fillStyle = 'rgba(0,0,0,0.3)';
+      g.beginPath();
+      g.ellipse(24, GROUND + 4, 18 - (GROUND - (bodyY + h)) * 0.06, 4, 0, 0, Math.PI * 2);
+      g.fill();
       g.fillStyle = alive ? '#00e676' : '#ff5252';
       if (dino.duck) {
         g.fillRect(6, GROUND - DUCK_H + 4, DINO_W + 6, DUCK_H - 4);
@@ -207,11 +261,16 @@
 
       if (!started) {
         g.fillStyle = 'rgba(255,255,255,0.75)';
-        g.font = '600 16px Fredoka, sans-serif';
+        g.font = "600 16px 'Hanken Grotesk', system-ui, sans-serif";
         g.textAlign = 'center';
         g.fillText('Druk op spatie of tik om te rennen', W / 2, H / 2 - 20);
         g.textAlign = 'left';
       }
+
+      // hoe sneller, hoe meer vaartstrepen
+      fx.speedLines(J.clamp((speed - 320) / 440, 0, 1), 'rgba(255,255,255,0.28)');
+      fx.vignette(0.38);
+      fx.end();
     }
 
     return {

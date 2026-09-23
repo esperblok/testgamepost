@@ -298,8 +298,15 @@
         ]),
       ]);
 
+      // spelkop toont de Roblox-thumbnail als die er is, anders de gradient+emoji
+      const headGrad = 'linear-gradient(135deg,' + gameDef.grad[0] + ',' + gameDef.grad[1] + ')';
+      const headStyle = gameDef.thumb
+        ? 'background-image:url(../' + gameDef.thumb + '),' + headGrad +
+          ';background-size:cover,cover;background-position:center,center;'
+        : 'background:' + headGrad;
+
       const head = el('div', { class: 'sb-head' }, [
-        el('div', { class: 'sb-head-icon', style: 'background:linear-gradient(135deg,' + gameDef.grad[0] + ',' + gameDef.grad[1] + ')', text: gameDef.icon }),
+        el('div', { class: 'sb-head-icon', style: headStyle, text: gameDef.thumb ? '' : gameDef.icon }),
         el('div', { class: 'sb-head-text' }, [
           el('h1', { text: gameDef.name }),
           el('p', { text: gameDef.tagline }),

@@ -47,6 +47,51 @@ Nu:
 
 ---
 
+## Roblox-look en "juice"
+
+De site ziet eruit als Roblox: donkergrijze navbar met een gekanteld blokje als
+logo, een vaste sidebar links, rijen met spellen die horizontaal scrollen, en
+spelkaarten met miniatuur, titel en een teller eronder. Klikken op een kaart
+opent eerst een spelpagina met statistieken en scorebord; de groene knop daarop
+start het spel.
+
+| Onderdeel | Bestand |
+| --- | --- |
+| Kleuren, knoppen, animaties | `assets/css/app.css` |
+| Navbar, sidebar, hero, rijen, kaarten, modals | `assets/css/home.css` |
+| Chrome om een spel heen | `assets/css/shell.css` |
+| Blokjespop en winkel | `assets/js/avatar.js` + `assets/css/avatar.css` |
+| Effectenlaag voor alle canvas-spellen | `assets/js/juice.js` |
+
+`juice.js` is de reden dat de spellen anders *voelen*. Eén module levert aan
+alle canvas-spellen: deeltjes (`burst`, `spark`, `dust`), schermschudden
+(`shake`), zwevende scoretekst (`pop`), schokgolven (`ring`), sporen (`trail`),
+sterrenvelden in drie lagen (`starfield`), vaartstrepen (`speedLines`) en
+donkere randen (`vignette`). Voor de DOM-spellen zijn er `confetti()`,
+`bounce()` en `ripple()`.
+
+Gebruik in een spel is drie regels:
+
+```js
+const fx = SBJuice.fx(ctx.ctx2d, { w: W, h: H });
+// in update(dt): fx.update(dt);
+// in render(): eerst het scherm wissen, dan fx.begin() … wereld tekenen … fx.end()
+```
+
+### Eerlijk over de getallen op de kaarten
+
+Het aantal "spelers" op een kaart is **niet echt**. Elk spel krijgt een vast
+startgetal dat uit zijn id wordt gehaald, en je eigen speelbeurten op dit
+apparaat tellen daar echt bij op (`sbx.stats['plays.<id>']`). Hetzelfde geldt
+voor het duimje-percentage. Er is geen server, dus er kan geen echt aantal
+spelers bestaan — de cijfers staan er alleen zodat de site er levendig uitziet.
+
+### Nieuwe pagina: `profile.html`
+
+De avatar in de topbar van elke spelpagina linkte naar `profile.html`, maar dat
+bestand bestond niet. Het bestaat nu: een eigen pagina met de blokjespop,
+huidkleuren, hoofddeksels, emoji- en naamkeuze en je records.
+
 ## De spellen
 
 | Spel | Soort | Besturing |

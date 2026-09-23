@@ -31,6 +31,7 @@
   ];
 
   root.SBGames.moon = function (ctx) {
+    const J = root.SBJuice;
     let s, wrap, resEl, popEl, creditEl, dayEl, gridEl, shopEl, logEl, nextBtn;
 
     function startState() {
@@ -200,6 +201,7 @@
       if (s.day > GOAL) {
         s.alive = false;
         paint();
+        if (J) J.confetti({ count: 140, life: 2.6 });
         ctx.after(() => ctx.onEnd({ score: GOAL * 10 + s.pop * 5, won: true }), 700);
         return;
       }

@@ -11,7 +11,8 @@
   const PAR = 7;
 
   root.SBGames.guess = function (ctx) {
-    let secret, guesses, lo, hi, over, wrap, input, listEl, hintEl, btn;
+    const J = root.SBJuice;
+    let secret, guesses, lo, hi, over, wrap, input, listEl, hintEl, btn, meterFill;
 
     function build() {
       if (wrap) return;
@@ -21,6 +22,12 @@
 
       hintEl = ctx.el('div', { class: 'guess-hint', text: 'Doe je eerste gok!' });
       wrap.appendChild(hintEl);
+
+      // balk die laat zien hoe klein het mogelijke bereik al is
+      const meter = ctx.el('div', { class: 'guess-meter' });
+      meterFill = ctx.el('i', { class: 'guess-meter-fill' });
+      meter.appendChild(meterFill);
+      wrap.appendChild(meter);
 
       const row = ctx.el('div', { class: 'guess-row' });
       input = ctx.el('input', {
@@ -77,9 +84,13 @@
       if (raw < secret) { lo = Math.max(lo, raw + 1); ctx.sound('tap'); }
       else if (raw > secret) { hi = Math.min(hi, raw - 1); ctx.sound('tap'); }
 
+      paintMeter();
+      if (J) J.bounce(hintEl);
+
       if (raw === secret) {
         over = true;
         ctx.sound('win');
+        if (J) J.confetti({ count: 110, life: 2.2 });
         // Par is 7 gokken: beter dan par levert bonus op, slechter kost punten.
         const score = Math.max(10, 160 - (guesses - PAR) * 22);
         hintEl.textContent = '🎯 Het was ' + secret + '!';
@@ -93,6 +104,15 @@
       input.value = '';
       input.focus();
       paintHud();
+    }
+
+    /** De balk krimpt mee met het bereik: zo zie je binair zoeken gebeuren. */
+    function paintMeter() {
+      if (!meterFill) return;
+      const left = ((lo - 1) / MAX) * 100;
+      const width = ((hi - lo + 1) / MAX) * 100;
+      meterFill.style.left = left + '%';
+      meterFill.style.width = Math.max(1, width) + '%';
     }
 
     function paintHud() {
@@ -117,6 +137,9 @@
       const err = wrap.querySelector('#guess-err');
       if (err) err.textContent = '';
       hintEl.textContent = 'Doe je eerste gok!';
+      lo = 1;
+      hi = MAX;
+      paintMeter();
       paintHud();
       ctx.after(() => input.focus(), 120);
     }

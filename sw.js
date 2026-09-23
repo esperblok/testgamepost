@@ -9,26 +9,43 @@
  * Belangrijk: verhoog CACHE bij elke wijziging, anders blijven bezoekers
  * een oude versie zien.
  */
-const CACHE = 'spaceblox-v1';
+const CACHE = 'spaceblox-v5';
 
 const SHELL = [
   './',
   './index.html',
   './dashboard.html',
+  './profile.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
   './assets/css/app.css',
   './assets/css/home.css',
   './assets/css/shell.css',
+  './assets/css/avatar.css',
   './assets/css/dashboard.css',
   './assets/js/store.js',
   './assets/js/auth.js',
   './assets/js/admin.config.js',
   './assets/js/games.js',
+  './assets/js/juice.js',
+  './assets/js/avatar.js',
   './assets/js/shell.js',
   './assets/js/home.js',
+  './assets/js/profile.js',
   './assets/js/dashboard.js',
+  './assets/img/race.jpg',
+  './assets/img/snake.jpg',
+  './assets/img/shooter.jpg',
+  './assets/img/racer.jpg',
+  './assets/img/dino.jpg',
+  './assets/img/blockrun.jpg',
+  './assets/img/pong.jpg',
+  './assets/img/memory.jpg',
+  './assets/img/guess.jpg',
+  './assets/img/clicker.jpg',
+  './assets/img/orlog.jpg',
+  './assets/img/moon.jpg',
 ];
 
 self.addEventListener('install', (e) => {

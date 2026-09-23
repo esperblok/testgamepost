@@ -1,32 +1,60 @@
-/* SpaceBlox — gedeelde look
- * Eén plek voor kleuren, lettertype en knoppen. Zowel index.html als de
- * games laden dit bestand, dus de site voelt overal hetzelfde.
+/* SpaceBlox — gedeelde look, in Roblox-stijl
+ *
+ * Eén plek voor kleuren, lettertype, knoppen en de gedeelde chrome
+ * (navbar + sidebar). Zowel de homepage als de spelpagina's en het
+ * profiel laden dit bestand, dus de site voelt overal hetzelfde.
+ *
+ * Geen externe webfonts: alles blijft werken zonder internet.
  */
 
 :root {
-  --bg: #0d0d16;
-  --bg-2: #14141f;
-  --card: #1b1b29;
-  --card-2: #232336;
-  --line: rgba(255, 255, 255, 0.07);
-  --line-2: rgba(255, 255, 255, 0.14);
-  --text: #ffffff;
-  --muted: rgba(255, 255, 255, 0.45);
-  --muted-2: rgba(255, 255, 255, 0.28);
-  --gold: #ffd200;
-  --orange: #ff6a00;
-  --green: #00e676;
-  --blue: #00c8ff;
-  --pink: #ff4081;
-  --red: #ff5252;
-  --radius: 14px;
-  --radius-sm: 9px;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-}
+  /* Roblox-palet: warm donkergrijs, geen zwart */
+  --rb-bg: #232527;
+  --rb-bg-deep: #1a1b1d;
+  --rb-nav: #232527;
+  --rb-surface: #2f3133;
+  --rb-card: #393b3d;
+  --rb-card-hi: #44464a;
+  --rb-line: #393b3d;
+  --rb-line-2: #4a4c4e;
+  --rb-text: #f2f4f5;
+  --rb-muted: #bdbebe;
+  --rb-faint: #8a8c8d;
+  --rb-green: #00b06f;
+  --rb-green-hi: #00c97e;
+  --rb-green-lo: #008754;
+  --rb-blue: #00a2ff;
+  --rb-red: #e5484d;
+  --rb-gold: #ffc700;
+  --rb-purple: #7c5cff;
 
-@font-face {
-  font-family: 'SB-fallback';
-  src: local('Fredoka'), local('Comic Sans MS'), local('Arial Rounded MT Bold');
+  /* ouderwetse aliassen; games en de shell gebruiken deze voor hun eigen accenten */
+  --bg: var(--rb-bg);
+  --bg-2: var(--rb-bg-deep);
+  --card: var(--rb-card);
+  --card-2: var(--rb-card-hi);
+  --line: var(--rb-line);
+  --line-2: var(--rb-line-2);
+  --text: var(--rb-text);
+  --muted: var(--rb-muted);
+  --muted-2: var(--rb-faint);
+  --green: var(--rb-green);
+  --gold: var(--rb-gold);
+  --blue: var(--rb-blue);
+  --red: var(--rb-red);
+  --orange: #ff8a3d;
+  --pink: #ff4081;
+  --purple: var(--rb-purple);
+
+  --radius: 10px;
+  --radius-sm: 8px;
+  --radius-lg: 14px;
+  --nav-h: 56px;
+  --side-w: 232px;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.5);
+
+  --font: 'Hanken Grotesk', 'Avenir Next', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', sans-serif;
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,21 +62,23 @@
 html { -webkit-text-size-adjust: 100%; }
 
 body {
-  font-family: 'Fredoka', 'SB-fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  font-family: var(--font);
+  background: var(--rb-bg);
+  color: var(--rb-text);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
+  font-size: 15px;
+  line-height: 1.45;
 }
 
-/* De oude versie zette user-select: none op alles; dat blokkeert tekst
- * selecteren in formulieren. Alleen tijdens het spelen uitzetten. */
+/* Tekst selecteren mag overal, behalve tijdens het spelen. */
 .sb-page, .sb-stage { user-select: none; -webkit-user-select: none; }
 input, textarea { user-select: text; -webkit-user-select: text; }
 
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; }
+h1, h2, h3, h4 { font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
 
 /* ── knoppen ── */
 
@@ -56,86 +86,95 @@ button { font-family: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  border: 1px solid var(--line);
-  background: var(--card);
-  color: var(--text);
-  padding: 10px 18px;
+  gap: 7px;
+  border: 0;
+  background: var(--rb-card);
+  color: var(--rb-text);
+  padding: 9px 16px;
   border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+  transition: background 0.13s ease, transform 0.1s ease, box-shadow 0.13s ease, filter 0.13s ease;
 }
-.sb-btn:hover { background: var(--card-2); border-color: var(--line-2); }
-.sb-btn:active { transform: scale(0.96); }
-.sb-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.sb-btn:hover { background: var(--rb-card-hi); }
+.sb-btn:active { transform: translateY(1px) scale(0.985); }
+.sb-btn:focus-visible { outline: 2px solid var(--rb-blue); outline-offset: 2px; }
 
 .sb-btn-primary {
-  background: linear-gradient(135deg, var(--green), #00a152);
-  border-color: transparent;
-  color: #04150c;
+  background: var(--rb-green);
+  color: #ffffff;
+  box-shadow: 0 2px 0 var(--rb-green-lo);
 }
-.sb-btn-primary:hover { filter: brightness(1.08); background: linear-gradient(135deg, var(--green), #00a152); }
-
-.sb-btn-ghost { background: rgba(255, 255, 255, 0.04); }
+.sb-btn-primary:hover { background: var(--rb-green-hi); }
+.sb-btn-primary:active { box-shadow: 0 0 0 var(--rb-green-lo); transform: translateY(2px); }
 
 .sb-btn-gold {
-  background: linear-gradient(135deg, var(--gold), var(--orange));
-  border-color: transparent;
-  color: #2a1600;
+  background: linear-gradient(180deg, #ffd83d, #f0a500);
+  color: #2a1c00;
+  box-shadow: 0 2px 0 #b87c00;
 }
+.sb-btn-gold:hover { filter: brightness(1.06); }
 
-.sb-btn[disabled] { opacity: 0.45; cursor: not-allowed; transform: none; }
+.sb-btn-blue { background: var(--rb-blue); color: #fff; box-shadow: 0 2px 0 #0072b3; }
+.sb-btn-danger { background: var(--rb-red); color: #fff; box-shadow: 0 2px 0 #a92f33; }
 
-/* ── chips (muntjes, level) ── */
+.sb-btn-ghost {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+.sb-btn-ghost:hover { background: rgba(255, 255, 255, 0.1); }
+
+.sb-btn-lg { padding: 13px 26px; font-size: 1rem; border-radius: var(--radius); }
+.sb-btn-block { width: 100%; }
+.sb-btn[disabled] { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── chips (muntjes, level, avatar) ── */
 
 .sb-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--line);
-  border-radius: 20px;
+  gap: 6px;
+  background: var(--rb-surface);
+  border: 1px solid var(--rb-line);
+  border-radius: 999px;
   padding: 5px 12px;
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
   white-space: nowrap;
+  transition: background 0.13s ease;
 }
-.sb-chip:hover { background: rgba(255, 255, 255, 0.09); }
-.sb-coins { color: var(--gold); border-color: rgba(255, 210, 0, 0.22); background: rgba(255, 210, 0, 0.09); }
+a.sb-chip:hover, button.sb-chip:hover { background: var(--rb-card); }
+.sb-coins { color: var(--rb-gold); }
+.sb-coins .sb-coin-ico { filter: drop-shadow(0 0 6px rgba(255, 199, 0, 0.5)); }
 
 /* ── formulieren ── */
 
 .sb-field {
   width: 100%;
-  padding: 11px 14px;
+  padding: 10px 13px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text);
+  border: 1px solid var(--rb-line-2);
+  background: var(--rb-bg-deep);
+  color: var(--rb-text);
   font-size: 0.9rem;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.sb-field:focus { border-color: var(--blue); }
-.sb-field::placeholder { color: var(--muted-2); }
+.sb-field:focus { border-color: var(--rb-blue); box-shadow: 0 0 0 3px rgba(0, 162, 255, 0.18); }
+.sb-field::placeholder { color: var(--rb-faint); }
 
-.sb-error {
-  color: var(--red);
-  font-size: 0.78rem;
-  min-height: 1.1em;
-  margin: 6px 0;
-}
-.sb-ok { color: var(--green); font-size: 0.78rem; margin: 6px 0; }
+.sb-error { color: #ff8a8d; font-size: 0.78rem; min-height: 1.1em; margin: 6px 0; }
+.sb-ok { color: var(--rb-green-hi); font-size: 0.78rem; margin: 6px 0; }
 
 /* ── scrollbars ── */
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.24); }
 
 /* ── toegankelijkheid ── */
 
@@ -147,6 +186,38 @@ button { font-family: inherit; }
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ── gedeelde animaties (juice.js gebruikt deze) ── */
+
+@keyframes sb-bounce {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.16); }
+  60%  { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+.sb-bounce { animation: sb-bounce 0.42s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes sb-ripple {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 176, 111, 0.55); }
+  100% { box-shadow: 0 0 0 18px rgba(0, 176, 111, 0); }
+}
+.sb-ripple { animation: sb-ripple 0.55s ease-out; }
+
+@keyframes sb-pop-in {
+  0%   { transform: scale(0.86) translateY(10px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.sb-pop-in { animation: sb-pop-in 0.24s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+
+@keyframes sb-shimmer {
+  0%   { background-position: -140% 0; }
+  100% { background-position: 240% 0; }
+}
+
+@keyframes sb-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -16,6 +16,7 @@
   };
 
   root.SBGames.memory = function (ctx) {
+    const J = root.SBJuice;
     let size, cards, first, second, lock, moves, matches, boardEl, pickerEl;
 
     function shuffled(n) {
@@ -62,13 +63,16 @@
           first = second = null;
           lock = false;
           ctx.sound('coin');
+          if (J) { J.bounce(a.el); J.bounce(b.el); }
           paintHud();
           if (matches === cards.length / 2) finish();
         }, 320);
       } else {
+        // "wrong" laat de kaarten even schudden; de animatie staat in memory.css
+        a.el.classList.add('wrong');
+        b.el.classList.add('wrong');
         ctx.after(() => {
-          a.el.classList.remove('up');
-          b.el.classList.remove('up');
+          [a.el, b.el].forEach((el) => { el.classList.remove('up', 'wrong'); });
           first = second = null;
           lock = false;
         }, 760);
@@ -79,6 +83,7 @@
       // Minder beurten = meer punten. Minimum 10 zodat verliezen ook telt.
       const perfect = cards.length / 2;
       const score = Math.max(10, 200 - (moves - perfect) * 8 + perfect * 4);
+      if (J) J.confetti({ count: 120, life: 2.4 });
       ctx.after(() => ctx.onEnd({ score: score, won: true }), 500);
     }
 

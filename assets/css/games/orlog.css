@@ -81,3 +81,24 @@
   padding: 3px 9px;
 }
 .ol-log li:first-child { color: var(--text); }
+
+/* ── extra laag: dobbelen voelt als dobbelen ── */
+.ol-die {
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.25);
+}
+.ol-die.rolling { animation: ol-roll 0.42s cubic-bezier(0.3, 1.4, 0.6, 1); }
+@keyframes ol-roll {
+  0%   { transform: rotate(0deg) scale(0.7); }
+  60%  { transform: rotate(360deg) scale(1.12); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+.ol-hp {
+  box-shadow: 0 0 14px rgba(0, 176, 111, 0.28);
+  font-weight: 800;
+}
+.ol-tok {
+  background: var(--rb-card);
+  border: 1px solid var(--rb-line-2);
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.ol-log li:first-child { animation: guess-in 0.25s ease both; }

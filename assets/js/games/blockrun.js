@@ -4,6 +4,8 @@
  * Vijf levels die vastzitten in dit bestand, dus geen losse leveldata nodig.
  *
  * Een platform is [x, y, breedte, hoogte]. Kristallen zijn [x, y].
+ * De levels en de regels zijn onveranderd; de aankleding (parallax, vonken,
+ * stofwolken bij het landen, gloeiende kristallen) komt uit juice.js.
  */
 (function (root) {
   'use strict';
@@ -59,13 +61,28 @@
 
   root.SBGames.blockrun = function (ctx) {
     const g = ctx.ctx2d;
+    const J = root.SBJuice;
     const W = ctx.logical.w;
     const H = ctx.logical.h;
     const GRAVITY = 1500;
     const JUMP_V = -520;
     const RUN = 210;
 
+    const fx = J.fx(g, { w: W, h: H });
+    const stars = J.starfield(g, { w: W, h: H, count: 46, dir: 'left', size: 1.3 });
+
+    // shirt in jouw avatar-kleur (uit de winkel); regenboog/ontbrekend -> blauw
+    const shirt = (function () {
+      try {
+        const it = root.SB.itemById(root.SB.getProfile(root.localStorage).skin);
+        if (it && it.color && it.color !== 'rainbow') return it.color;
+      } catch (e) {}
+      return '#00a2ff';
+    })();
+
     let level, p, platforms, crystals, flag, total, done, lives;
+    let squash = 0;      // -1 = plat gedrukt, +1 = uitgerekt
+    let levelFlash = 0;
     // Ingedrukte toetsen bijhouden: loslaten moet laten stilstaan, anders
     // schuift de speler oneindig door.
     const held = { left: false, right: false };
@@ -73,11 +90,13 @@
     function load(i) {
       const L = LEVELS[i];
       level = i;
-      p = { x: L.spawn[0], y: L.spawn[1], w: 24, h: 30, vx: 0, vy: 0, onGround: false, face: 1 };
+      p = { x: L.spawn[0], y: L.spawn[1], w: 24, h: 30, vx: 0, vy: 0, onGround: false, face: 1, run: 0 };
       platforms = L.platforms.map((r) => ({ x: r[0], y: r[1], w: r[2], h: r[3] }));
       crystals = L.crystals.map((c) => ({ x: c[0], y: c[1], got: false }));
       flag = { x: L.flag[0], y: L.flag[1] };
       done = false;
+      levelFlash = 1.2;
+      fx.pop(W / 2, H / 2 - 30, 'LEVEL ' + (i + 1), { color: '#69f0ae', size: 30 });
       paintHud();
       draw();
     }
@@ -85,6 +104,7 @@
     function reset() {
       total = 0;
       lives = 3;
+      fx.clear();
       load(0);
     }
 
@@ -100,6 +120,8 @@
     function die() {
       lives--;
       ctx.sound('lose');
+      fx.shake(12);
+      fx.burst(p.x + p.w / 2, p.y + p.h / 2, { colors: ['#ff8a3d', '#ff5252', '#ffffff'], count: 24, speed: 240, life: 0.7 });
       if (lives <= 0) {
         ctx.onEnd({ score: total });
         return;
@@ -115,10 +137,17 @@
       if (!p.onGround) return;
       p.vy = JUMP_V;
       p.onGround = false;
+      squash = 1;
       ctx.sound('jump');
+      fx.dust(p.x + p.w / 2, p.y + p.h, { count: 9 });
     }
 
     function update(dt) {
+      fx.update(dt);
+      stars.update(dt, 16);
+      if (levelFlash > 0) levelFlash = Math.max(0, levelFlash - dt);
+      squash = J.lerp(squash, 0, Math.min(1, dt * 10));
+
       if (done) { draw(); return; }
 
       p.vy += GRAVITY * dt;
@@ -135,6 +164,7 @@
 
       p.x += p.vx * dt;
       p.y += p.vy * dt;
+      p.run += Math.abs(p.vx) * dt * 0.05;
 
       // wanden
       if (p.x < 0) p.x = 0;
@@ -144,6 +174,7 @@
       if (p.y > H + 60) { die(); if (lives <= 0) return; }
 
       // platformbotsing: alleen landen als je van boven komt
+      const wasGround = p.onGround;
       p.onGround = false;
       for (const pl of platforms) {
         const overlapX = p.x + p.w > pl.x && p.x < pl.x + pl.w;
@@ -155,6 +186,15 @@
           p.onGround = true;
         }
       }
+      // net geland: stofwolkje en een klein deukje
+      if (p.onGround && !wasGround) {
+        squash = -1;
+        fx.dust(p.x + p.w / 2, p.y + p.h, { count: 8 });
+      }
+      // renstof
+      if (p.onGround && Math.abs(p.vx) > 120 && Math.random() < 0.35) {
+        fx.dust(p.x + p.w / 2 - p.face * 8, p.y + p.h, { count: 1, size: 2.4 });
+      }
 
       // kristallen
       crystals.forEach((c) => {
@@ -163,6 +203,9 @@
           c.got = true;
           total += 10;
           ctx.sound('coin');
+          fx.burst(c.x, c.y, { colors: ['#4dd0e1', '#b2ebf2', '#ffffff'], count: 16, speed: 180, life: 0.55, size: 3.4 });
+          fx.ring(c.x, c.y, { color: 'rgba(77,208,225,0.9)', r1: 34, life: 0.35 });
+          fx.pop(c.x, c.y - 14, '+10 💎', { color: '#4dd0e1', size: 16 });
           paintHud();
         }
       });
@@ -172,10 +215,13 @@
         if (level + 1 < LEVELS.length) {
           total += 25;
           ctx.sound('win');
+          fx.burst(flag.x + 10, flag.y + 8, { colors: ['#ffd200', '#ffffff', '#69f0ae'], count: 28, speed: 240, life: 0.8 });
+          fx.shake(5);
           load(level + 1);
         } else {
           total += 50;
           done = true;
+          fx.burst(flag.x + 10, flag.y + 8, { colors: ['#ffd200', '#ffffff', '#69f0ae'], count: 40, speed: 300, life: 1 });
           ctx.onEnd({ score: total, won: true });
         }
         return;
@@ -186,48 +232,111 @@
 
     function draw() {
       // lucht verloopt per level
-      const sky = g.createLinearGradient(0, 0, 0, H);
-      sky.addColorStop(0, '#101024');
-      sky.addColorStop(1, '#1b1b33');
-      g.fillStyle = sky;
+      g.fillStyle = J.vgrad(g, 0, H, '#141433', '#0d0d1c');
       g.fillRect(0, 0, W, H);
 
-      // platforms
+      fx.begin();
+
+      stars.draw(g);
+
+      // heuvels op de achtergrond, schuiven zachtjes mee
+      const drift = (p ? p.x : 0) * 0.12;
+      g.fillStyle = 'rgba(105,240,174,0.07)';
+      for (let i = 0; i < 5; i++) {
+        const bx = ((i * 180) - drift) % (W + 180);
+        g.beginPath();
+        g.arc(bx, H - 40, 90, Math.PI, 0);
+        g.fill();
+      }
+
+      // platforms met een lichtrand bovenop
       platforms.forEach((pl) => {
         g.fillStyle = '#3a3a55';
-        g.fillRect(pl.x, pl.y, pl.w, pl.h);
-        g.fillStyle = '#69f0ae';
-        g.fillRect(pl.x, pl.y, pl.w, 4);
+        J.roundRect(g, pl.x, pl.y, pl.w, pl.h, 3);
+        J.glow(g, '#69f0ae', 10, () => {
+          g.fillStyle = '#69f0ae';
+          J.roundRect(g, pl.x, pl.y, pl.w, 4, 2);
+        });
+        J.studs(g, pl.x, pl.y, pl.w, 'rgba(255,255,255,0.28)');
+        // blokjes-textuur
+        g.fillStyle = 'rgba(255,255,255,0.05)';
+        for (let x = pl.x + 6; x < pl.x + pl.w - 6; x += 16) g.fillRect(x, pl.y + 7, 8, 3);
       });
 
-      // kristallen
+      // kristallen: zweven, draaien en gloeien
+      const t = fx.t;
       crystals.forEach((c) => {
         if (c.got) return;
-        const bob = Math.sin(Date.now() / 300 + c.x) * 3;
-        g.fillStyle = '#4dd0e1';
+        const bob = Math.sin(t * 2.6 + c.x * 0.05) * 3.5;
+        const wob = Math.abs(Math.cos(t * 1.7 + c.x * 0.03));
+        J.blob(g, c.x, c.y + bob, 18, 'rgba(77,208,225,0.4)', 0.6);
+        J.glow(g, '#4dd0e1', 14, () => {
+          g.fillStyle = '#4dd0e1';
+          g.beginPath();
+          g.moveTo(c.x, c.y - 10 + bob);
+          g.lineTo(c.x + 8 * wob + 2, c.y + bob);
+          g.lineTo(c.x, c.y + 10 + bob);
+          g.lineTo(c.x - 8 * wob - 2, c.y + bob);
+          g.closePath();
+          g.fill();
+        });
+        g.fillStyle = 'rgba(255,255,255,0.7)';
+        g.fillRect(c.x - 1, c.y - 6 + bob, 2, 5);
+      });
+
+      // vlag wappert
+      const wave = Math.sin(t * 5) * 3;
+      g.fillStyle = '#bdbdbd';
+      g.fillRect(flag.x, flag.y, 3, 34);
+      J.glow(g, '#ffd200', 14, () => {
+        g.fillStyle = '#ffd200';
         g.beginPath();
-        g.moveTo(c.x, c.y - 9 + bob);
-        g.lineTo(c.x + 8, c.y + bob);
-        g.lineTo(c.x, c.y + 9 + bob);
-        g.lineTo(c.x - 8, c.y + bob);
+        g.moveTo(flag.x + 3, flag.y);
+        g.lineTo(flag.x + 24, flag.y + 8 + wave);
+        g.lineTo(flag.x + 3, flag.y + 16);
+        g.closePath();
         g.fill();
       });
 
-      // vlag
-      g.fillStyle = '#bdbdbd';
-      g.fillRect(flag.x, flag.y, 3, 34);
-      g.fillStyle = '#ffd200';
-      g.beginPath();
-      g.moveTo(flag.x + 3, flag.y);
-      g.lineTo(flag.x + 24, flag.y + 8);
-      g.lineTo(flag.x + 3, flag.y + 16);
-      g.fill();
+      // speler: een blokje met gezicht, dat meevert met springen en landen
+      if (p) {
+        const sw = p.w * (1 - squash * 0.14);
+        const sh = p.h * (1 + squash * 0.16);
+        const px = p.x + (p.w - sw) / 2;
+        const py = p.y + (p.h - sh);
+        const cx = px + sw / 2;
+        const cy = py + sh / 2;
 
-      // speler
-      g.fillStyle = '#ff8a3d';
-      g.fillRect(p.x, p.y, p.w, p.h);
-      g.fillStyle = '#0a0a12';
-      g.fillRect(p.x + (p.face > 0 ? 15 : 4), p.y + 8, 5, 5);
+        // schaduw op de grond
+        g.fillStyle = 'rgba(0,0,0,0.28)';
+        g.beginPath();
+        g.ellipse(cx, p.y + p.h + 4, sw * 0.5, 4, 0, 0, Math.PI * 2);
+        g.fill();
+
+        // jouw eigen avatar rent door het level: gele kop, shirt in jouw kleur
+        J.glow(g, shirt, 12, () => {
+          J.minifig(g, cx, p.y + p.h, {
+            h: sh,
+            shirt: shirt,
+            facing: p.face,
+            walk: Math.abs(p.vx) > 20 ? p.run * 6 : 0,
+            jump: !p.onGround,
+          });
+        });
+      }
+
+      if (levelFlash > 0) {
+        g.globalAlpha = J.clamp(levelFlash, 0, 1);
+        g.fillStyle = '#ffffff';
+        g.font = "800 32px 'Hanken Grotesk', system-ui, sans-serif";
+        g.textAlign = 'center';
+        g.fillText('LEVEL ' + (level + 1), W / 2, H / 2 - 30);
+        g.textAlign = 'left';
+        g.globalAlpha = 1;
+      }
+
+      fx.vignette(0.45);
+      fx.end();
     }
 
     return {

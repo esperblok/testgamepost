@@ -25,8 +25,11 @@
 
   root.SBGames.race = function (ctx) {
     const g = ctx.ctx2d;
+    const J = root.SBJuice;
     const W = ctx.logical.w;
     const H = ctx.logical.h;
+
+    const fx = J.fx(g, { w: W, h: H });
 
     const SAMPLES = 480;
     let path = [];
@@ -145,6 +148,8 @@
             lastLapAt = raceTime;
             if (k.lap > 1 && (!bestLap || lapTime < bestLap)) bestLap = lapTime;
             ctx.sound('coin');
+            fx.pop(W / 2, H / 2 - 40, 'RONDE ' + Math.min(k.lap, LAPS), { color: '#ffd200', size: 24 });
+            fx.ring(W / 2, H * 0.68, { color: 'rgba(255,210,0,0.8)', r1: 70, life: 0.4 });
           }
           if (k.lap > LAPS && !k.done) {
             k.done = true;
@@ -205,12 +210,18 @@
       if (finished) return;
       finished = true;
       place = standings().findIndex((k) => k.isPlayer) + 1;
+      fx.shake(place === 1 ? 10 : 5);
+      fx.burst(W / 2, H / 2, {
+        colors: place === 1 ? ['#ffd200', '#ffffff', '#00e676'] : ['#ffffff', '#00c8ff'],
+        count: 44, speed: 320, life: 1.1, size: 5,
+      });
       const base = [180, 120, 80, 50][place - 1] || 40;
       const lapBonus = bestLap ? Math.max(0, Math.round(60 - bestLap * 2)) : 0;
       ctx.after(() => ctx.onEnd({ score: base + lapBonus, won: place === 1 }), 600);
     }
 
     function update(dt) {
+      fx.update(dt);
       if (finished) { draw(); return; }
 
       if (countdown > 0) {
@@ -222,6 +233,12 @@
 
       const me = karts[0];
       drive(me, dt, throttleInput, steerInput);
+
+      // stof achter de eigen kart (in schermcoördinaten: de camera volgt jou)
+      if (Math.abs(me.speed) > 60) {
+        fx.dust(W / 2, H * 0.68 + 22, { count: 2, size: 3 });
+        fx.speedLines(J.clamp((Math.abs(me.speed) - 60) / 220, 0, 1), 'rgba(255,255,255,0.22)');
+      }
       for (let i = 1; i < karts.length; i++) driveAI(karts[i], dt);
       separate();
 
@@ -236,8 +253,10 @@
     function draw() {
       const me = karts[0];
 
-      g.fillStyle = '#0b1410';
+      g.fillStyle = J.vgrad(g, 0, H, '#123024', '#0a1a13');
       g.fillRect(0, 0, W, H);
+
+      fx.begin();
 
       g.save();
       // Camera volgt de speler en draait mee, zodat je altijd "vooruit" kijkt.
@@ -291,7 +310,7 @@
         g.fillStyle = 'rgba(0,0,0,0.45)';
         g.fillRect(0, 0, W, H);
         g.fillStyle = '#ffd200';
-        g.font = '700 84px Fredoka, sans-serif';
+        g.font = "700 84px 'Hanken Grotesk', system-ui, sans-serif";
         g.textAlign = 'center';
         g.fillText(String(Math.ceil(countdown)), W / 2, H / 2 + 26);
         g.textAlign = 'left';
@@ -301,11 +320,14 @@
         g.fillStyle = 'rgba(0,0,0,0.5)';
         g.fillRect(0, 0, W, H);
         g.fillStyle = place === 1 ? '#ffd200' : '#fff';
-        g.font = '700 40px Fredoka, sans-serif';
+        g.font = "700 40px 'Hanken Grotesk', system-ui, sans-serif";
         g.textAlign = 'center';
         g.fillText(place === 1 ? '🏆 Gewonnen!' : 'P' + place + ' — gefinisht', W / 2, H / 2);
         g.textAlign = 'left';
       }
+
+      fx.vignette(0.42);
+      fx.end();
     }
 
     function strokePath() {
@@ -337,6 +359,17 @@
       if (g.roundRect) g.roundRect(-7, -8, 14, 14, 4);
       else g.rect(-7, -8, 14, 14);
       g.fill();
+      // bestuurder: geel Roblox-blokhoofdje met helm in de kartkleur
+      g.fillStyle = '#ffd23c';
+      g.beginPath();
+      if (g.roundRect) g.roundRect(-5, -6, 10, 10, 2);
+      else g.rect(-5, -6, 10, 10);
+      g.fill();
+      g.fillStyle = k.color;
+      g.fillRect(-5, -8, 10, 3);
+      g.fillStyle = '#1c1e20';
+      g.fillRect(-2, -3, 2, 2);
+      g.fillRect(2, -3, 2, 2);
       // wielen
       g.fillStyle = '#111';
       [[-12, -12], [8, -12], [-12, 8], [8, 8]].forEach(([wx, wy]) => g.fillRect(wx, wy, 5, 10));

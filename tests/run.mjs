@@ -259,6 +259,73 @@ await test('een aankoop verandert de standaardwaarden niet', () => {
 
 /* ═══════════════════════ vrienden ═══════════════════════ */
 
+suite('Avatar en catalogus');
+
+await test('de catalogus heeft skins en hoeden, allemaal met een uniek id', () => {
+  const ids = SB.SHOP.map((i) => i.id);
+  eq(new Set(ids).size, ids.length, 'geen dubbele item-ids');
+  assert(SB.SHOP.some((i) => i.type === 'skin'), 'er moeten huidkleuren zijn');
+  assert(SB.SHOP.some((i) => i.type === 'hat'), 'er moeten hoofddeksels zijn');
+  SB.SHOP.forEach((i) => {
+    assert(i.type === 'skin' || i.type === 'hat', i.id + ' heeft een onbekend type');
+    assert(typeof i.price === 'number' && i.price >= 0, i.id + ' heeft geen eerlijke prijs');
+    ok(i.name, i.id + ' heeft geen naam');
+  });
+});
+
+await test('shopFor geeft alleen items van dat type', () => {
+  const skins = SB.shopFor('skin');
+  const hats = SB.shopFor('hat');
+  assert(skins.length > 0 && hats.length > 0);
+  eq(skins.length + hats.length, SB.SHOP.length);
+  skins.forEach((i) => eq(i.type, 'skin'));
+});
+
+await test('een nieuw profiel bezit precies de gratis items', () => {
+  const s = fakeStorage();
+  eq(SB.owns(s, 'skin', 'groen'), true);
+  eq(SB.owns(s, 'hat', 'geen'), true);
+  eq(SB.owns(s, 'skin', 'goud'), false);
+  eq(SB.owns(s, 'hat', 'kroon'), false);
+});
+
+await test('iets aandoen dat je niet bezit wordt geweigerd', () => {
+  const s = fakeStorage();
+  const r = SB.equipItem(s, 'hat', 'kroon');
+  eq(r.ok, false);
+  eq(r.reason, 'niet in bezit');
+  eq(SB.getProfile(s).hat, 'geen', 'het profiel mag niet stiekem wijzigen');
+});
+
+await test('kopen en daarna aandoen werkt, en wisselen terug ook', () => {
+  const s = fakeStorage();
+  SB.addCoins(s, 500);
+  const bought = SB.buyItem(s, SB.itemById('kroon'));
+  eq(bought.ok, true);
+  eq(SB.getCoins(s), 200, 'kroon kost 300');
+  eq(SB.getProfile(s).hat, 'kroon', 'aankoop wordt meteen gedragen');
+
+  eq(SB.equipItem(s, 'hat', 'geen').ok, true);
+  eq(SB.getProfile(s).hat, 'geen');
+  eq(SB.equipItem(s, 'hat', 'kroon').ok, true);
+  eq(SB.getProfile(s).hat, 'kroon');
+});
+
+await test('een onbekend item of type kan het profiel niet in de war schoppen', () => {
+  const s = fakeStorage();
+  eq(SB.equipItem(s, 'hat', 'bestaatniet').ok, false);
+  eq(SB.equipItem(s, 'schoenen', 'groen').ok, false);
+  // een skin als hoed aandragen moet ook mislukken
+  eq(SB.equipItem(s, 'hat', 'groen').ok, false);
+  eq(SB.getProfile(s).hat, 'geen');
+  eq(SB.getProfile(s).skin, 'groen');
+});
+
+await test('itemById vindt elk item uit de catalogus terug', () => {
+  SB.SHOP.forEach((i) => eq(SB.itemById(i.id).name, i.name));
+  eq(SB.itemById('nep'), null);
+});
+
 suite('Vrienden');
 
 await test('er staat een startlijst zodat de pagina niet leeg is', () => {

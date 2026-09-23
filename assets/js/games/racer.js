@@ -9,6 +9,7 @@
 
   root.SBGames.racer = function (ctx) {
     const g = ctx.ctx2d;
+    const J = root.SBJuice;
     const W = ctx.logical.w;
     const H = ctx.logical.h;
 
@@ -18,6 +19,8 @@
     const LANE_W = (ROAD_R - ROAD_L) / LANES;
     const CAR_W = 42;
     const CAR_H = 74;
+
+    const fx = J.fx(g, { w: W, h: H });
 
     let x, targetX, traffic, dist, speed, alive, spawnIn, stripe, boost, boostT, nearMiss;
 
@@ -37,6 +40,7 @@
       boost = [];
       boostT = 0;
       nearMiss = 0;
+      fx.clear();
       paintHud();
       draw();
     }
@@ -59,6 +63,7 @@
     }
 
     function update(dt) {
+      fx.update(dt);
       if (!alive) { draw(); return; }
 
       speed = Math.min(760, 280 + dist * 0.22);
@@ -109,6 +114,12 @@
         if (hit) {
           alive = false;
           ctx.sound('lose');
+          fx.shake(18);
+          fx.burst(x, H - CAR_H / 2 - 26, {
+            colors: ['#00c8ff', '#ff5252', '#ffd200', '#ffffff'],
+            count: 40, speed: 320, life: 0.9, size: 5,
+          });
+          fx.ring(x, H - CAR_H / 2 - 26, { color: '#ff5252', r1: 110, life: 0.5 });
           ctx.onEnd({ score: Math.floor(dist) + nearMiss * 5 });
           return;
         }
@@ -118,6 +129,8 @@
           c.counted = true;
           nearMiss++;
           ctx.sound('coin');
+          fx.spark(x, playerTop + 20, { colors: ['#ffd200', '#ffffff'], count: 12, speed: 260 });
+          fx.pop(x, playerTop - 12, 'GLIPPER +5', { color: '#ffd200', size: 17 });
           paintHud();
         }
       }
@@ -130,9 +143,16 @@
           boost.splice(i, 1);
           dist += 25;
           ctx.sound('coin');
+          fx.burst(laneX(b.lane), b.y, { colors: ['#ffd200', '#ffffff'], count: 22, speed: 240, life: 0.6 });
+          fx.pop(x, playerTop - 30, 'BOOST +25 m', { color: '#ffd200', size: 20 });
+          fx.shake(4);
           paintHud();
         }
       }
+
+      // uitlaat van de eigen auto
+      fx.trail(x - 12, H - 22, { color: 'rgba(160,220,255,0.8)', size: 4, life: 0.22 });
+      fx.trail(x + 12, H - 22, { color: 'rgba(160,220,255,0.8)', size: 4, life: 0.22 });
 
       paintHud();
       draw();
@@ -156,8 +176,10 @@
     }
 
     function draw() {
-      g.fillStyle = '#08080f';
+      g.fillStyle = J.vgrad(g, 0, H, '#0b0b16', '#050509');
       g.fillRect(0, 0, W, H);
+
+      fx.begin();
 
       // berm
       g.fillStyle = '#12121c';
@@ -191,10 +213,21 @@
       // speler
       car(x, H - CAR_H - 26, '#00c8ff', true);
 
+      // lantaarns in de berm schieten voorbij
+      g.fillStyle = 'rgba(255,199,0,0.5)';
+      for (let y = -60 + stripe * 2; y < H; y += 120) {
+        g.fillRect(ROAD_L - 12, y, 4, 12);
+        g.fillRect(ROAD_R + 8, y, 4, 12);
+      }
+
       if (!alive) {
         g.fillStyle = 'rgba(255,82,82,0.16)';
         g.fillRect(0, 0, W, H);
       }
+
+      fx.speedLines(J.clamp((speed - 280) / 480, 0, 1), 'rgba(180,230,255,0.4)');
+      fx.vignette(0.5);
+      fx.end();
     }
 
     return {

@@ -23,7 +23,7 @@
 
   const GAMES = [
     {
-      id: 'race', name: 'Kart Race', icon: '🏎️', cat: 'race',
+      id: 'race', thumb: 'assets/img/race.jpg', name: 'Kart Race', icon: '🏎️', cat: 'race',
       render: 'canvas',
       width: 640, height: 400,
       tagline: 'Race tegen 3 rivalen op 3 circuits',
@@ -33,7 +33,7 @@
       best: 'highest', unit: 'punten',
     },
     {
-      id: 'snake', name: 'Neon Snake', icon: '🐍', cat: 'actie',
+      id: 'snake', thumb: 'assets/img/snake.jpg', name: 'Neon Snake', icon: '🐍', cat: 'actie',
       render: 'canvas',
       width: 480, height: 480,
       tagline: 'Eet, groei, raak jezelf niet',
@@ -43,7 +43,7 @@
       best: 'highest', unit: 'appels',
     },
     {
-      id: 'shooter', name: 'Space Blaster', icon: '👾', cat: 'actie',
+      id: 'shooter', thumb: 'assets/img/shooter.jpg', name: 'Space Blaster', icon: '👾', cat: 'actie',
       render: 'canvas',
       width: 480, height: 640,
       tagline: 'Schiet de invasie neer',
@@ -53,7 +53,7 @@
       best: 'highest', unit: 'punten',
     },
     {
-      id: 'racer', name: 'Neon Rush', icon: '🚗', cat: 'race',
+      id: 'racer', thumb: 'assets/img/racer.jpg', name: 'Neon Rush', icon: '🚗', cat: 'race',
       render: 'canvas',
       width: 480, height: 640,
       tagline: 'Snelweg ontwijken op snelheid',
@@ -63,7 +63,7 @@
       best: 'highest', unit: 'meter',
     },
     {
-      id: 'dino', name: 'Dino Runner', icon: '🦖', cat: 'actie',
+      id: 'dino', thumb: 'assets/img/dino.jpg', name: 'Dino Runner', icon: '🦖', cat: 'actie',
       render: 'canvas',
       width: 640, height: 280,
       tagline: 'Spring over de cactussen',
@@ -73,7 +73,7 @@
       best: 'highest', unit: 'meter',
     },
     {
-      id: 'pong', name: 'Pong Duo', icon: '🏓', cat: 'actie',
+      id: 'pong', thumb: 'assets/img/pong.jpg', name: 'Pong Duo', icon: '🏓', cat: 'actie',
       render: 'canvas',
       width: 480, height: 480,
       tagline: 'Eerste tot 7 wint',
@@ -83,7 +83,7 @@
       best: 'highest', unit: 'punten',
     },
     {
-      id: 'memory', name: 'Memory Match', icon: '🃏', cat: 'puzzel',
+      id: 'memory', thumb: 'assets/img/memory.jpg', name: 'Memory Match', icon: '🃏', cat: 'puzzel',
       tagline: 'Zoek de paren',
       desc: 'Draai kaarten om en onthoud waar alles ligt. Minder beurten is beter.',
       players: 1, touches: true,
@@ -91,7 +91,7 @@
       best: 'lowest', unit: 'beurten',
     },
     {
-      id: 'guess', name: 'Raad het Getal', icon: '🔢', cat: 'puzzel',
+      id: 'guess', thumb: 'assets/img/guess.jpg', name: 'Raad het Getal', icon: '🔢', cat: 'puzzel',
       tagline: '1 tot 100 — zo min mogelijk gokken',
       desc: 'Hoger of lager. Een goede gokker heeft het in 7 beurten.',
       players: 1, touches: false,
@@ -99,7 +99,7 @@
       best: 'lowest', unit: 'gokken',
     },
     {
-      id: 'clicker', name: 'Munt Clicker', icon: '🪙', cat: 'casual',
+      id: 'clicker', thumb: 'assets/img/clicker.jpg', name: 'Munt Clicker', icon: '🪙', cat: 'casual',
       tagline: 'Klik, upgrade, automatiseer',
       desc: 'Bouw een muntfabriek. Upgrades maken het leuker, niet makkelijker.',
       players: 1, touches: true,
@@ -107,7 +107,7 @@
       best: 'highest', unit: 'munten',
     },
     {
-      id: 'orlog', name: 'Orlog', icon: '🎲', cat: 'casual',
+      id: 'orlog', thumb: 'assets/img/orlog.jpg', name: 'Orlog', icon: '🎲', cat: 'casual',
       tagline: 'Dobbelen tegen de vijand',
       desc: 'Drie rondes dobbelen, tokens inzetten, de beste combinatie wint.',
       players: 1, touches: true,
@@ -115,7 +115,7 @@
       best: 'highest', unit: 'zeges',
     },
     {
-      id: 'moon', name: 'Maan Kolonie', icon: '🌙', cat: 'bouwen',
+      id: 'moon', thumb: 'assets/img/moon.jpg', name: 'Maan Kolonie', icon: '🌙', cat: 'bouwen',
       tagline: 'Bouw een basis op de maan',
       desc: 'Zuurstof, energie en koepels. Overleef 30 dagen zonder dat alles ontploft.',
       players: 1, touches: true,
@@ -123,7 +123,7 @@
       best: 'highest', unit: 'dagen',
     },
     {
-      id: 'blockrun', name: 'Block Run', icon: '🧱', cat: 'avontuur',
+      id: 'blockrun', thumb: 'assets/img/blockrun.jpg', name: 'Block Run', icon: '🧱', cat: 'avontuur',
       render: 'canvas',
       width: 640, height: 360,
       tagline: 'Platformen door de blokkenwereld',

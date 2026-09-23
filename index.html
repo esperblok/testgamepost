@@ -5,75 +5,131 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>SpaceBlox — speel gratis games</title>
 <meta name="description" content="SpaceBlox: een gratis gamesite voor kinderen. Race, bouw, puzzel en verzamel muntjes. Alles werkt in je browser, zonder download.">
-<meta name="theme-color" content="#0d0d16">
+<meta name="theme-color" content="#232527">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-mobile-web-app-title" content="SpaceBlox">
 <link rel="stylesheet" href="assets/css/app.css">
 <link rel="stylesheet" href="assets/css/home.css">
+<link rel="stylesheet" href="assets/css/avatar.css">
 </head>
 <body>
 
-<header class="topbar">
-  <a class="logo" href="index.html">
-    <span class="logo-mark">⬛</span>
-    <span>SpaceBlox</span>
-  </a>
+<!-- ══════════════ navbar ══════════════ -->
+<header class="rb-nav">
+  <div class="rb-nav-in">
+    <a class="rb-logo" href="index.html">
+      <span class="rb-logo-mark" aria-hidden="true">⬛</span>
+      <span>SpaceBlox</span>
+    </a>
 
-  <nav class="tabs" id="tabs" aria-label="Hoofdmenu">
-    <button class="tab active" data-view="ontdek">🎮 Ontdek</button>
-    <button class="tab" data-view="vrienden">👥 Vrienden</button>
-    <button class="tab" data-view="profiel">👤 Profiel</button>
-  </nav>
+    <nav class="rb-navlinks" id="tabs" aria-label="Hoofdmenu">
+      <button class="rb-navlink active" data-view="ontdek">Games</button>
+      <button class="rb-navlink" data-view="avatar">Avatar</button>
+      <button class="rb-navlink" data-view="vrienden">Vrienden</button>
+      <button class="rb-navlink" data-view="profiel">Profiel</button>
+    </nav>
 
-  <div class="search">
-    <span aria-hidden="true">🔍</span>
-    <input id="search" type="search" placeholder="Zoek een game" aria-label="Zoek een game" autocomplete="off">
-  </div>
-
-  <div class="top-actions">
-    <div class="sb-chip sb-coins" title="Jouw muntjes">
-      <span aria-hidden="true">🪙</span><span id="coins">0</span>
+    <div class="rb-search">
+      <span aria-hidden="true">🔍</span>
+      <input id="search" type="search" placeholder="Zoek een game" aria-label="Zoek een game" autocomplete="off">
     </div>
-    <button class="icon-btn" id="giftBtn" title="Dagelijkse beloning" aria-label="Dagelijkse beloning">🎁</button>
-    <button class="icon-btn" id="loginBtn" title="Inloggen" aria-label="Inloggen">👤</button>
+
+    <div class="rb-nav-right">
+      <div class="sb-chip sb-coins" title="Jouw muntjes">
+        <span class="sb-coin-ico" aria-hidden="true">🪙</span><span id="coins">0</span>
+      </div>
+      <button class="rb-iconbtn" id="giftBtn" title="Dagelijkse beloning" aria-label="Dagelijkse beloning">🎁</button>
+      <button class="rb-avatarbtn" id="loginBtn" title="Inloggen" aria-label="Inloggen">🧑</button>
+    </div>
   </div>
 </header>
 
-<main>
-  <!-- spelerbalk -->
-  <section class="playerbar" aria-label="Jouw profiel">
-    <div class="playerbar-inner">
-      <div class="pb-avatar" id="pbAvatar">🧑</div>
-      <div class="pb-text">
-        <div class="pb-name"><span id="pbName">Speler</span><span class="pb-role" id="pbRole" hidden>Admin</span></div>
-        <div class="pb-level">
-          <span class="pb-lv" id="pbLv">Lv 1</span>
-          <span class="pb-xp"><i id="pbXp" style="width:0%"></i></span>
-          <span class="pb-xp-label" id="pbXpLabel">0 XP</span>
+<div class="rb-shell">
+  <!-- ══════════════ sidebar ══════════════ -->
+  <aside class="rb-side" aria-label="Zijmenu">
+    <div class="rb-side-title">Menu</div>
+    <button class="rb-side-item active" data-view="ontdek"><span class="ico" aria-hidden="true">🏠</span><span class="lbl">Home</span></button>
+    <button class="rb-side-item" data-view="avatar"><span class="ico" aria-hidden="true">🧍</span><span class="lbl">Avatar</span></button>
+    <button class="rb-side-item" data-view="winkel"><span class="ico" aria-hidden="true">🛍️</span><span class="lbl">Winkel</span></button>
+    <button class="rb-side-item" data-view="vrienden"><span class="ico" aria-hidden="true">👥</span><span class="lbl">Vrienden</span><span class="cnt" id="friendCount">0</span></button>
+    <button class="rb-side-item" data-view="records"><span class="ico" aria-hidden="true">🏆</span><span class="lbl">Records</span></button>
+    <button class="rb-side-item" data-view="profiel"><span class="ico" aria-hidden="true">⚙️</span><span class="lbl">Instellingen</span></button>
+    <a class="rb-side-item" href="dashboard.html"><span class="ico" aria-hidden="true">📊</span><span class="lbl">Dashboard</span></a>
+
+    <div class="rb-side-title">Jij</div>
+    <div class="rb-me">
+      <div class="rb-me-av" id="pbAvatar">🧑</div>
+      <div class="rb-me-txt">
+        <div class="rb-me-name"><span id="pbName">Speler</span> <span class="pb-role" id="pbRole" hidden>👑</span></div>
+        <div class="rb-me-lv">
+          <span id="pbLv">Lv 1</span>
+          <span class="rb-xpbar"><i id="pbXp" style="width:0%"></i></span>
         </div>
       </div>
-      <div class="pb-stats">
-        <div class="pb-stat coins"><b id="statCoins">0</b><span>muntjes</span></div>
-        <div class="pb-stat"><b id="statPlays">0</b><span>spellen</span></div>
-        <div class="pb-stat"><b id="statBest">0</b><span>records</span></div>
+    </div>
+    <div class="rb-me" style="margin-top:8px">
+      <div class="rb-me-av" style="background:linear-gradient(150deg,#ffd83d,#f0a500)">🪙</div>
+      <div class="rb-me-txt">
+        <div class="rb-me-name"><span id="statCoins">0</span> muntjes</div>
+        <div class="rb-me-lv"><span id="statPlays">0</span> spellen · <span id="statBest">0</span> records</div>
       </div>
     </div>
-  </section>
+  </aside>
 
-  <!-- categorieën -->
-  <div class="cats" id="cats" role="tablist" aria-label="Categorieën"></div>
+  <!-- ══════════════ hoofdgebied ══════════════ -->
+  <main class="rb-main">
+    <!-- downloadbanner: alleen zichtbaar in de preview (herkend aan het .e2b.app-adres) -->
+    <div id="dlBanner" hidden style="margin:14px 18px 0;padding:12px 16px;border-radius:12px;background:#00b06f;color:#062b1c;font-weight:700;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+      <span>📦 Preview-modus: download hier de hele site als zip om hem zelf op GitHub te zetten.</span>
+      <a id="dlLink" href="spaceblox-update.zip" download style="background:#062b1c;color:#7dffc4;padding:8px 14px;border-radius:10px;text-decoration:none">⬇️ spaceblox-update.zip (2,5 MB)</a>
+      <div style="width:100%;font-size:13px;font-weight:600;margin-top:4px">
+        Gebeurt er niets bij klikken?
+        <a id="dlFull" target="_blank" rel="noopener" style="color:#062b1c;text-decoration:underline">Open de zip in een nieuw tabblad</a>
+        — of kopieer deze link (selecteren, Ctrl+C, nieuw tabblad, plakken, Enter):
+        <code id="dlFullText" style="display:block;background:#062b1c;color:#7dffc4;padding:6px 8px;border-radius:8px;word-break:break-all;margin-top:6px"></code>
+      </div>
+    </div>
 
-  <div class="wrap">
     <div id="view-ontdek">
-      <section id="featuredSec" hidden>
-        <div class="section"><h2>⭐ Uitgelicht</h2><span class="hint">de leukste om mee te beginnen</span></div>
-        <div class="grid" id="featuredGrid"></div>
+      <!-- hero -->
+      <section class="rb-hero" id="hero" aria-label="Uitgelicht spel">
+        <div class="rb-hero-bg" id="heroBg"></div>
+        <div class="rb-hero-art" id="heroArt" aria-hidden="true">🎮</div>
+        <div class="rb-hero-body">
+          <span class="rb-hero-kicker">Uitgelicht</span>
+          <h1 id="heroTitle">—</h1>
+          <p id="heroDesc"></p>
+          <div class="rb-hero-stats" id="heroStats"></div>
+          <div class="rb-hero-actions">
+            <button class="sb-btn sb-btn-primary sb-btn-lg" id="heroPlay">▶ Spelen</button>
+            <button class="sb-btn sb-btn-ghost sb-btn-lg" id="heroMore">Meer info</button>
+          </div>
+        </div>
+        <button class="rb-arrow prev" id="heroPrev" aria-label="Vorige">◀</button>
+        <button class="rb-arrow next" id="heroNext" aria-label="Volgende">▶</button>
+        <div class="rb-hero-nav" id="heroDots"></div>
       </section>
 
-      <section>
-        <div class="section">
+      <!-- categorieën -->
+      <div class="cats" id="cats" role="tablist" aria-label="Categorieën"></div>
+
+      <!-- uitgelichte rij -->
+      <section class="rb-row" id="featuredSec" hidden>
+        <div class="rb-row-head">
+          <h2>⭐ Uitgelicht</h2>
+          <span class="hint">de leukste om mee te beginnen</span>
+        </div>
+        <div class="rb-track" id="featuredGrid"></div>
+      </section>
+
+      <!-- rijen per categorie -->
+      <div id="rows"></div>
+
+      <!-- alles -->
+      <section class="rb-row">
+        <div class="rb-row-head">
           <h2 id="gridTitle">🎮 Alle games</h2>
           <span class="hint" id="gridCount"></span>
         </div>
@@ -82,53 +138,121 @@
       </section>
     </div>
 
+    <!-- avatar -->
+    <div id="view-avatar" hidden>
+      <div class="rb-row-head"><h2>🧍 Avatar</h2><span class="hint">zo zien je vrienden jou</span></div>
+      <div class="av-layout">
+        <div class="av-stage">
+          <div class="av-figure" id="avFigure"></div>
+          <div class="av-name" id="avName">Speler</div>
+        </div>
+        <div class="av-panel">
+          <div class="rb-row-head"><h2>Kleur</h2><span class="hint" id="avSkinName"></span></div>
+          <div class="av-swatches" id="avSkins"></div>
+          <div class="rb-row-head" style="margin-top:18px"><h2>Hoofddeksel</h2><span class="hint" id="avHatName"></span></div>
+          <div class="av-hats" id="avHats"></div>
+          <div class="rb-row-head" style="margin-top:18px"><h2>Naam &amp; emoji</h2></div>
+          <div class="stack" style="display:flex;gap:8px">
+            <input class="sb-field" id="avProfileName" maxlength="16" placeholder="Jouw naam" aria-label="Jouw naam">
+            <button class="sb-btn sb-btn-primary" id="avSave">💾 Opslaan</button>
+          </div>
+          <p class="sb-ok" id="avOk"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- winkel -->
+    <div id="view-winkel" hidden>
+      <div class="rb-row-head">
+        <h2>🛍️ Winkel</h2>
+        <span class="hint">verdien muntjes met spelen en de dagelijkse beloning</span>
+      </div>
+      <div class="shop-grid" id="shopGrid"></div>
+      <p class="sb-error" id="shopErr"></p>
+    </div>
+
+    <!-- vrienden -->
     <div id="view-vrienden" hidden>
-      <div class="section"><h2>👥 Vrienden</h2><span class="hint">alleen op dit apparaat</span></div>
+      <div class="rb-row-head"><h2>👥 Vrienden</h2><span class="hint">alleen op dit apparaat</span></div>
       <div class="friends" id="friendList"></div>
-      <div class="section"><h2>➕ Vriend toevoegen</h2></div>
-      <div class="row" style="display:flex;gap:8px;max-width:360px">
+      <div class="rb-row-head" style="margin-top:18px"><h2>➕ Vriend toevoegen</h2></div>
+      <div style="display:flex;gap:8px;max-width:360px">
         <input class="sb-field" id="friendName" placeholder="Naam" maxlength="16" aria-label="Naam van je vriend">
         <button class="sb-btn sb-btn-primary" id="addFriend">Toevoegen</button>
       </div>
       <p class="sb-error" id="friendErr"></p>
     </div>
 
-    <div id="view-profiel" hidden>
-      <div class="section"><h2>👤 Profiel</h2></div>
-      <div class="modal" style="max-width:460px">
-        <h2>Jouw look</h2>
-        <p class="sub">Kies een emoji en een naam. Die zie je terug bij je highscores.</p>
-        <div class="stack">
-          <input class="sb-field" id="profName" maxlength="16" placeholder="Jouw naam" aria-label="Jouw naam">
-          <div class="reward-days" id="emojiPicker" style="grid-template-columns:repeat(8,1fr)"></div>
-          <button class="sb-btn sb-btn-primary" id="saveProfile">💾 Opslaan</button>
-        </div>
-        <p class="sb-ok" id="profOk"></p>
-      </div>
-
-      <div class="section"><h2>🏆 Jouw records</h2></div>
+    <!-- records -->
+    <div id="view-records" hidden>
+      <div class="rb-row-head"><h2>🏆 Jouw records</h2><span class="hint">per spel je beste score</span></div>
       <div class="friends" id="recordList"></div>
+    </div>
 
-      <div class="section"><h2>⚙️ Instellingen</h2></div>
-      <div class="modal" style="max-width:460px">
-        <div class="stack">
+    <!-- profiel / instellingen -->
+    <div id="view-profiel" hidden>
+      <div class="rb-row-head"><h2>⚙️ Instellingen</h2></div>
+      <div class="modal" style="max-width:460px;animation:none">
+        <div class="stack" style="display:flex;flex-direction:column;gap:10px">
           <label class="friend" style="cursor:pointer">
             <input type="checkbox" id="setSound" style="width:18px;height:18px">
             <span class="f-txt"><span class="f-name">🔊 Geluid</span><span class="f-sub">Piepjes en muziek bij het spelen</span></span>
           </label>
-          <button class="sb-btn sb-btn-ghost" id="resetData">🗑️ Alle gegevens wissen</button>
+          <label class="friend" style="cursor:pointer">
+            <input type="checkbox" id="setMotion" style="width:18px;height:18px">
+            <span class="f-txt"><span class="f-name">✨ Minder effecten</span><span class="f-sub">Zet deeltjes en schermschudden uit</span></span>
+          </label>
+          <button class="sb-btn sb-btn-ghost" id="goDashboard2">📊 Naar dashboard</button>
+          <button class="sb-btn sb-btn-danger" id="resetData">🗑️ Alle gegevens wissen</button>
         </div>
       </div>
     </div>
-  </div>
-</main>
+
+  </main>
+</div>
+
+<!-- mobiel menu -->
+<nav class="rb-mobile-tabs" id="mobileTabs" aria-label="Menu">
+  <button class="active" data-view="ontdek"><span class="ico" aria-hidden="true">🏠</span>Home</button>
+  <button data-view="avatar"><span class="ico" aria-hidden="true">🧍</span>Avatar</button>
+  <button data-view="winkel"><span class="ico" aria-hidden="true">🛍️</span>Winkel</button>
+  <button data-view="vrienden"><span class="ico" aria-hidden="true">👥</span>Vrienden</button>
+  <button data-view="profiel"><span class="ico" aria-hidden="true">⚙️</span>Meer</button>
+</nav>
 
 <footer class="foot">
   <span>SpaceBlox — 12 gratis spellen, geen download, geen advertenties.</span>
-  <span><a href="dashboard.html">📊 Dashboard</a> · <a href="README.md">📖 Over dit project</a></span>
+  <span><a href="dashboard.html">📊 Dashboard</a> · <a href="profile.html">🧍 Avatar</a> · <a href="README.md">📖 Over dit project</a></span>
 </footer>
 
-<!-- inloggen -->
+<!-- ══════════════ gamedetail ══════════════ -->
+<div class="modal-bg" id="detailModal">
+  <div class="modal detail">
+    <div class="detail-hero" id="dHero">
+      <span class="art" id="dArt" aria-hidden="true">🎮</span>
+      <button class="x" data-close aria-label="Sluiten">✕</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-top">
+        <div>
+          <h2 id="dName">—</h2>
+          <div class="detail-by">Door <strong>SpaceBlox Studio</strong></div>
+        </div>
+        <div class="detail-play">
+          <button class="sb-btn sb-btn-primary sb-btn-lg" id="dPlay">▶ Spelen</button>
+        </div>
+      </div>
+      <div class="detail-stats" id="dStats"></div>
+      <p class="detail-desc" id="dDesc"></p>
+      <div class="detail-chips" id="dChips"></div>
+      <div class="rb-row-head"><h2 style="font-size:1rem">🏆 Scorebord</h2></div>
+      <ol class="detail-board" id="dBoard"></ol>
+      <button class="sb-btn sb-btn-ghost modal-close" data-close>Sluiten</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ inloggen ══════════════ -->
 <div class="modal-bg" id="authModal">
   <div class="modal">
     <div class="modal-tabs" id="authTabs">
@@ -139,7 +263,7 @@
     <div id="authLogin">
       <h2>Welkom terug</h2>
       <p class="sub">Log in om je muntjes en records te zien.</p>
-      <div class="stack">
+      <div class="stack" style="display:flex;flex-direction:column;gap:10px">
         <input class="sb-field" id="logUser" placeholder="Gebruikersnaam" autocomplete="username">
         <input class="sb-field" id="logPass" type="password" placeholder="Wachtwoord" autocomplete="current-password">
         <p class="sb-error" id="logErr"></p>
@@ -150,7 +274,7 @@
     <div id="authRegister" hidden>
       <h2>Account aanmaken</h2>
       <p class="sub">Kies een naam en een wachtwoord met letters én cijfers.</p>
-      <div class="stack">
+      <div class="stack" style="display:flex;flex-direction:column;gap:10px">
         <input class="sb-field" id="regUser" placeholder="Gebruikersnaam" maxlength="16" autocomplete="username">
         <input class="sb-field" id="regPass" type="password" placeholder="Wachtwoord (min. 6 tekens)" autocomplete="new-password">
         <input class="sb-field" id="regPass2" type="password" placeholder="Nog een keer" autocomplete="new-password">
@@ -162,7 +286,7 @@
     <div id="authAccount" hidden>
       <h2 id="accName">—</h2>
       <p class="sub" id="accRole">Ingelogd</p>
-      <div class="stack">
+      <div class="stack" style="display:flex;flex-direction:column;gap:10px">
         <div id="accAdminBox" hidden>
           <div class="notice warn">
             Je bent ingelogd als admin. Het admin-wachtwoord staat niet in de broncode —
@@ -184,14 +308,14 @@
   </div>
 </div>
 
-<!-- dagelijkse beloning -->
+<!-- ══════════════ dagelijkse beloning ══════════════ -->
 <div class="modal-bg" id="giftModal">
   <div class="modal" style="text-align:center">
     <h2>🎁 Dagelijkse beloning</h2>
     <p class="sub">Kom elke dag terug voor meer muntjes.</p>
     <div class="reward-days" id="rewardDays"></div>
     <p id="rewardMsg" class="notice"></p>
-    <button class="sb-btn sb-btn-gold" id="claimReward" style="width:100%;margin-top:12px">🪙 Claimen</button>
+    <button class="sb-btn sb-btn-gold sb-btn-block" id="claimReward" style="margin-top:12px">🪙 Claimen</button>
     <button class="sb-btn sb-btn-ghost modal-close" data-close>Sluiten</button>
   </div>
 </div>
@@ -200,7 +324,39 @@
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/admin.config.js"></script>
 <script src="assets/js/games.js"></script>
+<script src="assets/js/juice.js"></script>
+<script src="assets/js/avatar.js"></script>
 <script src="assets/js/home.js"></script>
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
+<script>
+  /* Downloadbanner: in de preview (.e2b.app) altijd tonen; elders alleen als de
+     zip echt bestaat. Download via dezelfde verbinding, dus geen token-gedoe. */
+  (function () {
+    var banner = document.getElementById('dlBanner');
+    var link = document.getElementById('dlLink');
+    if (!banner || !link) return;
+    var url = 'spaceblox-update.zip' + location.search;
+    var full = new URL(url, location.href).href;
+    document.getElementById('dlFull').href = full;
+    document.getElementById('dlFullText').textContent = full;
+    function show() { banner.hidden = false; }
+    if (/\.e2b\.app$/.test(location.hostname)) show();
+    else if (typeof fetch === 'function') {
+      fetch(url, { method: 'HEAD' }).then(function (r) { if (r.ok) show(); }).catch(function () {});
+    }
+    link.addEventListener('click', function (e) {
+      if (typeof fetch !== 'function') return;
+      e.preventDefault();
+      fetch(url).then(function (r) { return r.blob(); }).then(function (b) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(b);
+        a.download = 'spaceblox-update.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }).catch(function () { location.href = url; });
+    });
+  })();
+</script>
 </body>
 </html>

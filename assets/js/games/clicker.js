@@ -19,6 +19,7 @@
   ];
 
   root.SBGames.clicker = function (ctx) {
+    const J = root.SBJuice;
     let minted, perClick, perSec, owned, floaters, wrap, coinEl, rateEl, shopEl, cashBtn, tickAcc;
 
     function cost(u) {
@@ -73,6 +74,10 @@
       owned[u.id] = (owned[u.id] || 0) + 1;
       recalc();
       ctx.sound('coin');
+      if (J) {
+        J.confetti({ count: 34, life: 1.1 });
+        J.bounce(coinEl);
+      }
       paint();
     }
 
@@ -88,6 +93,7 @@
     function addClick(ev) {
       minted += perClick;
       ctx.sound('coin');
+      if (J) J.bounce(coinEl);
       if (ev) {
         const r = ctx.stage.getBoundingClientRect();
         floaters.push({
@@ -127,6 +133,7 @@
       // De munten gaan hier rechtstreeks naar het saldo; de shell hoeft dat
       // dus niet nog eens te doen (vandaar coins: 0).
       SB.addCoins(localStorage, total);
+      if (J) J.confetti({ count: 130, life: 2.4 });
       ctx.onEnd({ score: total, coins: 0, won: true });
     }
 

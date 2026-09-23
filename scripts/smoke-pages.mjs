@@ -90,6 +90,8 @@ console.log('\n\x1b[1mindex.html\x1b[0m');
 {
   const { dom, errors, missing } = await loadPage('index.html', [
     '#grid', '#cats', '#coins', '#pbName', '#loginBtn', '#giftModal', '#authModal',
+    // nieuwe Roblox-chrome
+    '.rb-nav', '.rb-side', '#hero', '#heroTitle', '#rows', '#detailModal', '#shopGrid', '#avFigure',
   ]);
   errors.forEach((e) => bad(e));
   if (!errors.length) ok('laadt zonder JavaScript-fouten');
@@ -108,6 +110,17 @@ console.log('\n\x1b[1mindex.html\x1b[0m');
   if (cats.length >= 5) ok(cats.length + ' categorieknoppen');
   else bad('te weinig categorieën: ' + cats.length);
 
+  // de rijen die horizontaal scrollen
+  const rows = dom.window.document.querySelectorAll('#rows .rb-row');
+  const rowCards = dom.window.document.querySelectorAll('#rows .rb-track .game');
+  if (rows.length >= 5 && rowCards.length >= 20) ok(rows.length + ' rijen met ' + rowCards.length + ' kaarten');
+  else bad('rijen niet goed opgebouwd: ' + rows.length + ' rijen, ' + rowCards.length + ' kaarten');
+
+  // de hero toont een echt spel
+  const heroTitle = dom.window.document.getElementById('heroTitle').textContent;
+  if (heroTitle && heroTitle !== '—') ok('hero gevuld met "' + heroTitle + '"');
+  else bad('hero is leeg');
+
   // een kaart moet naar de juiste pagina linken
   const hrefs = [...cards].map((c) => c.getAttribute('href'));
   if (hrefs.includes('games/snake.html') && hrefs.includes('games/race.html')) {
@@ -120,6 +133,97 @@ console.log('\n\x1b[1mindex.html\x1b[0m');
   } else bad('geen startmuntjes uitgedeeld');
 
   dom.window.close();
+}
+
+/* ═══════════════════════ avatarpagina ════════════════════════ */
+
+console.log('\n\x1b[1mprofile.html\x1b[0m');
+{
+  const { dom, errors, missing } = await loadPage('profile.html', [
+    '#avFigure', '.av-fig', '#avSkins', '#avHats', '#recordList', '#avProfileName',
+  ]);
+  errors.forEach((e) => bad(e));
+  if (!errors.length) ok('laadt zonder JavaScript-fouten');
+  missing.forEach((m) => bad('ontbrekend element: ' + m));
+  if (!missing.length) ok('alle verwachte elementen aanwezig');
+
+  const win = dom.window;
+  const fig = win.document.querySelector('.av-fig');
+  const parts = win.document.querySelectorAll('.av-fig .av-part');
+  if (parts.length === 6) ok('pop bestaat uit 6 blokjes (hoofd, romp, 2 armen, 2 benen)');
+  else bad('verwachtte 6 blokjes, zag er ' + parts.length);
+
+  const skins = win.document.querySelectorAll('#avSkins .av-swatch');
+  const hats = win.document.querySelectorAll('#avHats .av-tile');
+  if (skins.length === win.SB.shopFor('skin').length) ok(skins.length + ' huidkleuren in de kiezer');
+  else bad('huidkleuren kloppen niet: ' + skins.length);
+  if (hats.length === win.SB.shopFor('hat').length) ok(hats.length + ' hoofddeksels in de kiezer');
+  else bad('hoofddeksels kloppen niet: ' + hats.length);
+
+  if (fig && fig.dataset.skin === 'groen') ok('nieuw profiel draagt de gratis kleur');
+  else bad('standaardkleur klopt niet: ' + (fig && fig.dataset.skin));
+
+  // klikken op een betaalde kleur moet kopen én aantrekken
+  const paid = [...skins].find((s) => s.dataset.skin === 'blauw');
+  const before = win.SB.getCoins(win.localStorage);
+  paid.click();
+  const after = win.SB.getCoins(win.localStorage);
+  if (win.SB.getProfile(win.localStorage).skin === 'blauw') ok('klik op een kleur koopt en trekt hem aan');
+  else bad('kleur werd niet aangetrokken');
+  if (after === before - 60) ok('prijs afgetrokken: ' + before + ' → ' + after);
+  else bad('prijs klopt niet: ' + before + ' → ' + after);
+
+  dom.window.close();
+}
+
+/* ═══════════════════════ juice (effectenlaag) ═════════════════ */
+
+console.log('\n\x1b[1massets/js/juice.js\x1b[0m');
+{
+  // UMD-module: als side-effect importeren, daarna van globalThis halen
+  await import('file://' + join(root, 'assets/js/juice.js'));
+  const juice = globalThis.SBJuice;
+  const calls = { n: 0 };
+  const gradient = { addColorStop() {} };
+  const fakeCtx = new Proxy({}, {
+    get(_t, prop) {
+      if (prop === 'createLinearGradient' || prop === 'createRadialGradient') return () => gradient;
+      if (prop === 'measureText') return () => ({ width: 10 });
+      return (...a) => { calls.n++; return undefined; };
+    },
+    set() { return true; },
+  });
+
+  const fx = juice.fx(fakeCtx, { w: 480, h: 480 });
+  fx.burst(100, 100, { colors: ['#fff', '#0f0'], count: 12 });
+  fx.pop(50, 50, '+1');
+  fx.ring(50, 50, { color: '#fff' });
+  fx.shake(8);
+  if (fx.count === 12) ok('burst maakt 12 deeltjes');
+  else bad('verwachtte 12 deeltjes, zag er ' + fx.count);
+  if (fx.shaking) ok('shake staat aan na fx.shake(8)');
+  else bad('shake stond niet aan');
+
+  // eerst tekenen mét levende deeltjes, dan pas laten uitdoven
+  for (let i = 0; i < 6; i++) fx.update(0.05);
+  fx.begin();
+  fx.end();
+  if (calls.n > 40) ok('tekenen doet echt iets (' + calls.n + ' canvas-opdrachten)');
+  else bad('te weinig getekend: ' + calls.n);
+
+  for (let i = 0; i < 60; i++) fx.update(0.05);
+  if (fx.count === 0) ok('deeltjes sterven uit na 3 seconden');
+  else bad('deeltjes bleven hangen: ' + fx.count);
+
+  const sf = juice.starfield(fakeCtx, { w: 480, h: 480, count: 20 });
+  if (sf.stars.length === 20) ok('sterrenveld heeft 20 sterren');
+  else bad('sterrenveld klopt niet: ' + sf.stars.length);
+  sf.update(0.1, 40);
+  sf.draw(fakeCtx);
+  ok('sterrenveld tekent zonder fouten');
+
+  if (juice.clamp(5, 0, 3) === 3 && juice.lerp(0, 10, 0.25) === 2.5) ok('clamp en lerp rekenen goed');
+  else bad('clamp/lerp kloppen niet');
 }
 
 /* ════════════════════════ dashboard ════════════════════════ */
