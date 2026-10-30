@@ -1,0 +1,21 @@
+{
+  "name": "fakevirus-prank-engine",
+  "version": "3.1.4-prank",
+  "private": true,
+  "description": "FAKEVIRUS — een fake virus voor Windows. Alle terminals, geluid en overlays zijn gesimuleerd; er gebeurt niets.",
+  "type": "module",
+  "bin": {
+    "fakevirus": "app.js"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "virus": "node app.js",
+    "stop": "node app.js --stop",
+    "test": "node tests/selftest.mjs",
+    "check": "node tests/selftest.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

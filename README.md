@@ -18,6 +18,7 @@ highscores. Alles draait in de browser — geen server, geen download, geen adve
 - [Een spel toevoegen](#een-spel-toevoegen)
 - [Admin-account en wachtwoord](#admin-account-en-wachtwoord)
 - [Eerlijk over beveiliging](#eerlijk-over-beveiliging)
+- [FAKEVIRUS — de nep-virus](#fakevirus--de-nep-virus)
 
 ---
 
@@ -138,6 +139,14 @@ scripts/smoke-pages.mjs     laadt elke pagina in jsdom, let op JS-fouten
 scripts/play-games.mjs      speelt de spellen echt na
 scripts/hash-password.mjs   maakt een nieuwe admin-hash
 tests/run.mjs               57 tests
+fakevirus/                 nep-virus prank voor Windows — todocht niets
+  FAKEVIRUS.bat            invoer: dubbelklik
+  STOP_FAKEVIRUS.bat       alles uitschakelen
+  app.js                   hoofdvenster + orkestrator
+  terminal.js              één fake terminalvenster
+  lib/                     util, font, scenes, sound, spawn
+  overlays/*.ps1           ransom-note, BSOD, flash, geluidsdaemon
+  tests/selftest.mjs       19 checks, géén vensters
 sw.js                       service worker (offline)
 manifest.json               installeren als app
 ```
@@ -288,6 +297,36 @@ Voor echte accounts, echte highscores tussen spelers en echte beveiliging hoort
 er een backend bij met `bcrypt`/`argon2` en een sessiecookie. Wat hier staat is
 bewust zo gebouwd dat die stap later kan zonder de spellen om te gooien: alle
 opslag loopt via `assets/js/store.js` en alle accounts via `assets/js/auth.js`.
+
+---
+
+## FAKEVIRUS — de nep-virus
+
+Naast de spellen staat in deze repo een **fake virus voor Windows** (`fakevirus/`):
+veel terminals, veel geluid, een ransom-note en een nep-BSOD. Het is een prank die
+elk venster en elk geluid zelf simuleert — **er gebeurt absoluut niets** met de pc.
+
+```bat
+cd fakevirus
+FAKEVIRUS.bat        :: dubbelklik, of:
+node app.js          :: 14 terminals, heel veel geluid, countdown
+node app.js --stop   :: alles uit
+```
+
+- `--terminals 24`  Meer vensters
+- `--sound off`     Geen geluid
+- `--countdown 180` Kortere aftelling
+- `--self-test`     19 checks, géén vensters
+
+Iedere terminal doet alsof het iets anders is: een `nmap`-scan, een SSH-bruteforce,
+`C:\>`-cmd, PowerShell, een Bitcoin-miner, een keylogger, een Tor-node, een
+CVE-2026-exploit — en een speciaal venster voor de testrijn van Tremiun.
+Geluid wordt in Node zelf gesynthetiseerd naar échte WAV-bestanden; de ransom-note,
+de nep-BSOD en de rode flashes zijn PowerShell-vensters.
+
+**Lees [`fakevirus/README.md`](fakevirus/README.md)** voor de opties, de veiligheids-
+achtergrond en hoe je zelf een rol toevoegt. Richt het in op mensen die weten dat
+het een grap is.
 
 ---
 
